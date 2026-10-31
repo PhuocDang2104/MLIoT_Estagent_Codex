@@ -56,8 +56,14 @@ def main():
                       const parsed=await mermaid.parse(text);
                       const {svg}=await mermaid.render(id,text);
                       document.querySelector('#output').innerHTML=svg;
+                      const element=document.querySelector('#output > svg');
+                      const box=element.viewBox.baseVal;
+                      element.setAttribute('width',String(Math.ceil(box.width)));
+                      element.setAttribute('height',String(Math.ceil(box.height)));
+                      element.style.width=Math.ceil(box.width)+'px';
+                      element.style.height=Math.ceil(box.height)+'px';
                       await document.fonts.ready;
-                      return {svg,type:parsed.diagramType};
+                      return {svg:element.outerHTML,type:parsed.diagramType};
                     }''',{'text':(FOLDER/filename).read_text(encoding='utf8'),'id':'diagram-'+label})
                     (output/f'diagram-{label}.svg').write_text(rendered['svg'],encoding='utf8')
                     page.locator('#output').screenshot(path=str(output/f'diagram-{label}.png'))

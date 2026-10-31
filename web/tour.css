@@ -101,3 +101,16 @@
 [data-page=viewer].is-immersive{--viewer-glass:#243234}
 [data-page=viewer].is-immersive .panel-body{background:#243234;-webkit-backdrop-filter:none;backdrop-filter:none}
 }
+
+/* Viewer demo readiness: every image shares the same viewport and controls. */
+[data-page=viewer].is-immersive #photo{object-fit:cover;object-position:center}
+[data-page=viewer].is-immersive #listen{pointer-events:auto;margin-top:14px;padding:10px 18px;background:#fff2cc;color:#202a29;border-color:#fff2cc;text-shadow:none;font-weight:650}
+[data-page=viewer].is-immersive input[type=range],[data-page=viewer].is-immersive input[type=checkbox]{accent-color:#e7c68f}
+[data-page=viewer].is-immersive .source-disclosure{font-size:12px;line-height:1.6;border-top:1px solid #ffffff26;padding-top:16px;margin-top:18px}
+[data-page=viewer].is-immersive .source-disclosure>summary{cursor:pointer;color:#e4e7df}
+[data-page=viewer].is-immersive .source-disclosure p{font-size:12px;color:#d5dfdb}
+[data-page=viewer].is-immersive #question-suggestions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+[data-page=viewer].is-immersive #question-suggestions button{font-size:11px;text-align:left;padding:8px 12px}
+[data-page=viewer].is-immersive #conversation{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow:auto}
+[data-page=viewer].is-immersive .viewer-message{padding:10px 13px;margin:0;white-space:pre-wrap;border-radius:14px;background:#ffffff14}
+[data-page=viewer].is-immersive .viewer-message.user{align-self:flex-end;background:#e7c68f26;border:1px solid #e7c68f50}

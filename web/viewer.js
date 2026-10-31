@@ -1,6 +1,6 @@
 import {$,t,language,api,node,notice,link,requestID} from './tour-common.js';
-import {PanoramaCamera} from './panorama.js';
-let manifest=null,libraryTours=[],index=0,camera=null,loadGeneration=0,view={yaw:0,pitch:0,fov:70,coverage:240};
+import {PanoramaCamera,constrainView} from './panorama.js';
+let configured=false,manifest=null,libraryTours=[],index=0,camera=null,loadGeneration=0,view={yaw:0,pitch:0,fov:70,coverage:240};
 let speech=null,utterance=null,paused=false;
 const params=new URLSearchParams(location.search),draftID=params.get('draft'),tourID=params.get('tour');
 // Two actual media elements, one narration source at a time. No generated audio.
@@ -9,7 +9,7 @@ class RecordedTourPlayer {
     this.voice=$('#narration-track');this.music=$('#music-track');this.active=false;this.generation=0;this.narrating=false;this.track=null;this.musicTrack=null;this.error='';
     for(const event of ['playing','pause','ended','waiting'])this.voice.addEventListener(event,()=>{
       this.narrating=event==='playing';this.mix();this.progress();
-      if(event==='ended'&&!this.musicTrack)this.active=false;
+      if(event==='ended'&&!this.musicTrack)this.active=false;syncAudio();
     });
     this.voice.addEventListener('timeupdate',()=>this.progress());
     this.voice.addEventListener('loadedmetadata',()=>this.progress());
@@ -17,7 +17,7 @@ class RecordedTourPlayer {
     this.music.addEventListener('error',()=>this.failed('music'));
   }
   pause(){
-    this.active=false;this.generation++;this.voice.pause();this.music.pause();this.narrating=false;this.mix();$('#play').ariaPressed='false';
+    this.active=false;this.generation++;this.voice.pause();this.music.pause();this.narrating=false;this.mix();$('#play').ariaPressed='false';syncAudio();
   }
   select(scene,audio,locale,auto=false){
     this.pause();this.error='';this.scene=scene;
@@ -33,7 +33,7 @@ class RecordedTourPlayer {
     $('#audio-seek').disabled=!this.track;$('#audio-seek').max=this.track?.track.duration_seconds||0;$('#audio-seek').value=0;
     $('#device-voice').disabled=!!this.track;if(this.track)$('#device-voice').checked=false;
     if(this.track?.transcript)$('#subtitle').textContent=this.track.transcript;$('#full-subtitle').textContent=this.track?.transcript||'';
-    this.mix();this.progress();this.describe();if(auto)this.play();
+    this.mix();this.progress();this.describe();syncAudio();if(auto&&(this.track||this.musicTrack))this.play();
   }
   describe(){
     const voice=this.track?t('Uploaded recording','Bản thu đã tải lên'):this.wrongLocale?t('No recording in this language','Không có bản thu theo ngôn ngữ này'):t('No recording for this scene','Chưa có bản thu cho điểm này');
@@ -76,14 +76,25 @@ class RecordedTourPlayer {
       this.error=t('One audio track could not start. Check playback permission or the recording; the visual tour still works.','Một track audio chưa phát được. Kiểm tra quyền phát hoặc bản thu; tour hình ảnh vẫn hoạt động.');this.describe();
       this.active=sources.some(element=>!element.paused);
     }
-    this.mix();
+    this.mix();syncAudio();
   }
 }
 const recorded=new RecordedTourPlayer();
+function syncAudio(){
+  const available=!!(recorded.track||recorded.musicTrack);
+  $('#viewer-audio').hidden=!available;if(!available)$('#viewer-audio').open=false;
+  $('#listen').hidden=!recorded.track;
+  $('#listen').textContent=recorded.active?t('Ⅱ Pause introduction','Ⅱ Dừng lời giới thiệu'):t('▶ Listen to introduction','▶ Nghe giới thiệu');
+  $('#listen').ariaPressed=String(recorded.active);
+  for(const id of ['narration-enabled','voice-volume'])$('#'+id).closest('label').hidden=!recorded.track;
+  for(const id of ['music','music-volume'])$('#'+id).closest('label').hidden=!recorded.musicTrack;
+  $('.audio-timeline').hidden=!recorded.track;
+}
+$('#listen').onclick=()=>{if(recorded.active)recorded.pause();else recorded.play();};
 function stop(){recorded.pause();if('speechSynthesis' in window)window.speechSynthesis.cancel();utterance=null;speech=null;paused=false;$('#play').ariaPressed='false';}
 // Fit the initial vertical view to captured pixels without changing projection/coverage.
-function fittedFov(){const stage=$('#stage'),aspect=stage.clientWidth/stage.clientHeight;return camera?Math.max(30,Math.min(70,2*Math.atan(view.coverage*Math.PI/180*camera.ratio/2*Math.max(1,aspect))*180/Math.PI)):70;}
-function draw(){if(camera&&!$('#panorama').hidden)camera.draw({...view,yaw:Math.max(-view.coverage/2,Math.min(view.coverage/2,view.yaw))});}
+function fittedFov(){const stage=$('#stage');return camera?constrainView({...view,fov:70,pitch:0},stage.clientWidth/stage.clientHeight,camera.ratio).fov:70;}
+function draw(){if(camera&&!$('#panorama').hidden){const stage=$('#stage');view=constrainView(view,stage.clientWidth/stage.clientHeight,camera.ratio);camera.draw(view);}}
 function say(){
   recorded.pause();
   if(!$('#device-voice').checked){notice(t('Enable device voice to use the labelled fallback. Recorded audio is unavailable.','Bật giọng thiết bị để dùng fallback. Chưa có lời thu âm.'),true);return;}
@@ -99,19 +110,34 @@ function say(){
 }
 async function select(next){
   const continueAudio=recorded.active;stop();index=(next+manifest.scenes.length)%manifest.scenes.length;const scene=manifest.scenes[index],generation=++loadGeneration;
-  $('#scene-title').textContent=scene.name;$('#scene-description').textContent=scene.description||scene.name;$('#projection-label').textContent=scene.projection==='cylindrical'?`${scene.coverage_degrees}° · ${scene.coverage_source==='user_calibrated'?t('calibrated panorama','panorama đã hiệu chỉnh'):t('provisional panorama','panorama góc tạm tính')}`:t('Photo · original perspective','Ảnh · góc nhìn gốc');$('#subtitle').textContent=scene.description||t('No description supplied.','Chưa có mô tả.');$('#scene-counter').textContent=`${index+1} / ${manifest.scenes.length}`;
+  $('#scene-title').textContent=scene.name;$('#scene-description').textContent=scene.description||scene.name;$('#projection-label').textContent=scene.projection==='cylindrical'?`${scene.coverage_degrees}° · ${scene.coverage_source==='user_calibrated'?t('calibrated panorama','panorama đã hiệu chỉnh'):t('provisional panorama','panorama góc tạm tính')}`:t('Photo · original perspective','Ảnh · góc nhìn gốc');$('#subtitle').textContent='';$('#scene-counter').textContent=`${index+1} / ${manifest.scenes.length}`;
   $('#coverage').textContent=scene.projection==='photo'?t('Original photo · no view behind the camera.','Ảnh thường · không có góc nhìn phía sau camera.'):t(`Cylindrical panorama · ${scene.coverage_degrees}° (${scene.coverage_source==='user_provisional'?'provisional coverage':'creator calibrated'}) · blank areas were not captured · not 3D. Drag to look around.`,`Panorama chiếu trụ · ${scene.coverage_degrees}° (${scene.coverage_source==='user_provisional'?'góc phủ tạm':'người dùng hiệu chỉnh'}) · vùng trống chưa được chụp · không phải 3D. Kéo để nhìn quanh.`);
   recorded.select(scene,manifest.audio,language(),continueAudio);
   $('#scene-nav').querySelectorAll('button').forEach((b,i)=>b.setAttribute('aria-current',i===index?'true':'false'));
   const keepPanorama=scene.projection==='cylindrical'&&camera&&!$('#panorama').hidden;$('#panorama').hidden=!keepPanorama;$('#photo').hidden=!!keepPanorama;$('#stage').ariaBusy='true';$('#photo').src=scene.image_url;$('#photo').alt=scene.name;
-  $('#zoom-in').disabled=$('#zoom-out').disabled=$('#reset-view').disabled=scene.projection==='photo';
+  for(const id of ['zoom-in','zoom-out','reset-view'])$('#'+id).hidden=scene.projection==='photo';
   if(scene.projection==='cylindrical'){
     const img=new Image();img.src=scene.image_url;
     try{await img.decode();if(generation!==loadGeneration)return;camera??=new PanoramaCamera($('#panorama'));camera.setImage(img);view={yaw:0,pitch:0,fov:70,coverage:scene.coverage_degrees};view.fov=fittedFov();$('#photo').hidden=true;$('#panorama').hidden=false;$('#stage').ariaBusy='false';draw();revealScene();}
     catch{if(generation===loadGeneration){$('#panorama').hidden=true;$('#photo').hidden=false;$('#stage').ariaBusy='false';notice(t('Panorama rendering failed. Showing the original photo.','Không dựng được góc xem panorama. Đang hiện ảnh gốc.'),true);}}
-  }else{$('#stage').ariaBusy='false';}
+  }else{$('#stage').ariaBusy='false';if(!matchMedia('(prefers-reduced-motion: reduce)').matches)$('#photo').animate([{opacity:.65},{opacity:1}],{duration:240});}
 }
-function renderText(){if(!manifest){renderLibrary();return;}$('#tour-heading').textContent=manifest.title;$('#tour-state').textContent=(draftID?t('PRIVATE PREVIEW','XEM THỬ RIÊNG'):t('PUBLISHED SNAPSHOT','BẢN ĐÃ XUẤT BẢN'))+t(` · revision ${manifest.revision} · content: ${manifest.locale.toUpperCase()}`,` · bản ${manifest.revision} · nội dung: ${manifest.locale.toUpperCase()}`);select(index);}
+function renderText(){
+  if(!manifest){renderLibrary();return;}
+  $('#tour-heading').textContent=manifest.title;
+  const contentLanguage=manifest.locale==='vi'?t('Vietnamese','Tiếng Việt'):t('English','Tiếng Anh');
+  $('#tour-state').textContent=t(`Original content: ${contentLanguage}. Interface controls can be switched; supplied text stays in its original language.`,`Nội dung gốc: ${contentLanguage}. Đổi ngôn ngữ giao diện không dịch nội dung người đăng.`);
+  for(const element of [$('#tour-heading'),$('#scene-title'),$('#scene-description'),$('#subtitle')])element.lang=manifest.locale;
+  renderSuggestions();select(index);
+}
+function renderSuggestions(){
+  $('#question-suggestions').replaceChildren();
+  for(const text of [t('Tell me about this stop.','Giới thiệu điểm xem này.'),t('What details should I ask the owner?','Tôi nên hỏi người đăng thêm điều gì?')]){
+    const button=node('button',text,'quiet');button.type='button';button.onclick=()=>{$('#question').value=text;$('#question').focus();};$('#question-suggestions').append(button);
+  }
+}
+function chatBubble(role,text){const bubble=node('p',text,`viewer-message ${role}`);$('#conversation').append(bubble);bubble.scrollIntoView({block:'nearest'});return bubble;}
+
 
 function renderLibrary(){
   $('#tour-library').replaceChildren();
@@ -119,10 +145,10 @@ function renderLibrary(){
   for(const tour of libraryTours){const card=link('',tour.kind==='cached_demo'?tour.href:`/viewer.html?tour=${tour.id}`,'library-card');const img=node('img');img.src=tour.thumbnail_url;img.alt='';card.append(img,node('h2',tour.title),node('span',tour.kind==='cached_demo'?t('Cached model + 32 panoramas ↗','Model mẫu + 32 panorama ↗'):t('Open tour ↗','Mở tour ↗')));$('#tour-library').append(card);}
 }
 $('#previous').onclick=()=>select(index-1);$('#next').onclick=()=>select(index+1);
-$('#zoom-in').onclick=()=>{view.fov=Math.max(30,view.fov-8);draw();};$('#zoom-out').onclick=()=>{view.fov=Math.min(110,view.fov+8);draw();};$('#reset-view').onclick=()=>{view.yaw=0;view.pitch=0;view.fov=fittedFov();draw();};
+$('#zoom-in').onclick=()=>{view.fov=Math.max(.25,view.fov-8);draw();};$('#zoom-out').onclick=()=>{view.fov=Math.min(110,view.fov+8);draw();};$('#reset-view').onclick=()=>{view.yaw=0;view.pitch=0;view.fov=fittedFov();draw();};
 $('#fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if($('#tour-view').requestFullscreen)await $('#tour-view').requestFullscreen();else throw new Error();}catch{notice(t('Fullscreen is unavailable in this browser.','Trình duyệt chưa hỗ trợ toàn màn hình.'),true);}};
-let drag=null;const canvas=$('#panorama');canvas.onpointerdown=e=>{drag={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);};canvas.onpointermove=e=>{if(!drag)return;view.yaw=Math.max(-view.coverage/2,Math.min(view.coverage/2,view.yaw-(e.clientX-drag.x)*.16));view.pitch=Math.max(-65,Math.min(65,view.pitch+(e.clientY-drag.y)*.12));drag={x:e.clientX,y:e.clientY};draw();};canvas.onpointerup=canvas.onpointercancel=()=>drag=null;canvas.addEventListener('wheel',e=>{e.preventDefault();view.fov=Math.max(30,Math.min(110,view.fov+e.deltaY*.025));draw();},{passive:false});
-canvas.onkeydown=e=>{const steps={ArrowLeft:[-8,0],ArrowRight:[8,0],ArrowUp:[0,6],ArrowDown:[0,-6]};if(steps[e.key]){e.preventDefault();view.yaw=Math.max(-view.coverage/2,Math.min(view.coverage/2,view.yaw+steps[e.key][0]));view.pitch=Math.max(-65,Math.min(65,view.pitch+steps[e.key][1]));draw();}};
+let drag=null;const canvas=$('#panorama');canvas.onpointerdown=e=>{drag={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);};canvas.onpointermove=e=>{if(!drag)return;view.yaw=view.yaw-(e.clientX-drag.x)*.16;view.pitch=Math.max(-65,Math.min(65,view.pitch+(e.clientY-drag.y)*.12));drag={x:e.clientX,y:e.clientY};draw();};canvas.onpointerup=canvas.onpointercancel=()=>drag=null;canvas.addEventListener('wheel',e=>{e.preventDefault();view.fov=Math.max(.25,Math.min(110,view.fov+e.deltaY*.025));draw();},{passive:false});
+canvas.onkeydown=e=>{const steps={ArrowLeft:[-8,0],ArrowRight:[8,0],ArrowUp:[0,6],ArrowDown:[0,-6]};if(steps[e.key]){e.preventDefault();view.yaw=view.yaw+steps[e.key][0];view.pitch=Math.max(-65,Math.min(65,view.pitch+steps[e.key][1]));draw();}};
 window.addEventListener('resize',()=>{view.fov=Math.min(view.fov,fittedFov());draw();});document.addEventListener('fullscreenchange',()=>{syncFullscreen();draw();});
 function syncFullscreen(){const active=!!document.fullscreenElement;$('#fullscreen').ariaPressed=String(active);$('#fullscreen').setAttribute('aria-label',active?t('Exit fullscreen','Thoát toàn màn hình'):t('Fullscreen','Toàn màn hình'));}
 $('#play').onclick=()=>{if($('#device-voice').checked&&!recorded.track)say();else{if('speechSynthesis'in window)window.speechSynthesis.cancel();utterance=null;speech=null;paused=false;recorded.play();}};
@@ -137,14 +163,27 @@ for(const panel of panels){
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){const open=panels.find(p=>p.open);if(open){open.open=false;open.querySelector('summary').focus();}else if(document.fullscreenElement){document.exitFullscreen().catch(()=>notice(t('Could not exit fullscreen. Use the browser fullscreen control.','Không thoát được toàn màn hình. Hãy dùng điều khiển toàn màn hình của trình duyệt.'),true));}}});
 function revealScene(){if(!matchMedia('(prefers-reduced-motion: reduce)').matches)$('#panorama').animate([{opacity:.65},{opacity:1}],{duration:240,easing:'ease-out'});}
 $('#question').onfocus=stop;
-$('#question-form').onsubmit=async e=>{e.preventDefault();stop();$('#ask').disabled=true;try{const data=await api(`/published/${tourID}/chat`,{method:'POST',body:{text:$('#question').value,revision:manifest.revision,request_id:requestID(),locale:language(),scene_id:manifest.scenes[index].id}});$('#answer').textContent=data.reply;if(data.scene_id){const target=manifest.scenes.findIndex(s=>s.id===data.scene_id);if(target>=0)await select(target);}}catch(e){$('#answer').textContent=e.message;}finally{$('#ask').disabled=false;}};
+$('#question-form').onsubmit=async e=>{
+  e.preventDefault();const text=$('#question').value.trim();if(!text||!configured)return;
+  stop();$('#ask').disabled=true;chatBubble('user',text);$('#question').value='';$('#answer').textContent=t('Thinking…','Đang trả lời…');
+  try{
+    const data=await api(`/published/${tourID}/chat`,{method:'POST',body:{text,revision:manifest.revision,request_id:requestID(),locale:language(),scene_id:manifest.scenes[index].id}});
+    chatBubble('assistant',data.reply);$('#answer').textContent='';
+    if(data.scene_id){const target=manifest.scenes.findIndex(s=>s.id===data.scene_id);if(target>=0)await select(target);}
+  }catch{
+    $('#answer').textContent=t('The assistant is temporarily unavailable. Please try again or read the tour details.','Trợ lý tạm thời chưa trả lời được. Hãy thử lại hoặc xem thông tin tour.');
+    $('#question').value=text;
+  }finally{$('#ask').disabled=false;}
+};
 window.addEventListener('pagehide',stop);document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});document.addEventListener('languagechange',()=>{stop();notice('');renderText();syncFullscreen();});
 $('#photo').onerror=()=>notice(t('This scene image is unavailable. Other scenes remain accessible.','Ảnh này không tải được. Bạn vẫn xem được các điểm khác.'),true);
 try{
-  await api('/session');
+  const session=await api('/session');configured=!!session.configured;
   if(draftID||tourID){manifest=await api(draftID?`/drafts/${draftID}`:`/published/${tourID}`);$('#tour-view').hidden=false;document.body.classList.add('is-immersive');
-    $('#immersive-title').append($('#tour-heading'));$('#immersive-language').append($('.language-switch'));$('#snapshot-info').append($('#tour-state'));$('#tour-view').append($('#status'));$('#viewer-chat').hidden=!!draftID;$('#preview-label').hidden=!draftID;
+    $('#immersive-title').append($('#tour-heading'));$('#immersive-language').append($('.language-switch'));$('#snapshot-info').append($('#tour-state'));$('#tour-view').append($('#status'));$('#viewer-chat').hidden=!!draftID||!configured;$('#preview-label').hidden=!draftID;
+    const opening=manifest.scenes.find(s=>s.id===manifest.start_scene_id);if(opening)manifest.scenes=[opening,...manifest.scenes.filter(s=>s!==opening)];
+    try{if(!localStorage.getItem('estagent-language'))document.querySelector(`[data-lang="${manifest.locale}"]`)?.click();}catch{/* Optional preference storage. */}
     manifest.scenes.forEach((scene,i)=>{const button=node('button',undefined,'scene-thumb');button.type='button';const image=node('img');image.src=scene.thumbnail_url;image.alt='';button.append(image,node('span',scene.name));button.onclick=()=>select(i);$('#scene-nav').append(button);});
-    index=manifest.scenes.findIndex(s=>s.id===manifest.start_scene_id);renderText();
+    index=0;renderText();
   }else{libraryTours=await api('/published');try{const response=await fetch('/api/demos');if(!response.ok)throw Error('Demo catalog unavailable');const demos=await response.json();libraryTours=[...demos,...libraryTours];}catch(error){notice(t('Home demo unavailable; published tours remain below.','Nhà demo tạm không tải được; các tour đã xuất bản vẫn ở dưới.'),true);}renderLibrary();}
 }catch(e){notice(e.message,true);}

@@ -12,6 +12,16 @@ adapter, narration/TTS và immutable publish. Không có worker thì chờ integ
 và chặn publish. Không giả dựng 3D hoặc tự suy panorama chỉ từ tỷ lệ ảnh.
 Các endpoint, payload, giới hạn và điểm nối worker ghi trong card trên.
 
+House-modeling integration (user-authorized): see `HOUSE-MODELING-AGENT.md`.
+Generation responses add private `modeling_plan` and `plan_attempts`. Spatial
+review additionally accepts `decision=revise`, `clarification` (<=3000 chars),
+and `accept_approximate`. Final review still accepts only approve/reject.
+Published v1 anchor fields optionally add `dollhouse_visible`, `heading` and
+`accuracy`; optional model `metadata` records units, axes, scale, builder and plan
+hash. Defaults preserve older packages/worker adapters. Updated v1 JSON Schema
+and synthetic fixture are checked together. The internal HousePlan is not a
+public tour contract; it is validated before execution and remains private.
+
 > **Trạng thái: v0 nháp** (rút từ `../codex_hack`). Dev 1 sửa theo đề thật rồi **freeze v1 trước H0:45**.
 > Chủ file: Dev 1. Sau freeze chỉ được thêm field (additive), bump `version`, sửa `fixtures/` trong cùng commit.
 > Lane nào cũng code dựa trên fixture trong `fixtures/`, không chờ lane khác.

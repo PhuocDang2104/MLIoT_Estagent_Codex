@@ -9,7 +9,7 @@ HEADERS={'Origin':'http://testserver'}
 
 
 def app(tmp_path, provider=None, worker=None):
-    return create_app(db_path=tmp_path/'assistant.sqlite',env={'ASSISTANT_ORIGIN':'http://testserver'},
+    return create_app(db_path=tmp_path/'assistant.sqlite',env={'ASSISTANT_ORIGIN':'http://testserver','STUDIO_GEOMETRY':'off'},
                       creator_provider=provider,creator_worker=worker)
 
 

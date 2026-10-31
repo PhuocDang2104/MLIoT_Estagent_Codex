@@ -32,7 +32,6 @@ graph TD;
 	__end__([<p>__end__</p>]):::last
 	__start__ --> understand;
 	assemble --> __end__;
-	build_model --> mapping;
 	mapping --> semantic;
 	narration --> final_review;
 	navigation --> narration;
@@ -42,6 +41,9 @@ graph TD;
 	scene -.-> spatial;
 	spatial_review -.-> __end__;
 	spatial_review -.-> build_model;
+	spatial_review -.-> spatial;
+	build_model -.-> mapping;
+	build_model -.-> spatial;
 	final_review -.-> __end__;
 	final_review -.-> voice;
 	voice -.-> assemble;

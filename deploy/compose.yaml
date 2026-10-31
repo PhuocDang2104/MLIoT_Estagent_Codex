@@ -11,6 +11,8 @@ services:
       OPENAI_MODEL_VISION: ${OPENAI_MODEL_VISION:-gpt-6.1-sol}
       OPENAI_MODEL_TTS: ${OPENAI_MODEL_TTS:-gpt-4o-mini-tts}
       STUDIO_DATA_DIR: /data/studio
+      STUDIO_GEOMETRY: ${STUDIO_GEOMETRY:-auto}
+      STUDIO_BLENDER_TIMEOUT: ${STUDIO_BLENDER_TIMEOUT:-180}
       OPENAI_MODEL_TEXT: ${OPENAI_MODEL_TEXT:?Set OPENAI_MODEL_TEXT}
       OPENAI_MODEL_REALTIME: ${OPENAI_MODEL_REALTIME:?Set OPENAI_MODEL_REALTIME}
       OPENAI_MODEL_TRANSCRIBE: ${OPENAI_MODEL_TRANSCRIBE:?Set OPENAI_MODEL_TRANSCRIBE}
@@ -32,8 +34,8 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
-    mem_limit: 1g
-    cpus: 1.0
+    mem_limit: ${ESTAGENT_MEMORY_LIMIT:-1g}
+    cpus: ${ESTAGENT_CPU_LIMIT:-1.0}
     pids_limit: 128
     stop_grace_period: 45s
     logging:

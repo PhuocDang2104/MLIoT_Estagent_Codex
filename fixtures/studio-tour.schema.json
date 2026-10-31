@@ -24,6 +24,27 @@
         "room_id": {
           "title": "Room Id",
           "type": "string"
+        },
+        "dollhouse_visible": {
+          "default": true,
+          "title": "Dollhouse Visible",
+          "type": "boolean"
+        },
+        "heading": {
+          "default": 0,
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Heading",
+          "type": "number"
+        },
+        "accuracy": {
+          "default": "approximate",
+          "enum": [
+            "approximate",
+            "measured"
+          ],
+          "title": "Accuracy",
+          "type": "string"
         }
       },
       "required": [
@@ -141,6 +162,17 @@
           },
           "title": "Anchors",
           "type": "object"
+        },
+        "metadata": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GeometryMetadata"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -148,6 +180,46 @@
         "anchors"
       ],
       "title": "Geometry",
+      "type": "object"
+    },
+    "GeometryMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "units": {
+          "const": "meters",
+          "title": "Units",
+          "type": "string"
+        },
+        "up_axis": {
+          "const": "Y",
+          "title": "Up Axis",
+          "type": "string"
+        },
+        "scale": {
+          "enum": [
+            "assumed",
+            "measured"
+          ],
+          "title": "Scale",
+          "type": "string"
+        },
+        "builder": {
+          "title": "Builder",
+          "type": "string"
+        },
+        "plan_sha256": {
+          "title": "Plan Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "units",
+        "up_axis",
+        "scale",
+        "builder",
+        "plan_sha256"
+      ],
+      "title": "GeometryMetadata",
       "type": "object"
     },
     "Hotspot": {

@@ -69,7 +69,9 @@ class Link(Model):
 class Review(Model):
     request_id: str = Field(pattern=r'^[a-zA-Z0-9-]{8,80}$')
     kind: Literal['spatial', 'final']
-    decision: Literal['approve', 'reject']
+    decision: Literal['approve', 'reject', 'revise']
+    clarification: str = Field(default='', max_length=3000)
+    accept_approximate: bool = False
     rooms: list[RoomEdit] = Field(default_factory=list, max_length=12)
     connections: list[Link] = Field(default_factory=list, max_length=132)
     scripts: list[Segment] = Field(default_factory=list, max_length=12)

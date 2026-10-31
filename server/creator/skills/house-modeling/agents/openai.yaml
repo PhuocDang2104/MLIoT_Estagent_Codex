@@ -1,0 +1,4 @@
+interface:
+  display_name: "House Modeling"
+  short_description: "Build faithful 3D houses from panoramas and plans"
+  default_prompt: "Use $house-modeling to build a detailed 3D house from these panoramas and any available floorplan. Recover a provisional layout or ask targeted questions where the evidence is insufficient."

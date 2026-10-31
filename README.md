@@ -3,6 +3,22 @@
 Help rental seekers decide which homes are worth visiting. Creators provide photos and descriptions;
 viewers explore approved checkpoints and see what is still unknown.
 
+## Generation Studio with house modeling
+
+`/business/create` is the newer persistent Studio flow: upload up to 12 captures
+and an optional floorplan, clarify/approve the modeling agent's plan, automatically
+build a textured house in local Blender, review narration, then publish. Creator
+and Viewer use Three.js for the dollhouse and clickable panorama checkpoints.
+Set `STUDIO_BLENDER_EXECUTABLE` if Blender is not discovered locally; generation
+also needs the backend OpenAI key. No floorplan is required when the images and
+creator clarification support an explicitly approximate layout. This is authored
+single-floor geometry, not metric photogrammetry or PanSplat neural rendering.
+
+See [Studio setup](docs/CREATOR-STUDIO.md) and the
+[house-modeling integration handoff](docs/HOUSE-MODELING-AGENT.md) for contracts,
+configuration, artifacts, budgets and evidence. The photo-tour instructions and
+limits below describe the separate legacy `/creator.html` flow.
+
 ## Run the whole product
 
 Requirements: Python 3.13, [uv](https://docs.astral.sh/uv/) and Node for frontend checks.

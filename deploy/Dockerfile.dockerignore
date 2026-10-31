@@ -5,6 +5,11 @@
 !server/assistant/requirements.txt
 !server/creator/
 !server/creator/*.py
+!server/creator/skills/
+!server/creator/skills/**
+!pipelines/
+!pipelines/core/
+!pipelines/core/*.py
 !server/tours/
 !server/creator/
 !server/creator/*.py

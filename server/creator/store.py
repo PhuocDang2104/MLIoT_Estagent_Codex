@@ -126,13 +126,15 @@ class Store:
         manifest = json.loads(data[20:20+length])
         if not manifest.get('meshes') or not manifest.get('scenes'):
             raise ValueError('GLB has no renderable scene')
+        if len(data)>80*1024*1024 or any(x.get('uri') for key in ('buffers','images') for x in manifest.get(key,[])):
+            raise ValueError('GLB must be self-contained and within the 80 MiB limit')
         anchors = result['anchors']
         for value in anchors.values():
             pos = value.get('position', [])
             if len(pos) != 3 or any(not isinstance(n, (float, int)) or not math.isfinite(n) for n in pos):
                 raise ValueError('Invalid worker checkpoint anchor')
         asset = self.put_asset(project['id'], 'house.glb', 'model', 'model/gltf-binary', data)
-        return {'asset_id': asset['id'], 'anchors': anchors}
+        return {'asset_id': asset['id'], 'anchors': anchors, **({'metadata':result['metadata']} if result.get('metadata') else {})}
 
     def emit(self, generation_id, node, status, message):
         event = {'generation_id': generation_id, 'node_id': node, 'event_type': 'status',

@@ -10,9 +10,9 @@ flowchart TB
         __start__["START"]:::terminal
         understand["understand<br/>OpenAI · trích xuất hồ sơ"]:::node
         scene["scene<br/>OpenAI Vision · từng ảnh"]:::node
-        spatial["spatial<br/>Tạo room / checkpoint nháp"]:::node
+        spatial["spatial<br/>House-modeling agent · ảnh + mặt bằng"]:::node
         spatial_review["spatial_review<br/>interrupt · Business kiểm tra"]:::review
-        build_model["build_model<br/>Adapter dựng 3D"]:::worker
+        build_model["build_model<br/>Blender CLI · GLB + scene"]:::worker
         mapping["mapping<br/>Kiểm tra room / anchor"]:::node
         semantic["semantic<br/>Giữ dữ kiện có nguồn"]:::node
         navigation["navigation<br/>Hotspots + hành trình hợp lệ"]:::node
@@ -23,7 +23,6 @@ flowchart TB
         __end__["END"]:::terminal
         __start__ --> understand
         assemble --> __end__
-        build_model --> mapping
         mapping --> semantic
         narration --> final_review
         navigation --> narration
@@ -34,6 +33,9 @@ flowchart TB
         scene -->|"Đủ ảnh"| spatial
         spatial_review -->|"Từ chối"| __end__
         spatial_review -->|"Duyệt"| build_model
+        spatial_review -->|"Làm rõ / tối đa 3 bản"| spatial
+        build_model -->|"GLB hợp lệ"| mapping
+        build_model -->|"Bản cũ chưa có plan"| spatial
         final_review -->|"Từ chối"| __end__
         final_review -->|"Duyệt"| voice
         voice -->|"Đủ audio"| assemble
@@ -52,7 +54,7 @@ flowchart TB
     __end__ -. "package + approved" .-> READY
     PUBLISH["Business chọn xuất bản<br/>API kiểm approval + music + assets"]:::review
     SNAPSHOT["Snapshot bất biến"]:::terminal
-    VIEWER["Viewer · ảnh / 360° + audio<br/>GLB download · OpenAI Q&A chỉ đọc"]:::boundary
+    VIEWER["Viewer · Three.js / 360° + audio<br/>Checkpoint → panorama · Q&A chỉ đọc"]:::boundary
     READY -.-> PUBLISH -.-> SNAPSHOT -.-> VIEWER
     classDef node fill:#fafafa,stroke:#d4d6da,color:#292c2e,stroke-width:1px;
     classDef review fill:#fff0eb,stroke:#ed321e,color:#8c3428,stroke-width:1.5px;

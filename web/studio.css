@@ -1047,7 +1047,7 @@ textarea {
   font-weight: 500;
   white-space: nowrap;
 }
-.tabs button[aria-selected="true"] {
+.tabs button[aria-selected="true"], .tabs button[aria-pressed="true"] {
   background: #fff;
   color: #303336;
   box-shadow: 0 1px 5px #0000000d;
@@ -1732,3 +1732,14 @@ dialog p {
     max-width: 95px;
   }
 }
+/* Shared embedded Three.js viewport. No second floor is added over the GLB. */
+.preview > .house-stage { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; overflow: hidden; }
+.preview:has(.house-stage) { width: 100%; min-width: 0; height: clamp(280px, 30vw, 440px); }
+.house-stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.house-status { position: absolute; bottom: 4px; left: 12px; right: 12px; font-size: 11px; pointer-events: none; color: #464d43; }
+.house-toolbar { position: absolute; top: 10px; left: 10px; display: flex; gap: 6px; }
+.house-toolbar button { padding: 5px 8px; font-size: 11px; background: #fffdf9e8; }
+.house-marker { position: absolute; transform: translate(-50%,-50%); border-radius: 50%; min-width: 32px; height: 32px; padding: 4px; border: 2px solid white; background: #ed321e; color: white; font-size: 11px; box-shadow: 0 2px 8px #0003; }
+.house-marker:focus-visible { outline: 3px solid #242d28; outline-offset: 2px; }
+.plan-preview { display: block; width: 100%; min-height: 180px; max-height: 340px; padding: 12px; }
+.review input[type=checkbox] { width: auto; margin-right: 8px; }

@@ -49,6 +49,7 @@ class Creator:
                 'brief': values.get('brief'), 'rooms': values.get('rooms', []),
                 'connections': values.get('connections', []), 'script': values.get('script'),
                 'model': values.get('model'), 'package': values.get('package'),
+                'modeling_plan':values.get('modeling_plan'), 'plan_attempts':values.get('plan_attempts',0),
                 'observations': values.get('observations', []),
                 'events': self.store.events(generation_id)}
 
@@ -95,7 +96,7 @@ class Creator:
             if current['status'] != 'needs_review' or not current['review'] or current['review']['kind'] != review.kind:
                 raise HTTPException(409, 'Bước duyệt đã thay đổi. Tải lại dữ liệu.')
             try:
-                validate_review(review, current['rooms'])
+                validate_review(review, current['rooms'],current.get('modeling_plan'),current.get('plan_attempts',0))
                 if review.kind == 'final' and review.scripts:
                     allowed = {'description', *(r['asset_id'] for r in current['rooms'])}
                     if any(not set(x.sources) <= allowed for x in review.scripts):

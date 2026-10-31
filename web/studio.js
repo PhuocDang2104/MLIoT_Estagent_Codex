@@ -1,4 +1,5 @@
 import { panorama } from "./studio-panorama.js";
+import { houseModel, planPreview } from "./studio-model.js";
 const $ = (selector) => document.querySelector(selector);
 const states = {
   queued: "Đang chờ",
@@ -379,13 +380,15 @@ async function refreshGeneration(id) {
   renderHistory();
 }
 function connectStream() {
+  stopStream();
   if (!generation || !["queued", "running"].includes(generation.status)) return;
   const id = generation.id;
   source = new EventSource(
     `/api/studio/generations/${id}/events?after=${generation.events.at(-1)?.event_id || 0}`,
   );
+  const stream = source;
   source.onmessage = () => {
-    if (generation?.id !== id) return;
+    if (source !== stream || generation?.id !== id) return;
     clearTimeout(refreshTimer);
     refreshTimer = setTimeout(
       () => refreshGeneration(id).catch((e) => notify(e.message, true)),
@@ -393,7 +396,7 @@ function connectStream() {
     );
   };
   source.addEventListener("settled", () => {
-    if (generation?.id !== id) return;
+    if (source !== stream || generation?.id !== id) return;
     stopStream();
     clearTimeout(refreshTimer);
     refreshGeneration(id)
@@ -401,13 +404,16 @@ function connectStream() {
       .catch((e) => notify(e.message, true));
   });
   source.onerror = () => {
-    if (generation?.id !== id) return;
+    if (source !== stream || generation?.id !== id) return;
     stopStream();
-    notify("Kết nối tiến trình bị gián đoạn. Đang khôi phục…");
     setTimeout(() => {
       if (generation?.id === id)
         refreshGeneration(id)
-          .then(() => connectStream())
+          .then(() => {
+            if(generation?.id !== id) return;
+            if(['queued','running'].includes(generation.status)) connectStream();
+            else renderPreview();
+          })
           .catch((e) => notify(e.message, true));
     }, 2000);
   };
@@ -644,7 +650,7 @@ function renderReview() {
   const box = $("#review"),
     editor = $("#script-editor");
   const key =
-    generation?.id + ":" + generation?.status + ":" + generation?.review?.kind;
+    generation?.id + ":" + generation?.status + ":" + generation?.review?.kind + ":" + generation?.plan_attempts;
   if (key === reviewKey) return;
   reviewKey = key;
   box.replaceChildren();
@@ -679,6 +685,24 @@ function renderReview() {
   const form = node("form");
   box.append(form);
   if (g.review.kind === "spatial") {
+    const plan = g.modeling_plan;
+    if (plan) {
+      const preview = node('div'); planPreview(preview,plan); form.append(preview);
+      form.append(node('p',plan.summary));
+      for (const text of [...plan.assumptions,...plan.questions]) form.append(node('p',text,{class:'muted'}));
+      const answer = node('textarea',null,{rows:'3',maxlength:'3000','aria-label':'Làm rõ bố cục',placeholder:'Bổ sung kích thước, phòng chung hoặc cửa nối…'});
+      const revise = node('button',`Cập nhật bố cục (${g.plan_attempts}/3)`,{type:'button'});
+      revise.disabled = g.plan_attempts >= 3;
+      revise.onclick = () => {
+        if(!answer.value.trim()) return notify('Nhập thông tin làm rõ bố cục.',true);
+        action(revise,`/generations/${g.id}/review`,{kind:'spatial',decision:'revise',clarification:answer.value.trim()});
+      };
+      form.append(answer,revise);
+      if(plan.status==='provisional') {
+        const label=node('label',' Tôi chấp nhận bố cục và kích thước ước lượng.');
+        label.prepend(node('input',null,{type:'checkbox',name:'accept_approximate',required:''})); form.append(label);
+      }
+    }
     form.append(
       node("span", "Ước lượng · Cần xác nhận", { class: "review-flag" }),
     );
@@ -725,7 +749,7 @@ function renderReview() {
         });
         for (const room of g.rooms)
           select.append(
-            node("option", room.label, { value: room.checkpoint_id }),
+            node("option", `${room.checkpoint_id} · ${room.label}`, { value: room.checkpoint_id }),
           );
         if (name === "target" && g.rooms.length > 1) select.selectedIndex = 1;
         row.append(select);
@@ -785,6 +809,7 @@ function renderReview() {
     ),
     reject = node("button", "Từ chối", { type: "button" });
   form.append(approve, reject);
+  if(g.review.kind==='spatial' && g.modeling_plan?.status==='needs_clarification') approve.disabled=true;
   reject.onclick = () =>
     action(reject, `/generations/${g.id}/review`, {
       kind: g.review.kind,
@@ -794,6 +819,7 @@ function renderReview() {
     e.preventDefault();
     const payload = { kind: g.review.kind, decision: "approve" };
     if (g.review.kind === "spatial") {
+      payload.accept_approximate = !!form.querySelector('[name=accept_approximate]')?.checked;
       payload.rooms = [...form.querySelectorAll("[data-checkpoint]")].map(
         (row) => ({
           checkpoint_id: row.dataset.checkpoint,
@@ -866,6 +892,11 @@ function renderPreview() {
     }
   }
   if (mode === "floorplan") {
+    if(generation?.modeling_plan) {
+      planPreview(box,generation.modeling_plan);
+      $('#preview-caption').textContent = generation.modeling_plan.scale==='assumed' ? 'Bố cục ước lượng · chưa có tỷ lệ đo.' : 'Bố cục dựng từ dữ liệu đã duyệt.';
+      return;
+    }
     const asset = project.assets.find((a) => a.kind === "floorplan");
     if (asset) {
       box.append(
@@ -879,15 +910,11 @@ function renderPreview() {
     }
   }
   if (mode === "model" && generation?.model) {
-    const div = node("div");
-    div.append(
-      node("p", "Mô hình 3D"),
-      node("a", "Tải mô hình 3D ↗", {
-        href: assetUrl(generation.model),
-        download: "house.glb",
-      }),
-    );
-    box.append(div);
+    disposePreview = houseModel(box,assetUrl(generation.model),generation.rooms,checkpoint => {
+      const room=generation.rooms.find(r=>r.checkpoint_id===checkpoint);
+      activeAsset=project.assets.find(a=>a.id===room.asset_id); mode='panorama'; renderPreview();
+    });
+    $('#preview-caption').append(node('a','Tải mô hình GLB ↗',{href:assetUrl(generation.model),download:'house.glb'}));
     return;
   }
   if (mode === "tour" && generation?.package) {

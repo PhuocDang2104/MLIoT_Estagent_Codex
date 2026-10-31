@@ -1,13 +1,14 @@
 # Estagent — luồng LangGraph tạo tour cho Business
 
 Ngày đối chiếu: 2026-10-31. Source: `server/creator/graph.py`, `service.py`, `api.py`,
-`provider.py`, `store.py` và `package.py` trên branch `web/creator-studio-integrated`.
+`provider.py`, `store.py` và `package.py` trên branch `ai/house-modeling-agent` (base `web/creator-studio-integrated`).
 
-**Kết luận: diagram gốc khớp mục tiêu sản phẩm, chưa khớp runtime hiện tại.**
-Hai nhóm tác vụ song song, ước lượng floorplan, tự bỏ qua spatial review, vòng
-Edit & Regenerate, dual-view 3D hoàn chỉnh và MP4 là kiến trúc đích. Code hiện tại
-chạy tuần tự, luôn duyệt spatial, duyệt lời trước TTS và publish bằng API riêng.
-Blender/MCP chưa nối; thiếu adapter sẽ tạm dừng thật, không tạo mô hình giả.
+**Runtime hiện tại:** các bước chạy tuần tự; house-modeling planner đọc ảnh và
+floorplan, hỗ trợ clarification rồi chạy Blender sau spatial review. Creator và
+Viewer có Three.js ↔ panorama. Vẫn duyệt lời trước TTS và publish bằng API riêng.
+Fan-out/fan-in, tự bỏ spatial review, partial regeneration sau publish và MP4
+chưa được triển khai.
+Blender CLI đã nối qua house-modeling agent; Three.js mở model và checkpoint. Thiếu worker vẫn tạm dừng thật. Layout chưa rõ có vòng clarification, tối đa 3 bản. Các PNG/SVG cũ là snapshot trước tích hợp; Mermaid bên dưới là graph hiện tại.
 
 ## 1. Hai bản diagram và nguồn đối chiếu
 
@@ -45,9 +46,9 @@ flowchart TB
         __start__["START"]:::terminal
         understand["understand<br/>OpenAI · trích xuất hồ sơ"]:::node
         scene["scene<br/>OpenAI Vision · từng ảnh"]:::node
-        spatial["spatial<br/>Tạo room / checkpoint nháp"]:::node
+        spatial["spatial<br/>House-modeling agent · ảnh + mặt bằng"]:::node
         spatial_review["spatial_review<br/>interrupt · Business kiểm tra"]:::review
-        build_model["build_model<br/>Adapter dựng 3D"]:::worker
+        build_model["build_model<br/>Blender CLI · GLB + scene"]:::worker
         mapping["mapping<br/>Kiểm tra room / anchor"]:::node
         semantic["semantic<br/>Giữ dữ kiện có nguồn"]:::node
         navigation["navigation<br/>Hotspots + hành trình hợp lệ"]:::node
@@ -58,7 +59,6 @@ flowchart TB
         __end__["END"]:::terminal
         __start__ --> understand
         assemble --> __end__
-        build_model --> mapping
         mapping --> semantic
         narration --> final_review
         navigation --> narration
@@ -69,6 +69,9 @@ flowchart TB
         scene -->|"Đủ ảnh"| spatial
         spatial_review -->|"Từ chối"| __end__
         spatial_review -->|"Duyệt"| build_model
+        spatial_review -->|"Làm rõ / tối đa 3 bản"| spatial
+        build_model -->|"GLB hợp lệ"| mapping
+        build_model -->|"Bản cũ chưa có plan"| spatial
         final_review -->|"Từ chối"| __end__
         final_review -->|"Duyệt"| voice
         voice -->|"Đủ audio"| assemble
@@ -87,7 +90,7 @@ flowchart TB
     __end__ -. "package + approved" .-> READY
     PUBLISH["Business chọn xuất bản<br/>API kiểm approval + music + assets"]:::review
     SNAPSHOT["Snapshot bất biến"]:::terminal
-    VIEWER["Viewer · ảnh / 360° + audio<br/>GLB download · OpenAI Q&A chỉ đọc"]:::boundary
+    VIEWER["Viewer · Three.js / 360° + audio<br/>Checkpoint → panorama · Q&A chỉ đọc"]:::boundary
     READY -.-> PUBLISH -.-> SNAPSHOT -.-> VIEWER
     classDef node fill:#fafafa,stroke:#d4d6da,color:#292c2e,stroke-width:1px;
     classDef review fill:#fff0eb,stroke:#ed321e,color:#8c3428,stroke-width:1.5px;
@@ -104,17 +107,17 @@ flowchart TB
 | Diagram tham khảo | Runtime hiện tại | Đánh giá |
 | --- | --- | --- |
 | Input Processing là node graph | API xác thực/lưu input, tạo generation trước khi invoke graph; `understand` trích xuất brief | Cần tách API khỏi graph |
-| Vision và Layout Estimation chạy song song | `scene` xử lý từng ảnh, checkpoint sau từng lần; chưa có layout estimator/floorplan parser | Chưa triển khai fan-out/fan-in |
-| Spatial Graph có floors, geometry, camera anchors đầy đủ | `spatial` tạo một room/checkpoint nháp cho mỗi ảnh; connections rỗng, `estimated=true` | Chưa đo kích thước, cluster phòng hoặc suy topology |
+| Vision và Layout Estimation chạy song song | `scene` xử lý từng ảnh, checkpoint sau từng lần; planner đọc ảnh + floorplan trong node spatial | Chưa triển khai fan-out/fan-in |
+| Spatial Graph có floors, geometry, camera anchors đầy đủ | `spatial` tạo HousePlan, nhóm capture vào phòng; connections vẫn do Business duyệt | Kích thước/pose suy luận vẫn được đánh dấu ước lượng |
 | Reliable layout được bỏ qua Spatial Review | Mọi generation đều vào `spatial_review` và `interrupt()` | Không có reliability bypass |
-| Blender MCP đã dựng nhà | `creator_worker` là adapter được inject; default `None` | Chờ nối worker/MCP như phạm vi đã giao |
-| Checkpoint Registration tự ước lượng pose | `mapping` kiểm checkpoint IDs và room IDs của anchors do worker trả | Chưa có pose estimation |
+| Blender MCP đã dựng nhà | Blender CLI được phát hiện hoặc cấu hình, nhận manifest đã validate | Fixed builder, không chạy code do LLM viết |
+| Checkpoint Registration tự ước lượng pose | `mapping` kiểm checkpoint IDs và room IDs của anchors do worker trả | Planner ước lượng pose; chưa phải geometric pose solver |
 | Semantic enrichment là một agent đầy đủ | `semantic` giữ facts có provenance `verified`/`observed` | Chưa có enrichment từ nguồn bên ngoài |
 | Navigation và Narration/TTS chạy song song | `navigation → narration → final_review → voice` | Tuần tự; script tách TTS |
 | Duyệt sau Package + QA + audio | `final_review` duyệt script trước TTS; `assemble` kiểm dữ liệu sau TTS; Business vẫn chủ động chọn publish | Không phải duyệt final audio bằng một graph interrupt khác |
 | Publish / Export là node graph | Publish là API sau khi graph END và draft completed | Không có graph node publish hoặc MP4 export |
-| Edit quay lại đúng nhánh để tái sinh | Review sửa label/yaw/links hoặc script ngay tại interrupt; reject kết thúc | Chưa có selective regeneration/version editor |
-| Dual-view 3D ↔ 360° hoàn chỉnh | Viewer có ảnh/360°, liên kết, audio/Q&A và tải GLB | Chưa có renderer GLB/orbit/transition 3D |
+| Edit quay lại đúng nhánh để tái sinh | Spatial revise quay về planner, giữ observations; final sửa script; reject kết thúc | Chưa có selective regeneration/version editor |
+| Dual-view 3D ↔ 360° hoàn chỉnh | Viewer có Three.js/orbit/GLB, checkpoint vào ảnh/360°, audio/Q&A | Đã nối model → panorama và nút quay lại |
 
 Không sửa code thành “đã có” những phần kiến trúc đích chỉ để diagram trông khớp.
 Các phần chưa làm được ghi rõ; diagram runtime là bản dùng để kiểm implementation.
@@ -145,8 +148,8 @@ không đồng nghĩa project riêng có thể được truy cập chỉ bằng 
 | --- | --- | --- |
 | `understand` | OpenAI Responses Structured Outputs đọc mô tả; validate `Brief` | `brief` → `scene` |
 | `scene` | OpenAI Vision đọc một ảnh chưa xử lý; validate observation, nguồn và uncertainty | Append `observations`; còn ảnh → chính nó, đủ ảnh → `spatial` |
-| `spatial` | Tạo `cp01…`, `r01…`, label/summary/facts, projection và yaw mặc định; chưa tính geometry | `rooms`, `connections=[]`, `estimated=true` → `spatial_review` |
-| `spatial_review` | `interrupt(kind=spatial)`; Business xác nhận tên khu, yaw và các đường nối có thật | Merge rooms/links; approve → `build_model`, reject → END |
+| `spatial` | Tạo capture IDs, gọi house-modeling template và validate HousePlan khi có worker tự động | `rooms`, `connections=[]`, `estimated=true` → `spatial_review` |
+| `spatial_review` | `interrupt(kind=spatial)`; Business xác nhận tên khu, yaw và các đường nối có thật | Merge rooms/links; revise → spatial (tối đa 3), approve → build_model, reject → END |
 | `build_model` | Gọi adapter `build(project, rooms, connections, assets)`; lưu GLB đã kiểm container/scene/mesh và anchors hữu hạn | `model` → `mapping`; thiếu worker → integration interrupt ngay tại node |
 | `mapping` | Mọi checkpoint phải có anchor, không thiếu/thừa ID; anchor.room_id phải khớp room | Gắn `anchor` vào `rooms` → `semantic` |
 | `semantic` | Giữ facts `verified`/`observed`, không tự nâng suy luận thành dữ kiện xác minh | `rooms` → `navigation` |
@@ -200,7 +203,7 @@ phải dùng generation_id làm khóa idempotency; SDK OpenAI không tự retry.
 
 State gồm: `project`, `assets`, `brief`, `observations`, `rooms`, `connections`,
 `model`, `navigation_config`, `itinerary`, `script`, `audio`, `approved`,
-`rejected`, `package`. Không nhét GLB hoặc WAV lớn vào state; state giữ asset IDs.
+`rejected`, `package`, `modeling_plan`, `plan_attempts`, `clarification`, `revise_plan`. Không nhét GLB hoặc WAV lớn vào state; state giữ asset IDs.
 
 - `graph.sqlite`: SQLite checkpointer theo generation thread.
 - `creator.sqlite`: project, binary assets, generation status, events, request
@@ -233,11 +236,7 @@ khi bắt đầu generation, hiện chưa có đường thêm nhạc muộn vào
 
 ## 8. Phần còn phải nối để đạt diagram kiến trúc đích
 
-- Floorplan parsing/layout estimation và spatial graph có geometry/floors được
-  đo hoặc xác minh; clustering nhiều ảnh cùng phòng, uncertainty có nguồn.
-- Adapter Blender/MCP có job idempotency, geometry/bounds QA, materials,
-  room-to-mesh mapping và preview renders. Hiện chỉ có seam + validation container.
-- Renderer GLB, room picking và chuyển 3D ↔ panorama. Hiện chỉ tải GLB xuống.
+- Đã nối single-floor HousePlan, Blender CLI idempotency, source fixture materials và Three.js checkpoint picking. Chưa có pose solver hoặc tái dựng metric tự động; cần kiểm OpenAI live trên nhà thật.
 - Partial regeneration, revision history/editor sau reject hoặc publish, upload
   nhạc muộn; MP4 là worker riêng, chưa phải node thực hiện trong graph.
 - Chỉ thêm song song nếu task độc lập, có reducer/merge state rõ ràng và budget

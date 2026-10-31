@@ -20,6 +20,7 @@ from server.creator.api import router as creator_router
 from server.creator.service import Creator
 from server.creator.provider import OpenAIProvider
 from server.creator.models import ViewerQuestion
+from pipelines.core.blender_worker import configured_worker
 
 ROOT = Path(__file__).resolve().parents[2]
 WEB = ROOT / 'web'
@@ -49,8 +50,10 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
         def unavailable(_): raise ValueError('Cần cấu hình OpenAI ở máy chủ để tiếp tục.')
         graph = build_graph(extractor or (make_extractor(client,env.get('OPENAI_MODEL_TEXT','gpt-6.1-sol')) if client else unavailable),saver,required)
         app.state.graph = graph
-        app.state.creator = Creator(Path(env.get('STUDIO_DATA_DIR', path.parent / 'studio')),
-            creator_provider or (OpenAIProvider(client, env) if client else None), creator_worker)
+        studio_root = Path(env.get('STUDIO_DATA_DIR', path.parent / 'studio'))
+        app.state.creator = Creator(studio_root,
+            creator_provider or (OpenAIProvider(client, env) if client else None),
+            creator_worker if creator_worker is not None else configured_worker(env,studio_root))
         try:
             yield
         finally:
@@ -187,7 +190,7 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
 
     @app.get('/{filename}')
     def static_file(filename:str):
-        allowed = {'assistant.html','assistant.css','assistant.js','index.html','experience.html','styles.css','app.js','i18n.js','intake.js','property.js','motion.css','motion.js','creator.html','viewer.html','tour.css','tour-common.js','creator.js','viewer.js','panorama.js','studio.html','studio.css','studio.js','studio-panorama.js','studio-tour.html','studio-tour.js'}
+        allowed = {'assistant.html','assistant.css','assistant.js','index.html','experience.html','styles.css','app.js','i18n.js','intake.js','property.js','motion.css','motion.js','creator.html','viewer.html','tour.css','tour-common.js','creator.js','viewer.js','panorama.js','studio.html','studio.css','studio.js','studio-panorama.js','studio-model.js','studio-tour.html','studio-tour.js'}
         if filename not in allowed or not (WEB/filename).is_file(): raise HTTPException(404)
         return FileResponse(WEB/filename)
 

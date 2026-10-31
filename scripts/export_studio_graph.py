@@ -23,9 +23,9 @@ LABELS = {
     '__start__': 'START',
     'understand': 'understand<br/>OpenAI · trích xuất hồ sơ',
     'scene': 'scene<br/>OpenAI Vision · từng ảnh',
-    'spatial': 'spatial<br/>Tạo room / checkpoint nháp',
+    'spatial': 'spatial<br/>House-modeling agent · ảnh + mặt bằng',
     'spatial_review': 'spatial_review<br/>interrupt · Business kiểm tra',
-    'build_model': 'build_model<br/>Adapter dựng 3D',
+    'build_model': 'build_model<br/>Blender CLI · GLB + scene',
     'mapping': 'mapping<br/>Kiểm tra room / anchor',
     'semantic': 'semantic<br/>Giữ dữ kiện có nguồn',
     'navigation': 'navigation<br/>Hotspots + hành trình hợp lệ',
@@ -38,6 +38,9 @@ LABELS = {
 ROUTES = {
     ('scene', 'scene'): 'Còn ảnh', ('scene', 'spatial'): 'Đủ ảnh',
     ('spatial_review', 'build_model'): 'Duyệt', ('spatial_review', '__end__'): 'Từ chối',
+    ('spatial_review', 'spatial'): 'Làm rõ / tối đa 3 bản',
+    ('build_model', 'spatial'): 'Bản cũ chưa có plan',
+    ('build_model', 'mapping'): 'GLB hợp lệ',
     ('final_review', 'voice'): 'Duyệt', ('final_review', '__end__'): 'Từ chối',
     ('voice', 'voice'): 'Còn đoạn', ('voice', 'assemble'): 'Đủ audio',
 }
@@ -112,7 +115,7 @@ def main():
         '    __end__ -. "package + approved" .-> READY',
         '    PUBLISH["Business chọn xuất bản<br/>API kiểm approval + music + assets"]:::review',
         '    SNAPSHOT["Snapshot bất biến"]:::terminal',
-        '    VIEWER["Viewer · ảnh / 360° + audio<br/>GLB download · OpenAI Q&A chỉ đọc"]:::boundary',
+        '    VIEWER["Viewer · Three.js / 360° + audio<br/>Checkpoint → panorama · Q&A chỉ đọc"]:::boundary',
         '    READY -.-> PUBLISH -.-> SNAPSHOT -.-> VIEWER',
         '    classDef node fill:#fafafa,stroke:#d4d6da,color:#292c2e,stroke-width:1px;',
         '    classDef review fill:#fff0eb,stroke:#ed321e,color:#8c3428,stroke-width:1.5px;',
@@ -133,7 +136,7 @@ def main():
     if count != 1:
         raise ValueError('Markdown must have exactly one runtime graph marker pair')
     markdown.write_text(text, encoding='utf8')
-    evidence = ROOT / 'tests/ai/evidence/studio-refinement'
+    evidence = ROOT / 'tests/ai/evidence/house-modeling'
     evidence.mkdir(parents=True, exist_ok=True)
     (evidence / 'graph-export.json').write_text(json.dumps({
         'node_ids': list(graph.nodes), 'edges': [dict(source=e.source, target=e.target,

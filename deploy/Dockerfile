@@ -1,4 +1,6 @@
 FROM python:3.13-slim
+ARG WITH_BLENDER=0
+RUN if [ "$WITH_BLENDER" = "1" ]; then apt-get update && apt-get install -y --no-install-recommends blender && rm -rf /var/lib/apt/lists/*; fi
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
 WORKDIR /app
 COPY server/assistant/requirements.txt /app/server/assistant/requirements.txt
@@ -8,6 +10,7 @@ RUN pip install --no-cache-dir -r server/assistant/requirements.txt \
     && mkdir /data && chown assistant:assistant /data
 COPY server/assistant/ /app/server/assistant/
 COPY server/creator/ /app/server/creator/
+COPY pipelines/core/ /app/pipelines/core/
 COPY server/tours/ /app/server/tours/
 COPY web/ /app/web/
 COPY deploy/entrypoint.py deploy/smoke.py /app/deploy/

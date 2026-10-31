@@ -36,7 +36,7 @@ def main():
         log.write('Real local HTTP/SQLite/image decoder/WebGL. Synthetic images. No OpenAI calls.\n')
         try:
             browser('open','about:blank')
-            for mode,script in [('missing-key','creator_browser.js')]:
+            for mode,script in [('missing-key','creator_browser.js'),('fixture','creator_chat.js')]:
                 server=subprocess.Popen([sys.executable,'tests/integration/local_server.py','--db',f'{temp}/assistant.sqlite','--port',str(port),'--mode',mode],cwd=ROOT,env=child_env,stdout=subprocess.PIPE,stderr=server_log,text=True)
                 try:
                     with selectors.DefaultSelector() as selector:

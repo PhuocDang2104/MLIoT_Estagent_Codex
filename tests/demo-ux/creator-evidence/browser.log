@@ -1,0 +1,5 @@
+Real local HTTP/SQLite/image decoder/WebGL. Synthetic images. No OpenAI calls.
+creator_browser.js: {"pass":true,"keylessCreatePublish":true,"descriptionTitle":true,"sourceLocalePreserved":true,"chatRequests":0,"clearedInput":true,"advancedAudio":true,"canonicalAndLegacyRoutes":true,"publishHelp":true,"viewports":[{"width":1440,"noOverflow":true},{"width":390,"noOverflow":true},{"width":320,"noOverflow":true}],"errors":[]}
+
+creator_chat.js: {"pass":true,"configuredAssistant":true,"provider":"injected finite test interpreter, zero OpenAI calls","visibleEdits":true,"history":true,"sourceLocalePreserved":true,"errors":[]}
+

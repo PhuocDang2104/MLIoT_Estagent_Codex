@@ -43,6 +43,7 @@ function syncNarrationPanel(){
 }
 document.addEventListener('narration-preview-start',()=>$('#creator-audio-preview').pause());
 function render(){
+  $('#message-label').textContent=manifest?t('Message to the assistant','Nhắn cho trợ lý'):t('Describe the space','Mô tả không gian');
   $('#initial-fields').hidden=!!manifest;$('#composer').hidden=!!manifest&&!session?.configured;$('#keyless-help').hidden=!manifest||!!session?.configured;
   $('#creation-help').textContent=manifest?(session?.configured?t('Ask the assistant to improve a description or arrange your stops.','Nhờ trợ lý sửa mô tả hoặc sắp xếp các điểm xem.'):t('Your draft is ready to review.','Bản nháp đã sẵn sàng để kiểm tra.')):t('Your words become the starting title and description. Review them before sharing.','Tên và mô tả sẽ được điền từ nội dung bạn cung cấp. Kiểm tra trước khi chia sẻ.');
   if(!busy)syncNarrationPanel();
@@ -53,7 +54,7 @@ function render(){
   if($('#published-link button'))$('#published-link button').textContent=t('Copy link','Sao chép link');
   drawAttachments();
   if(!manifest)return;
-  $('#tour-title').value=manifest.title;$('#tour-locale').value=manifest.locale;publishHelp();$('#revision').textContent=t(`Saved revision ${manifest.revision} · Audio: ${manifest.audio.status}`,`Đã lưu bản ${manifest.revision} · Audio: ${manifest.audio.status==='ready'?'đủ lời theo điểm':manifest.audio.status==='partial'?'còn thiếu':'chưa có'}`);
+  $('#tour-title').value=manifest.title;$('#tour-locale').value=manifest.locale;publishHelp();$('#revision').textContent=t('Changes saved','Đã lưu thay đổi');
   if(!dirty)$('#preview').href=`/viewer.html?draft=${manifest.id}`;
   $('#scene-cards').replaceChildren();
   manifest.scenes.forEach((scene,index)=>{

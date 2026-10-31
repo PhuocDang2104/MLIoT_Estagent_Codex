@@ -1,0 +1,8 @@
+PASS MinIO restart preserved SHA/Range/private denial
+ Container estagent-storage-minio-1 Restarting 
+ Container estagent-storage-minio-1 Started 
+time="2026-10-31T13:26:26+07:00" level=warning msg="volume \"estagent-minio-objects\" already exists but was not created by Docker Compose. Use `external: true` to use an existing volume"
+ Container estagent-storage-minio-1 Running 
+ Container estagent-storage-minio-1 Waiting 
+ Container estagent-storage-minio-1 Healthy 
+PASS MinIO restart preserved SHA/Range/private denial

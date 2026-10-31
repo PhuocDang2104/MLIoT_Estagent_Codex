@@ -1,0 +1,46 @@
+name: estagent-storage
+services:
+  minio:
+    image: ${MINIO_IMAGE:?Set a verified immutable MinIO image ID}
+    pull_policy: never
+    command: [server, /data, --console-address, ':9001']
+    user: '10001:10001'
+    init: true
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Set a dedicated operator account}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set a dedicated operator secret}
+      MINIO_BROWSER: 'off'
+    ports:
+      - '127.0.0.1:19000:9000'
+      - '127.0.0.1:19001:9001'
+    volumes:
+      - objects:/data
+    networks:
+      storage:
+        aliases: [estagent-minio]
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+    cpus: 0.5
+    pids_limit: 128
+    stop_grace_period: 30s
+    healthcheck:
+      test: [CMD, curl, --fail, --silent, http://127.0.0.1:9000/minio/health/live]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: '3'}
+volumes:
+  objects:
+    name: estagent-minio-objects
+    external: true
+networks:
+  storage:
+    name: estagent-object-store

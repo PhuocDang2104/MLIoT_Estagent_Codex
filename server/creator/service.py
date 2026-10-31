@@ -14,10 +14,10 @@ from .worker import HTTPGeometryWorker, WorkerPending
 
 class Creator:
     """One fenced process, one durable dispatcher; checkpoints survive restarts."""
-    def __init__(self, root, provider=None, worker=None, env=None):
+    def __init__(self, root, provider=None, worker=None, env=None, *, object_storage=None, storage_limits=None):
         self.runtime_lock = RuntimeLock(root)
         try:
-            self.store = Store(root)
+            self.store = Store(root, object_storage=object_storage, storage_limits=storage_limits)
         except BaseException:
             self.runtime_lock.close()
             raise
@@ -230,6 +230,8 @@ class Creator:
             allowed |= {a['asset_id'] for a in package['narration']['audio']}
             if not allowed <= {a['id'] for a in assets}:
                 raise HTTPException(409, 'Tour thiếu asset đã kiểm chứng.')
+            for asset in assets:
+                if asset['id'] in allowed:self.store.verify_asset(asset)
             package['assets'] = [{k: a[k] for k in ('id', 'kind', 'mime', 'name')} for a in assets if a['id'] in allowed]
             package = PublishedTour.model_validate(package).model_dump()
             self.store.execute('INSERT INTO published VALUES(?,?,?,?)', (public_id, current['project_id'], generation_id, json.dumps(package, ensure_ascii=False)))

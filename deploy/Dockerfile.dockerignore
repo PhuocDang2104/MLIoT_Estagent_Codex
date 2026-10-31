@@ -1,6 +1,8 @@
 **
 !server/
 !server/limits.py
+!server/storage.py
+!server/object_storage.py
 !server/assistant/
 !server/assistant/*.py
 !server/assistant/requirements.txt

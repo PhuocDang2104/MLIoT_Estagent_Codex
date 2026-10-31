@@ -1,0 +1,3 @@
+PASS hard quota rejects a real app write; restored 536870912
+PASS dedicated bucket, separate app policy, hard quota 536870912
+MinIO smoke failed: AssertionError

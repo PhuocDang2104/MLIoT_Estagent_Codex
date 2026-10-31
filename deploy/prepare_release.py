@@ -10,14 +10,14 @@ import tarfile
 
 ROOT = Path(__file__).resolve().parents[1]
 FILES = [
-    'server/assistant', 'server/tours', 'server/creator', 'server/limits.py', 'web/index.html', 'web/experience.html',
+    'server/assistant', 'server/tours', 'server/creator', 'server/limits.py', 'server/storage.py', 'server/object_storage.py', 'web/index.html', 'web/experience.html',
     'web/creator.html', 'web/viewer.html', 'web/assistant.html',
     'web/styles.css', 'web/motion.css', 'web/tour.css', 'web/assistant.css',
     'web/app.js', 'web/i18n.js', 'web/motion.js', 'web/creator.js',
     'web/viewer.js', 'web/tour-common.js', 'web/panorama.js',
     'web/assistant.js', 'web/studio.html', 'web/studio.css', 'web/studio.js', 'web/studio-panorama.js', 'web/studio-tour.html', 'web/studio-tour.js', 'web/assets', 'deploy/Dockerfile',
-    'deploy/Dockerfile.dockerignore', 'deploy/compose.yaml',
-    'deploy/entrypoint.py', 'deploy/smoke.py', 'deploy/backup_data.py', 'deploy/.env.example',
+    'deploy/Dockerfile.dockerignore', 'deploy/compose.yaml', 'deploy/minio.compose.yaml', 'deploy/provision_minio.py', 'deploy/minio_smoke.py', 'deploy/minio_app_smoke.py',
+    'deploy/entrypoint.py', 'deploy/smoke.py', 'deploy/backup_data.py', 'deploy/rollback_preflight.py', 'deploy/.env.example',
 ]
 
 

@@ -1,0 +1,2 @@
+PASS hard quota rejects new app write while existing media stays readable; restored 536870912
+PASS dedicated bucket, separate app policy, hard quota 536870912

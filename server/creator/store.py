@@ -3,6 +3,9 @@ import hashlib
 import io
 import json
 import math
+import logging
+import re
+from contextlib import nullcontext
 import sqlite3
 import struct
 import threading
@@ -11,6 +14,7 @@ import wave
 from datetime import datetime, timezone
 from contextlib import contextmanager
 from fastapi import HTTPException
+from fastapi.responses import Response
 
 
 def now():
@@ -74,7 +78,7 @@ def sanitize_image(data):
 
 
 class Store:
-    def __init__(self, root):
+    def __init__(self, root, object_storage=None, storage_limits=None):
         root.mkdir(parents=True, exist_ok=True, mode=0o700)
         root.chmod(0o700)
         self.db = sqlite3.connect(root / 'creator.sqlite', check_same_thread=False)
@@ -82,10 +86,13 @@ class Store:
         self.db.row_factory = sqlite3.Row
         self.lock = threading.RLock()
         self.in_action = False
+        self.object_storage = object_storage
+        self.storage_limits = storage_limits
         self.db.executescript('''
             PRAGMA journal_mode=WAL;
             CREATE TABLE IF NOT EXISTS projects(id TEXT PRIMARY KEY, owner TEXT, data TEXT);
             CREATE TABLE IF NOT EXISTS assets(id TEXT PRIMARY KEY, project TEXT, meta TEXT, content BLOB);
+            CREATE TABLE IF NOT EXISTS media_refs(asset TEXT PRIMARY KEY, backend TEXT NOT NULL, object_key TEXT NOT NULL);
             CREATE TABLE IF NOT EXISTS generations(id TEXT PRIMARY KEY, project TEXT, status TEXT, error TEXT, attempts INTEGER DEFAULT 0);
             CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY AUTOINCREMENT, generation TEXT, data TEXT);
             CREATE INDEX IF NOT EXISTS event_generation ON events(generation,id);
@@ -142,21 +149,78 @@ class Store:
         return [json.loads(r['meta']) for r in self.rows('SELECT meta FROM assets WHERE project=? ORDER BY rowid', (project_id,))]
 
     def content(self, asset):
+        key = self.object_key(asset['id'])
+        if key is not None:
+            return self.require_objects().get_bytes(key)
         rows = self.rows('SELECT content FROM assets WHERE id=?', (asset['id'],))
         if not rows:
             raise ValueError('Asset missing')
         return rows[0]['content']
 
+    def object_key(self, asset_id):
+        refs=self.rows('SELECT backend,object_key FROM media_refs WHERE asset=?',(asset_id,))
+        if not refs:return None
+        if refs[0]['backend']!='minio':raise HTTPException(503,'Media backend unavailable')
+        return refs[0]['object_key']
+
+    def require_objects(self):
+        if self.object_storage is None:raise HTTPException(503,'Object storage unavailable')
+        return self.object_storage
+
+    def verify_asset(self, asset):
+        key=self.object_key(asset['id'])
+        if key is not None:
+            info=self.require_objects().stat(key)
+            if info.size!=asset['size'] or info.content_type!=asset['mime'] or (info.sha256 and info.sha256!=asset['sha256']):
+                raise HTTPException(409,'Media does not match its registered metadata')
+        else:
+            rows=self.rows('SELECT length(content) AS size FROM assets WHERE id=?',(asset['id'],))
+            if not rows or rows[0]['size']!=asset['size']:raise HTTPException(409,'Media unavailable')
+
+    def response(self, asset, *, range_header=None):
+        key=self.object_key(asset['id'])
+        if key is not None:return self.require_objects().response(key,range_header=range_header)
+        data=self.content(asset)
+        headers={'Accept-Ranges':'bytes','Cache-Control':'no-store'}
+        if range_header is None:return Response(data,media_type=asset['mime'],headers=headers)
+        match=re.fullmatch(r'bytes=([0-9]*)-([0-9]*)',range_header)
+        if not match or not any(match.groups()) or not data:
+            return Response(status_code=416,headers={**headers,'Content-Range':f'bytes */{len(data)}'})
+        left,right=match.groups()
+        start=int(left) if left else max(0,len(data)-int(right))
+        end=min(int(right),len(data)-1) if left and right else len(data)-1
+        if start>=len(data) or start>end:
+            return Response(status_code=416,headers={**headers,'Content-Range':f'bytes */{len(data)}'})
+        return Response(data[start:end+1],status_code=206,media_type=asset['mime'],
+            headers={**headers,'Content-Range':f'bytes {start}-{end}/{len(data)}'})
+
     def put_asset(self, project_id, name, kind, mime, data, extra=None):
-        digest = hashlib.sha256(data).hexdigest()
-        for asset in self.assets(project_id):
-            if asset['sha256'] == digest and asset['kind'] == kind:
-                return asset
-        asset = {'id': uid(), 'project_id': project_id, 'name': name,
-                 'kind': kind, 'mime': mime, 'size': len(data), 'sha256': digest, **(extra or {})}
-        self.execute('INSERT INTO assets VALUES(?,?,?,?)', (asset['id'], project_id,
-                     json.dumps(asset, ensure_ascii=False), data))
-        return asset
+        with self.lock:
+            digest = hashlib.sha256(data).hexdigest()
+            for asset in self.assets(project_id):
+                if asset['sha256'] == digest and asset['kind'] == kind:
+                    return asset
+            asset = {'id': uid(), 'project_id': project_id, 'name': name,
+                     'kind': kind, 'mime': mime, 'size': len(data), 'sha256': digest, **(extra or {})}
+            key=f'studio/assets/{asset["id"]}'
+            serialized=json.dumps(asset,ensure_ascii=False)
+            reservation=self.storage_limits.reserve(len(serialized.encode()) if self.object_storage else len(data)) if self.storage_limits else nullcontext()
+            attempted=False
+            with reservation:
+                try:
+                    if self.object_storage:
+                        attempted=True
+                        self.object_storage.put_bytes(key,data,mime)
+                    with nullcontext() if self.in_action else self.db:
+                        self.db.execute('INSERT INTO assets VALUES(?,?,?,?)',
+                            (asset['id'],project_id,serialized,b'' if self.object_storage else data))
+                        if self.object_storage:self.db.execute('INSERT INTO media_refs VALUES(?,?,?)',(asset['id'],'minio',key))
+                except BaseException:
+                    if attempted:
+                        try:self.object_storage.remove(key)
+                        except Exception:logging.getLogger(__name__).warning('Orphan media cleanup failed; operator reconciliation required')
+                    raise
+            return asset
 
     def write_audio(self, project, segment_id, data):
         duration = wav_duration(data)

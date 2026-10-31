@@ -41,6 +41,8 @@ def validate():
     from fastapi import FastAPI
     from server.limits import install_limits
     install_limits(FastAPI(), os.environ)
+    from server.storage import validate_storage
+    validate_storage(os.environ)
 
 
 if __name__ == '__main__':

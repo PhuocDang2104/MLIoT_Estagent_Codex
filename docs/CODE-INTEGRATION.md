@@ -1,7 +1,20 @@
 # Quản lý code và tích hợp
 
-Thái giao Tatejo quản lý code, review, merge, resolve conflict và push main để đồng đội cùng làm việc.
-Lane/teammate implement trên nhánh riêng; chỉ integrator thay main và phát hành bản tích hợp.
+Quyết định trực tiếp mới nhất của Thái, 2026-10-31: root Tatejo **chỉ điều phối,
+review và nghiệm thu**, không trực tiếp implementation hoặc SSH rollout. Lane
+integration/release được giao là owner thực thi tích hợp, resolve, merge/push main
+và deploy Estagent; lane UI implement Viewer trên worktree riêng rồi trả handback.
+Quyền merge/deploy theo scope user đã giao vẫn hiệu lực, không thêm approval vòng
+mới. Tin nhắn điều phối không được giả thành phê duyệt mới của Thái.
+
+Release hiện làm ở `.worktrees/release-wave2`, branch `integration/wave2-release`;
+root checkout có edit `.env.example` riêng của user, tuyệt đối không bỏ/stage/reset.
+Chỉ đụng instance/container/network/volume Estagent đã được giao trên VM hiện có;
+không tạo VM/cloud resource, không thay stack/DB/secret project khác. Giữ keyless,
+không paid API. Release production từ SHA sạch đã kiểm và push main; giữ dữ liệu
+cũ, rollback phải kiểm cả audio và marker MinIO theo `deploy/rollback_preflight.py`.
+Báo về khi chạm quyết định product/contract, biên rủi ro chưa được giao hoặc chưa
+phân biệt được fix với reproduce sai; tiếp tục phần độc lập đã được ủy quyền.
 
 ## Vòng tích hợp
 

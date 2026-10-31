@@ -10,6 +10,8 @@ COPY server/assistant/ /app/server/assistant/
 COPY server/creator/ /app/server/creator/
 COPY server/tours/ /app/server/tours/
 COPY server/limits.py /app/server/limits.py
+COPY server/storage.py /app/server/storage.py
+COPY server/object_storage.py /app/server/object_storage.py
 COPY web/ /app/web/
 COPY deploy/entrypoint.py deploy/smoke.py deploy/backup_data.py /app/deploy/
 USER 10001:10001

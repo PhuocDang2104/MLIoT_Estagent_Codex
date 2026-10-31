@@ -1,0 +1,18 @@
+{
+  "source": "e12582f793273b3e0000c8e47d779309b1da433e",
+  "image_id": "sha256:db5a3a361981bace5165ae89e6a985ac4a7470a6baa401e1a93e622bf7383cf3",
+  "studio_health": {
+    "ready": true,
+    "mode": "single-host-sqlite",
+    "geometry_configured": true
+  },
+  "upload_limit_per_minute": 24,
+  "upload_concurrency": 1,
+  "studio_call_cap_unchanged": 40,
+  "global_ai_hourly_cap_unchanged": 50,
+  "existing_uploads_preserved": 8,
+  "asset_rows_sha256": "5a76516b1d268b35408bf8b1b72cae54b7d3a088690252be88bfd477acd0739e",
+  "public_script_matches_release": true,
+  "backup": "/opt/estagent/backups/studio-rollout/20261031T090526249794Z-before-studio-e12582f",
+  "provider_calls_for_this_fix": 0
+}

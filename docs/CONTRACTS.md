@@ -1,5 +1,17 @@
 # CONTRACTS — giao diện giữa 3 lane
 
+## Additive: AI Generation Studio
+
+Đọc `CREATOR-STUDIO.md` cho luồng LangGraph dài tại `/business/create`.
+Luồng này dùng `/api/studio/*`, `/api/studio-tours/*` và cookie/storage riêng;
+giữ nguyên `/api/tours/*`, schema Manifest và các trang Creator/Viewer hiện có.
+Schema mới: `fixtures/studio-tour.schema.json`, fixture tổng hợp
+`fixtures/studio-example/studio-tour.json`; gate kiểm cả hai bộ schema.
+Studio có checkpoint persistence, SSE replay, spatial/final interrupt, worker
+adapter, narration/TTS và immutable publish. Không có worker thì chờ integration
+và chặn publish. Không giả dựng 3D hoặc tự suy panorama chỉ từ tỷ lệ ảnh.
+Các endpoint, payload, giới hạn và điểm nối worker ghi trong card trên.
+
 > **Trạng thái: v0 nháp** (rút từ `../codex_hack`). Dev 1 sửa theo đề thật rồi **freeze v1 trước H0:45**.
 > Chủ file: Dev 1. Sau freeze chỉ được thêm field (additive), bump `version`, sửa `fixtures/` trong cùng commit.
 > Lane nào cũng code dựa trên fixture trong `fixtures/`, không chờ lane khác.

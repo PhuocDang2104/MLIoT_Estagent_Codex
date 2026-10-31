@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Tạo tour — Estagent Studio</title>
+    <link rel="stylesheet" href="/assets/fonts.css" />
+    <link rel="stylesheet" href="/studio.css" />
+    <script type="module" src="/studio.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Đến nội dung chính</a>
+    <header class="topbar">
+      <a href="/index.html" class="brand"
+        ><span class="brandmark">E</span
+        ><span>Estagent Studio<small>Property Tour Builder</small></span></a
+      ><span class="draft-pill" id="top-status">Bản nháp</span
+      ><a href="/assistant.html" class="subtle">Trợ lý nhập thông tin ↗</a>
+    </header>
+    <div class="shell">
+      <aside class="sidebar">
+        <button id="new-project" class="primary">＋ Tạo tour mới</button>
+        <p class="eyebrow">KHÔNG GIAN LÀM VIỆC</p>
+        <nav id="projects" aria-label="Danh sách bất động sản"></nav>
+        <div class="sidebar-note">
+          <span class="live-dot"></span> Dữ liệu được lưu tại máy chủ
+          <p>
+            Phiên này không cần đăng nhập. Giữ cookie để mở lại các bản nháp.
+          </p>
+        </div>
+      </aside>
+      <main id="main">
+        <div
+          id="notice"
+          class="notice"
+          role="status"
+          aria-live="polite"
+          hidden
+        ></div>
+        <section id="create-view">
+          <div class="intro">
+            <p class="eyebrow">TỪ KHÔNG GIAN ĐẾN CÂU CHUYỆN</p>
+            <h1>Một ngôi nhà.<br />Một trải nghiệm mới.</h1>
+            <p>
+              Thêm panorama và kể về bất động sản.<br />Cùng AI xây dựng tour,
+              từng bước một.
+            </p>
+          </div>
+          <form id="create-form" class="create-card">
+            <div class="section-heading">
+              <span class="step-number">01</span>
+              <div>
+                <h2>Đưa không gian của bạn vào Studio</h2>
+                <p>
+                  Ảnh panorama là nguồn hình ảnh thực tế cho mỗi điểm tham quan.
+                </p>
+              </div>
+            </div>
+            <label class="dropzone" id="dropzone"
+              ><span class="upload-symbol">↥</span
+              ><strong>Thả panorama vào đây</strong
+              ><span>hoặc bấm để chọn ảnh</span
+              ><small
+                >JPEG, PNG, WebP · 1–12 ảnh · Tối đa 20 MB/ảnh, 80
+                MB/project</small
+              ><input
+                id="panoramas"
+                type="file"
+                multiple
+                accept="image/jpeg,image/png,image/webp"
+                aria-label="Chọn ảnh panorama"
+            /></label>
+            <div id="selected-images" class="image-grid"></div>
+            <label
+              ><span
+                ><input
+                  type="checkbox"
+                  name="panorama_confirmed"
+                  id="panorama-confirmed"
+                  style="width: auto"
+                />
+                Tôi xác nhận bộ ảnh là panorama 360° × 180° dạng
+                equirectangular.</span
+              ></label
+            >
+            <p class="muted">
+              Ảnh chưa được xác nhận sẽ hiển thị như ảnh thường. Tỷ lệ 2:1 không
+              tự chứng minh ảnh 360°.
+            </p>
+            <div class="section-heading">
+              <span class="step-number">02</span>
+              <div>
+                <h2>Kể về bất động sản</h2>
+                <p>
+                  Thông tin bạn cung cấp sẽ được tách riêng với những gì AI quan
+                  sát từ ảnh.
+                </p>
+              </div>
+            </div>
+            <label
+              >Tên bất động sản<input
+                name="name"
+                required
+                maxlength="150"
+                placeholder="Ví dụ: Căn hộ ven sông" /></label
+            ><label
+              >Mô tả và mong muốn của bạn<textarea
+                name="description"
+                required
+                minlength="10"
+                maxlength="6000"
+                rows="5"
+                placeholder="Mô tả không gian, các phòng và những điểm muốn giới thiệu. Chỉ cung cấp thông tin bạn biết rõ…"
+              ></textarea>
+            </label>
+            <details class="extras">
+              <summary>Dữ liệu bổ sung & cách giới thiệu</summary>
+              <div class="form-grid">
+                <label
+                  >Bản vẽ mặt bằng (tùy chọn)<input
+                    id="floorplan"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp" /></label
+                ><label
+                  >Ngôn ngữ lời giới thiệu<select name="locale">
+                    <option value="vi">Tiếng Việt</option>
+                    <option value="en">English</option>
+                  </select></label
+                ><label
+                  >Giọng AI<select name="voice">
+                    <option value="coral">Coral</option>
+                    <option value="alloy">Alloy</option>
+                    <option value="onyx">Onyx</option>
+                  </select></label
+                ><label
+                  >Nhạc nền WAV (tùy chọn khi lưu nháp)<input
+                    id="music"
+                    type="file"
+                    accept="audio/wav,.wav" /></label
+                ><label class="wide"
+                  >Nguồn & quyền sử dụng nhạc<input
+                    name="music_credit"
+                    maxlength="300"
+                    placeholder="Tác giả, nguồn và giấy phép / quyền sử dụng"
+                /></label>
+              </div>
+              <p class="muted">
+                Giọng giới thiệu do AI tạo. Cần nhạc có quyền sử dụng trước khi
+                xuất bản.
+              </p>
+            </details>
+            <div class="form-footer">
+              <p>Kiểm tra và phê duyệt trước khi xuất bản.</p>
+              <button class="primary" type="submit" id="save-project">
+                Lưu dữ liệu & mở Studio ↗
+              </button>
+            </div>
+          </form>
+        </section>
+        <section id="workspace-view" hidden>
+          <div class="workspace-heading">
+            <div>
+              <p class="eyebrow">AI GENERATION WORKSPACE</p>
+              <h1 id="project-name"></h1>
+              <p id="project-description"></p>
+            </div>
+            <div class="workspace-actions">
+              <button id="generate" class="primary">Tạo tour bằng AI ↗</button
+              ><button id="retry" hidden>Thử lại bước đang dở</button
+              ><button id="publish" class="primary" hidden>
+                Phê duyệt & xuất bản ↗
+              </button>
+            </div>
+          </div>
+          <div class="workspace-grid">
+            <div>
+              <section class="panel asset-strip">
+                <div class="panel-title">
+                  <h2>Dữ liệu không gian</h2>
+                  <span id="asset-count" class="muted"></span>
+                </div>
+                <div id="assets" class="image-grid"></div>
+              </section>
+              <div class="stream-heading">
+                <h2>Hành trình tạo tour</h2>
+                <span class="muted" id="generation-status">Chưa bắt đầu</span>
+              </div>
+              <p class="muted" id="empty-stream">
+                Dữ liệu đã được lưu. Bắt đầu để AI phân tích không gian của bạn.
+              </p>
+              <div
+                id="activity"
+                class="activity"
+                role="log"
+                aria-live="polite"
+                aria-label="Tiến trình tạo tour"
+              ></div>
+              <section id="review" class="panel review" hidden></section>
+              <section id="script-editor" class="panel" hidden></section>
+              <div id="share" class="panel" hidden></div>
+            </div>
+            <aside class="preview-column">
+              <section class="panel preview-panel">
+                <div class="panel-title">
+                  <h2>Xem trước trực tiếp</h2>
+                  <button
+                    id="fullscreen"
+                    class="icon-button"
+                    aria-label="Mở rộng bản xem trước"
+                  >
+                    ⤢
+                  </button>
+                </div>
+                <div class="tabs" role="tablist" aria-label="Chế độ xem trước">
+                  <button role="tab" data-mode="panorama" aria-selected="true">
+                    Panorama</button
+                  ><button
+                    role="tab"
+                    data-mode="floorplan"
+                    aria-selected="false"
+                  >
+                    Mặt bằng</button
+                  ><button role="tab" data-mode="model" aria-selected="false">
+                    Nhà 3D</button
+                  ><button role="tab" data-mode="tour" aria-selected="false">
+                    Tour
+                  </button>
+                </div>
+                <div id="preview" class="preview">
+                  <p>Chọn ảnh để khám phá không gian.</p>
+                </div>
+                <p id="preview-caption" class="muted"></p>
+              </section>
+              <section class="panel">
+                <p class="eyebrow">THÔNG TIN BẤT ĐỘNG SẢN</p>
+                <div id="brief">
+                  <p class="muted">
+                    Thông tin AI phân loại sẽ xuất hiện tại đây.
+                  </p>
+                </div>
+              </section>
+              <section class="panel">
+                <h3>Lịch sử tạo tour</h3>
+                <div id="history"></div>
+              </section>
+            </aside>
+          </div>
+        </section>
+      </main>
+    </div>
+    <dialog id="image-dialog">
+      <button id="close-dialog" aria-label="Đóng ảnh">×</button><img alt="" />
+      <p></p>
+    </dialog>
+  </body>
+</html>

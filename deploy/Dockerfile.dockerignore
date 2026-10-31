@@ -3,7 +3,11 @@
 !server/assistant/
 !server/assistant/*.py
 !server/assistant/requirements.txt
+!server/creator/
+!server/creator/*.py
 !server/tours/
+!server/creator/
+!server/creator/*.py
 !server/tours/*.py
 !web/
 !web/*.html

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Khám phá bất động sản — Estagent</title>
+    <link rel="stylesheet" href="/assets/fonts.css" />
+    <link rel="stylesheet" href="/studio.css" />
+    <script type="module" src="/studio-tour.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/index.html"
+        ><span class="brandmark">E</span>Estagent</a
+      ><span class="draft-pill">Tour đã xuất bản</span>
+    </header>
+    <main style="max-width: 1300px; margin: auto">
+      <div
+        id="notice"
+        class="notice"
+        role="status"
+        aria-live="polite"
+        hidden
+      ></div>
+      <h1 id="title">Đang mở tour…</h1>
+      <div class="workspace-grid">
+        <section class="panel">
+          <div class="panel-title">
+            <h2 id="room-label"></h2>
+            <select id="room" aria-label="Chọn khu tham quan"></select>
+          </div>
+          <div id="preview" class="preview" style="aspect-ratio: 1.7"></div>
+          <nav
+            id="connections"
+            aria-label="Đi đến khu liền kề"
+            style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px"
+          ></nav>
+          <p id="room-description" class="muted"></p>
+          <button id="play" disabled>Nghe giới thiệu</button>
+          <button id="pause">Tạm dừng</button
+          ><label class="muted"
+            >Nhạc nền
+            <input
+              id="music-volume"
+              type="range"
+              min="0"
+              max="0.4"
+              step="0.01"
+              value="0.16"
+              aria-label="Âm lượng nhạc nền" /></label
+          ><label class="muted"
+            >Lời giới thiệu
+            <input
+              id="voice-volume"
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value="1"
+              aria-label="Âm lượng lời giới thiệu"
+          /></label>
+          <p id="subtitle"></p>
+          <p class="muted">
+            Giọng giới thiệu được tạo bằng AI. Kéo ảnh để xoay hoặc dùng phím
+            mũi tên.
+          </p>
+          <a id="model-link">Tải mô hình GLB ↗</a>
+        </section>
+        <aside class="panel">
+          <h2>Hỏi về không gian đang xem</h2>
+          <p class="muted">Trợ lý chỉ đọc thông tin tour đã được duyệt.</p>
+          <div id="chat" role="log" aria-live="polite"></div>
+          <form id="question-form">
+            <label for="question" class="muted">Câu hỏi của bạn</label
+            ><textarea
+              id="question"
+              rows="3"
+              maxlength="1000"
+              required
+              placeholder="Khu vực này có đặc điểm gì?"
+            ></textarea
+            ><button class="primary" id="ask" style="margin-top: 12px" disabled>
+              Hỏi Estagent ↗
+            </button>
+          </form>
+          <p id="music-credit" class="muted"></p>
+        </aside>
+      </div>
+    </main>
+  </body>
+</html>

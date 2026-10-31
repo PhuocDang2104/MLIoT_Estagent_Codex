@@ -15,12 +15,21 @@ contract() {
   if [ ! -f fixtures/tour.schema.json ]; then skip contract "chưa có fixtures/tour.schema.json"; return; fi
   run "contract tour.json" py - <<'EOF'
 import json, glob, jsonschema
-schema = json.load(open("fixtures/tour.schema.json"))
+schema = json.load(open("fixtures/tour.schema.json", encoding="utf-8"))
 files = glob.glob("fixtures/**/tour.json", recursive=True) + glob.glob("projects/*/tour.json")
 assert files, "không có tour.json nào để kiểm"
 for f in files:
-    jsonschema.validate(json.load(open(f)), schema)
+    jsonschema.validate(json.load(open(f, encoding="utf-8")), schema)
 print(len(files), "tour.json hợp lệ")
+from pathlib import Path
+studio_schema = Path('fixtures/studio-tour.schema.json')
+if studio_schema.exists():
+    schema = json.loads(studio_schema.read_text(encoding='utf-8'))
+    studio_files = glob.glob('fixtures/**/studio-tour.json', recursive=True)
+    assert studio_files, 'không có Studio fixture để kiểm'
+    for f in studio_files:
+        jsonschema.validate(json.loads(Path(f).read_text(encoding='utf-8')), schema)
+    print(len(studio_files), 'Studio packages hợp lệ')
 EOF
 }
 

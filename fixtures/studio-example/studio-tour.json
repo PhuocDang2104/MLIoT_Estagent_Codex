@@ -1,0 +1,203 @@
+{
+  "version": 1,
+  "id": "cb25afdd5ea0465f88f87b49a55f1470",
+  "generation_id": "bdb1a7bd3be94128ad6ef8aeb7f2a5be",
+  "name": "Fixture project",
+  "locale": "vi",
+  "rooms": [
+    {
+      "checkpoint_id": "cp01",
+      "room_id": "r01",
+      "asset_id": "e56985dbc6dc4ad18ed1f35adb5a7a89",
+      "label": "room0.png",
+      "yaw": 0.0,
+      "summary": "Ảnh kiểm thử tổng hợp.",
+      "facts": [
+        {
+          "text": "Màu kiểm thử",
+          "provenance": "observed",
+          "source": "e56985dbc6dc4ad18ed1f35adb5a7a89"
+        }
+      ],
+      "estimated": true,
+      "projection": "equirectangular",
+      "anchor": {
+        "position": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "room_id": "r01"
+      }
+    },
+    {
+      "checkpoint_id": "cp02",
+      "room_id": "r02",
+      "asset_id": "66418502441549fe9e4d6f734d22fb05",
+      "label": "room1.png",
+      "yaw": 0.0,
+      "summary": "Ảnh kiểm thử tổng hợp.",
+      "facts": [
+        {
+          "text": "Màu kiểm thử",
+          "provenance": "observed",
+          "source": "66418502441549fe9e4d6f734d22fb05"
+        }
+      ],
+      "estimated": true,
+      "projection": "equirectangular",
+      "anchor": {
+        "position": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "room_id": "r02"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "source": "cp01",
+      "target": "cp02",
+      "yaw": 90.0,
+      "pitch": 0.0
+    },
+    {
+      "source": "cp02",
+      "target": "cp01",
+      "yaw": -90.0,
+      "pitch": 0.0
+    }
+  ],
+  "navigation": [
+    {
+      "source": "cp01",
+      "target": "cp02",
+      "yaw": 90.0,
+      "pitch": 0.0,
+      "label": "room1.png",
+      "target_yaw": 0.0
+    },
+    {
+      "source": "cp02",
+      "target": "cp01",
+      "yaw": -90.0,
+      "pitch": 0.0,
+      "label": "room0.png",
+      "target_yaw": 0.0
+    }
+  ],
+  "itinerary": [
+    "cp01",
+    "cp02",
+    "cp01"
+  ],
+  "model": {
+    "asset_id": "28dcea04b55641c4896538cc5e7db91c",
+    "anchors": {
+      "cp01": {
+        "position": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "room_id": "r01"
+      },
+      "cp02": {
+        "position": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "room_id": "r02"
+      }
+    }
+  },
+  "narration": {
+    "introduction": "Đây là tour fixture.",
+    "segments": [
+      {
+        "checkpoint_id": "cp01",
+        "text": "Lời kiểm thử room0.png",
+        "sources": [
+          "e56985dbc6dc4ad18ed1f35adb5a7a89"
+        ]
+      },
+      {
+        "checkpoint_id": "cp02",
+        "text": "Lời kiểm thử room1.png",
+        "sources": [
+          "66418502441549fe9e4d6f734d22fb05"
+        ]
+      }
+    ],
+    "audio": [
+      {
+        "checkpoint_id": "introduction",
+        "asset_id": "5c3d8ffa1d5646578d34cbac70af64f5",
+        "duration": 0.1
+      },
+      {
+        "checkpoint_id": "cp01",
+        "asset_id": "5c3d8ffa1d5646578d34cbac70af64f5",
+        "duration": 0.1
+      },
+      {
+        "checkpoint_id": "cp02",
+        "asset_id": "5c3d8ffa1d5646578d34cbac70af64f5",
+        "duration": 0.1
+      }
+    ]
+  },
+  "music": {
+    "id": "5f14085406614feba93571da7e15880e",
+    "project_id": "cb25afdd5ea0465f88f87b49a55f1470",
+    "name": "fixture.wav",
+    "kind": "music",
+    "mime": "audio/wav",
+    "size": 1644,
+    "sha256": "c726d333dd159a31423f3480dbb1c5c4a9dfcd30efe1f7e12ade390dc92e8908",
+    "width": 0,
+    "height": 0,
+    "duration": 0.1,
+    "credit": "Synthetic-test-only",
+    "warning": null
+  },
+  "approved": true,
+  "ai_voice_disclosure": true,
+  "published_at": "2026-10-31T05:14:37.250087+00:00",
+  "public_id": "efa4c5b7c4cb494f88151dc40745e1df",
+  "assets": [
+    {
+      "id": "e56985dbc6dc4ad18ed1f35adb5a7a89",
+      "kind": "panorama",
+      "mime": "image/png",
+      "name": "room0.png"
+    },
+    {
+      "id": "66418502441549fe9e4d6f734d22fb05",
+      "kind": "panorama",
+      "mime": "image/png",
+      "name": "room1.png"
+    },
+    {
+      "id": "5f14085406614feba93571da7e15880e",
+      "kind": "music",
+      "mime": "audio/wav",
+      "name": "fixture.wav"
+    },
+    {
+      "id": "28dcea04b55641c4896538cc5e7db91c",
+      "kind": "model",
+      "mime": "model/gltf-binary",
+      "name": "house.glb"
+    },
+    {
+      "id": "5c3d8ffa1d5646578d34cbac70af64f5",
+      "kind": "narration",
+      "mime": "audio/wav",
+      "name": "introduction.wav"
+    }
+  ]
+}

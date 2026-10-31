@@ -7,6 +7,7 @@ RUN pip install --no-cache-dir -r server/assistant/requirements.txt \
     && useradd --uid 10001 --gid assistant --no-create-home assistant \
     && mkdir /data && chown assistant:assistant /data
 COPY server/assistant/ /app/server/assistant/
+COPY server/creator/ /app/server/creator/
 COPY server/tours/ /app/server/tours/
 COPY web/ /app/web/
 COPY deploy/entrypoint.py deploy/smoke.py /app/deploy/

@@ -32,6 +32,8 @@ Paths: integration requires root config, `server/`, `pipelines/core/`, `web/`,
 `tests/`, `scripts/`, `deploy/`, `fixtures/`, `docs/` and release evidence.
 Existing dependencies retained; production image adds optional Debian Blender
 alongside FFmpeg. Verify actual GLB output on the deployed Blender version.
+Debian's Blender 3.4.1 glTF exporter needs `python3-numpy` explicitly when using
+`--no-install-recommends`; Linux acceptance exercises actual GLB export.
 
 Added user scope: import the premade Seoul ZIP as a separate read-only library
 sample with source panoramas/floorplan and original furniture. New optional

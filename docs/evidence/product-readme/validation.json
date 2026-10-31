@@ -1,0 +1,70 @@
+{
+  "status": "PASS",
+  "documents": [
+    {
+      "file": "README.md",
+      "local_links_checked": 33,
+      "renderer": "GitHub Markdown REST API (GFM)",
+      "images": 3
+    },
+    {
+      "file": "docs/PRODUCT-OVERVIEW.md",
+      "local_links_checked": 23,
+      "renderer": "GitHub Markdown REST API (GFM)",
+      "images": 3
+    }
+  ],
+  "original_images": [
+    {
+      "file": "docs/Langgraph Rag Spatial Context Assistant.png",
+      "sha256": "801b7ccc44544ca6f41ca3a0718e8ca0df113f142d45fc1141ad089b9eae18ac",
+      "unchanged": true
+    },
+    {
+      "file": "docs/Langgraph Tour Generation OpenAI Architecture.png",
+      "sha256": "f214b11117936bf08b023d6065d132cefdd057f33b40d77152a1ca8a5b8ad1f9",
+      "unchanged": true
+    }
+  ],
+  "visual": [
+    {
+      "file": "README.md",
+      "width": 1280,
+      "images_loaded": true,
+      "no_page_overflow": true
+    },
+    {
+      "file": "README.md",
+      "width": 390,
+      "images_loaded": true,
+      "no_page_overflow": true
+    },
+    {
+      "file": "README.md",
+      "width": 320,
+      "images_loaded": true,
+      "no_page_overflow": true
+    },
+    {
+      "file": "docs/PRODUCT-OVERVIEW.md",
+      "width": 1280,
+      "images_loaded": true,
+      "no_page_overflow": true
+    },
+    {
+      "file": "docs/PRODUCT-OVERVIEW.md",
+      "width": 390,
+      "images_loaded": true,
+      "no_page_overflow": true
+    },
+    {
+      "file": "docs/PRODUCT-OVERVIEW.md",
+      "width": 320,
+      "images_loaded": true,
+      "no_page_overflow": true
+    }
+  ],
+  "page_errors": [],
+  "preview": "GitHub-compatible HTML with local review CSS; not a screenshot of the live GitHub site",
+  "paid_calls": 0
+}

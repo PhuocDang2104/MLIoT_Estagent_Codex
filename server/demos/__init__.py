@@ -55,7 +55,7 @@ def install_demos(app, env, web):
         if demo_id != DEMO_ID or not catalog:
             raise HTTPException(404)
         return FileResponse(web/'demos'/'house.html', headers={
-            'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'"})
+            'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' blob:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'"})
 
     @app.get('/demos/static/{name}')
     def demo_static(name: str):

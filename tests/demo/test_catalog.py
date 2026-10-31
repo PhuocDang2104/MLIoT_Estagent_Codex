@@ -38,7 +38,9 @@ def setup(tmp_path):
 def test_catalog_membership_range_stream_cleanup(tmp_path):
     app,sdk,_,_=setup(tmp_path)
     assert app.get('/api/demos').json()[0]['href']=='/demos/'+DEMO_ID
-    assert app.get('/demos/'+DEMO_ID).status_code==200
+    page=app.get('/demos/'+DEMO_ID)
+    assert page.status_code==200
+    assert "connect-src 'self' blob:" in page.headers['content-security-policy']
     path=f'/api/demos/{DEMO_ID}/assets/house/dollhouse-studio.glb'
     response=app.get(path,headers={'Range':'bytes=2-8'})
     assert response.status_code==206 and response.content==(b'glTF'+bytes(range(32)))[2:9]

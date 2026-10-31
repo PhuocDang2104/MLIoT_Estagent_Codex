@@ -20,3 +20,9 @@ Baseline gate do root xác nhận PASS; gate chạy lại trong own worktree PAS
 Nguồn: font Manrope/OFL và code i18n/motion hiện có; ảnh hero từ actual catalog do Deploy cung cấp, không Pexels mới/paid assets. Code/CSS/copy viết mới trong task, minh hoạ flow chỉ HTML/CSS; không claim thời điểm H0. Contract change: none trong patch; seed import là NEED chưa chốt.
 
 Final browser PASS:1440/390/320 EN/VI,2CTA,keyboard picker/attachment preview,empty drafts hidden,zero JS errors. `catalog.log` xác nhận thumbnail thật và canonical200. Trường heroLoaded0 trong lượt Creator là count ở trang Creator, không phải lỗi tải hero; kiểm hero riêng tại catalog.log. Fix input sr-only bị CSS form kéo rộng đã reproduce1540px và retest không overflow.
+
+## Yêu cầu trực tiếp tiếp theo: hero full màn hình và xoay
+
+Thái bác card ảnh tĩnh: đổi hero thành panorama toàn viewport (100dvh), header/copy/2CTA overlay; bỏ card và caption riêng. Dùng chính thumbnail catalog ZInD equirectangular đã xác nhận ở `web/demos/house.html` của release, không suy full360 từ demo cylindrical240° trước đây. `web/app.js` thêm camera WebGL equirectangular, adapt phép chiếu từ `web/studio-panorama.js` hiện có; không sửa renderer Viewer/Studio. Xoay tự động chậm, kéo để xem/dừng xoay, nút pause/resume có keyboard; reduced-motion hiển thị góc tĩnh, dừng rAF khi page ẩn/hero ra khỏi viewport. Nếu WebGL không dùng được, hiện ảnh gốc và giữ CTA; không mua/thêm ảnh/dependency.
+
+Evidence mới: `tests/pitch-ux/panorama-browser.log` xác nhận pixel đổi khi xoay, đứng yên khi pause/reduced-motion, hero x0/y0 và đúng1440×1000,390×844,320×740, hai CTA giữđúng,zero JS errors. `panorama-gate.log`: strict web PASS. Screenshot nhà thật **local only** `/private/tmp/pitch-panorama-{1440,390,320}.png`. Patch follow-up này tiếp nối d07e869; không đổi Creator/TTS/export/server.

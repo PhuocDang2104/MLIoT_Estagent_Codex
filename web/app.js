@@ -75,12 +75,46 @@ if (input) {
 document.addEventListener('languagechange', () => { toggle?.setAttribute('aria-label', toggle.getAttribute('aria-expanded') === 'true' ? t('Close menu', 'Đóng menu') : t('Open menu', 'Mở menu')); });
 if (toggle) toggle.setAttribute('aria-label', t('Open menu', 'Mở menu'));
 
-// Public demo descriptor owns the thumbnail; never substitute unrelated property photos.
+// Catalog zind-house-000 is an equirectangular source (see demos/house.html).
+// Projection adapted from the existing studio-panorama.js; no new assets/dependencies.
+function startHeroPanorama(image) {
+  const canvas=document.querySelector('#hero-panorama'),button=document.querySelector('#hero-rotation');
+  const gl=canvas.getContext('webgl',{alpha:false,antialias:false,preserveDrawingBuffer:true});
+  if(!gl)return;
+  const shader=(type,source)=>{const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error('Panorama shader unavailable');return s;};
+  const vertex=shader(gl.VERTEX_SHADER,'attribute vec2 p;varying vec2 uv;void main(){uv=p;gl_Position=vec4(p,0.,1.);}');
+  const fragment=shader(gl.FRAGMENT_SHADER,`precision highp float;varying vec2 uv;uniform sampler2D tex;uniform vec3 camera;
+  void main(){vec3 d=normalize(vec3(uv.x*camera.y,-uv.y*camera.z,1.));float c=cos(camera.x),s=sin(camera.x);d=vec3(c*d.x+s*d.z,d.y,-s*d.x+c*d.z);vec2 t=vec2(atan(d.x,d.z)/6.2831853+.5,asin(clamp(d.y,-1.,1.))/3.14159265+.5);gl_FragColor=texture2D(tex,t);}`);
+  const program=gl.createProgram();gl.attachShader(program,vertex);gl.attachShader(program,fragment);gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error('Panorama program unavailable');gl.useProgram(program);
+  const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+  const p=gl.getAttribLocation(program,'p');gl.enableVertexAttribArray(p);gl.vertexAttribPointer(p,2,gl.FLOAT,false,0,0);
+  const texture=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,texture);
+  for(const key of [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T])gl.texParameteri(gl.TEXTURE_2D,key,gl.CLAMP_TO_EDGE);
+  for(const key of [gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER])gl.texParameteri(gl.TEXTURE_2D,key,gl.LINEAR);
+  let source=image;const limit=Math.min(4096,gl.getParameter(gl.MAX_TEXTURE_SIZE));
+  if(image.naturalWidth>limit){source=document.createElement('canvas');source.width=limit;source.height=Math.round(limit*image.naturalHeight/image.naturalWidth);source.getContext('2d').drawImage(image,0,0,source.width,source.height);}
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,source);if(gl.getError()!==gl.NO_ERROR)throw new Error('Panorama texture unavailable');
+  const location=gl.getUniformLocation(program,'camera'),motion=matchMedia('(prefers-reduced-motion: reduce)');
+  let yaw=0,paused=false,visible=true,drag=null,frame=0,last=0;
+  const draw=()=>{const dpr=Math.min(devicePixelRatio||1,1.5),w=Math.round(canvas.clientWidth*dpr),h=Math.round(canvas.clientHeight*dpr);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}gl.viewport(0,0,w,h);const aspect=w/h,lens=Math.tan(Math.PI*70/360);gl.uniform3f(location,yaw,lens*Math.min(1,aspect),lens*Math.min(1,1/aspect));gl.drawArrays(gl.TRIANGLES,0,3);};
+  const syncLabel=()=>{const stopped=paused||motion.matches;button.textContent=motion.matches?t('Still view','Góc nhìn tĩnh'):stopped?t('Resume rotation','Tiếp tục xoay'):t('Pause rotation','Dừng xoay');button.ariaPressed=String(stopped);button.disabled=motion.matches;};
+  const tick=now=>{frame=0;if(paused||motion.matches||document.hidden||!visible){last=0;return;}if(last)yaw+=(Math.min(now-last,60)/1000)*.035;last=now;draw();frame=requestAnimationFrame(tick);};
+  const sync=()=>{cancelAnimationFrame(frame);last=0;syncLabel();draw();if(!paused&&!motion.matches&&!document.hidden&&visible)frame=requestAnimationFrame(tick);};
+  canvas.hidden=false;image.hidden=true;button.hidden=false;sync();
+  button.onclick=()=>{paused=!paused;sync();};
+  canvas.onpointerdown=e=>{paused=true;drag=e.clientX;canvas.setPointerCapture(e.pointerId);sync();};
+  canvas.onpointermove=e=>{if(drag===null)return;yaw-=(e.clientX-drag)*.004;drag=e.clientX;draw();};canvas.onpointerup=canvas.onpointercancel=()=>drag=null;
+  motion.addEventListener('change',sync);window.addEventListener('resize',draw);document.addEventListener('visibilitychange',sync);document.addEventListener('languagechange',syncLabel);
+  new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;sync();}).observe(canvas);
+  window.addEventListener('pagehide',()=>cancelAnimationFrame(frame));window.addEventListener('pageshow',sync);
+}
 if(document.querySelector('#demo-hero')){
+ const state=document.querySelector('#demo-image-state');
+ const unavailable=()=>{state.textContent=t('Open the sample home to explore.','Mở nhà mẫu để khám phá.');};
  fetch('/api/demos').then(async response=>{if(!response.ok)throw new Error('Demo catalog unavailable');return response.json();}).then(catalog=>{
-  const demo=catalog.find(item=>item.id==='zind-house-000');if(!demo?.thumbnail_url)return;
-  const image=document.querySelector('#demo-hero');const url=new URL(demo.thumbnail_url,location.origin);
-  if(url.origin!==location.origin)return;
-  image.onload=()=>{image.hidden=false;document.querySelector('#demo-image-state').hidden=true;};image.src=url.href;
- }).catch(()=>{/* Keep the canonical sample link usable when catalog imagery is unavailable. */});
+  const demo=catalog.find(item=>item.id==='zind-house-000');if(!demo?.thumbnail_url){unavailable();return;}
+  const image=document.querySelector('#demo-hero'),url=new URL(demo.thumbnail_url,location.origin);if(url.origin!==location.origin){unavailable();return;}
+  image.onload=()=>{image.hidden=false;state.hidden=true;try{startHeroPanorama(image);}catch{image.hidden=false;document.querySelector('#hero-panorama').hidden=true;document.querySelector('#hero-rotation').hidden=true;}};
+  image.onerror=unavailable;image.src=url.href;
+ }).catch(unavailable);
 }

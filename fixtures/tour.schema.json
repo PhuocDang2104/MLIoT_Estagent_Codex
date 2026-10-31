@@ -19,7 +19,7 @@
               "items": {
                 "$ref": "#/$defs/SceneNarration"
               },
-              "maxItems": 20,
+              "maxItems": 40,
               "type": "array"
             },
             {
@@ -44,7 +44,9 @@
           "default": "none",
           "enum": [
             "none",
-            "user_uploaded"
+            "user_uploaded",
+            "openai_generated",
+            "mixed"
           ],
           "title": "Source",
           "type": "string"
@@ -116,6 +118,17 @@
           "default": 2,
           "title": "Sample Width",
           "type": "integer"
+        },
+        "generation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SpeechGeneration"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -240,6 +253,50 @@
         "thumbnail_url"
       ],
       "title": "SceneView",
+      "type": "object"
+    },
+    "SpeechGeneration": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "const": "openai",
+          "default": "openai",
+          "title": "Provider",
+          "type": "string"
+        },
+        "model": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "voice": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Voice",
+          "type": "string"
+        },
+        "locale": {
+          "enum": [
+            "en",
+            "vi"
+          ],
+          "title": "Locale",
+          "type": "string"
+        },
+        "script_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Script Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "model",
+        "voice",
+        "locale",
+        "script_sha256"
+      ],
+      "title": "SpeechGeneration",
       "type": "object"
     }
   },

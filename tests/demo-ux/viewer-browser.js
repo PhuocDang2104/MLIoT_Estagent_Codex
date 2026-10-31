@@ -1,12 +1,12 @@
 async page => {
-  const base='http://127.0.0.1:5277',errors=[];await page.unroute('**/*');await page.goto('about:blank');
+  const base='http://127.0.0.1:5277',errors=[];await page.unroute(base+'/api/tours/**');await page.goto('about:blank');
   const check=(value,message)=>{if(!value)throw Error(message);};
   page.on('pageerror',error=>errors.push(error.message));
   const image=await page.evaluate(()=>{const canvas=document.createElement('canvas');canvas.width=1600;canvas.height=400;const ctx=canvas.getContext('2d');ctx.fillStyle='#efb45a';ctx.fillRect(0,0,1600,400);return canvas.toDataURL('image/png');});
-  let configured=false,withAudio=false,chatError=false;
+  let configured=false,withAudio=false,chatError=false,englishAudio=false;
   const scene=(id,projection,coverage)=>({id,asset_id:id,name:`Điểm ${id}`,description:`Mô tả gốc ${id}`,projection,coverage_degrees:coverage,coverage_source:projection==='photo'?'unknown':'user_provisional',image_url:image,thumbnail_url:image});
   const track={url:base+'/tone.wav',duration_seconds:8,source_label:'Synthetic tone',rights:'owned',rights_note:'Generated test tone, not narration.'};
-  const manifest=()=>({id:'demo',revision:1,status:'published',title:'Căn hộ mẫu',locale:'vi',start_scene_id:'s2',scenes:[scene('s1','cylindrical',240),scene('s2','photo',null),scene('s3','cylindrical',30)],audio:{status:withAudio?'ready':'unavailable',source:withAudio?'user_uploaded':'none',music:null,narration:withAudio?[{scene_id:'s2',locale:'vi',track,transcript:'Bản kiểm thử âm thanh.'}]:null}});
+  const manifest=()=>({id:'demo',revision:1,status:'published',title:'Căn hộ mẫu',locale:'vi',start_scene_id:'s2',scenes:[scene('s1','cylindrical',240),scene('s2','photo',null),scene('s3','cylindrical',30)],audio:{status:withAudio?'ready':'unavailable',source:withAudio?'user_uploaded':'none',music:null,narration:withAudio?[{scene_id:'s2',locale:'vi',track,transcript:'Bản kiểm thử âm thanh.'},...(englishAudio?[{scene_id:'s2',locale:'en',track:{...track,generation:{provider:'fixture'}},transcript:'Synthetic audio test.'}]:[])]:null}});
   await page.route(base+'/api/tours/**',async route=>{
     const path=route.request().url().split('?')[0];
     if(path.endsWith('/session'))return route.fulfill({json:{configured,drafts:[]}});
@@ -53,6 +53,18 @@ async page => {
   withAudio=true;configured=true;await page.reload();await page.locator('#listen').waitFor();
   await page.locator('#listen').click();await page.waitForFunction(()=>document.querySelector('#narration-track').currentTime>.1);
   check(await page.locator('#listen').getAttribute('aria-pressed')==='true','Listen state not active');
+  await page.locator('#viewer-audio summary').click();await page.locator('#audio-language').selectOption('en');
+  check(await page.locator('#viewer-audio').isVisible(),'Other-language recording hides selector');check(!await page.locator('#listen').isVisible(),'Missing language has listen button');
+  await page.locator('#audio-language').selectOption('vi');check(await page.locator('#listen').isVisible(),'Cannot restore available narration');
+  await page.locator('#listen').click();await page.waitForFunction(()=>!document.querySelector('#narration-track').paused);
+  await page.locator('[data-lang=en]').click();check(await page.locator('#narration-track').evaluate(el=>el.paused),'Locale change auto-resumed');
+  check(await page.locator('#subtitle').getAttribute('lang')==='vi','Subtitle language mislabeled');await page.locator('[data-lang=vi]').click();
+  await page.locator('#listen').click();await page.waitForFunction(()=>!document.querySelector('#narration-track').paused);
+  await page.locator('#audio-seek').fill('7.8');await page.locator('#audio-seek').dispatchEvent('input');await page.waitForFunction(()=>document.querySelector('#narration-track').ended);
+  check(await page.locator('#listen').getAttribute('aria-pressed')==='false','Listen state remained active after end');
+  englishAudio=true;await page.reload();await page.locator('#viewer-audio summary').click();await page.locator('#audio-language').selectOption('en');
+  check((await page.locator('#audio-state').innerText()).includes('Giọng AI tạo'),'Generated source label lost');check(await page.locator('#subtitle').getAttribute('lang')==='en','English subtitle has wrong lang');
+  await page.locator('#listen').click();await page.waitForFunction(()=>document.querySelector('#narration-track').currentTime>.1);
   await page.locator('#viewer-chat summary').click();check(await page.locator('#narration-track').evaluate(el=>el.paused),'Opening chat did not pause');
   await page.locator('#question-suggestions button').first().click();await page.locator('#ask').click();await page.locator('.viewer-message.assistant').waitFor();
   check(await page.locator('.viewer-message.user').count()===1,'Question not retained');
@@ -60,6 +72,8 @@ async page => {
   chatError=true;await page.locator('#question').fill('Câu hỏi thứ hai');await page.locator('#ask').click();await page.waitForFunction(()=>document.querySelector('#answer').textContent.includes('tạm thời'));
   check(!(await page.locator('#answer').innerText()).includes('OPENAI'),'Technical error leaked');
   check(await page.locator('.viewer-message.user').count()===2,'History lost');
+  check(await page.locator('#tour-view').evaluate(el=>el.scrollTop===0),'Chat scrolled immersive viewport');
+  check(await page.locator('.immersive-header').isVisible(),'Chat hid header');
   await page.screenshot({path:'tests/demo-ux/viewer-chat.png'});
   check(errors.length===0,errors.join('; '));
   return {pass:true,source:'synthetic image/WAV with mocked API, actual Chromium/WebGL/media',photoViewport:[1440,390,320],openingFirst:true,blankPixels:0,cameraInputs:['keyboard','drag','wheel','resize'],hiddenUnavailable:true,recordedPlayback:true,chatHistory:true,sanitizedError:true,errors};

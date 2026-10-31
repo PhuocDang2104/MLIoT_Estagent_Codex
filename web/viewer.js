@@ -141,7 +141,7 @@ function renderSuggestions(){
     const button=node('button',text,'quiet');button.type='button';button.onclick=()=>{$('#question').value=text;$('#question').focus();};$('#question-suggestions').append(button);
   }
 }
-function chatBubble(role,text){const bubble=node('p',text,`viewer-message ${role}`);$('#conversation').append(bubble);bubble.scrollIntoView({block:'nearest'});return bubble;}
+function chatBubble(role,text){const bubble=node('p',text,`viewer-message ${role}`);const conversation=$('#conversation');conversation.append(bubble);conversation.scrollTop=conversation.scrollHeight;return bubble;}
 
 
 function renderLibrary(){

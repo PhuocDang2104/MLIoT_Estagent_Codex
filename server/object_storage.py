@@ -12,7 +12,7 @@ from starlette.responses import Response, StreamingResponse
 
 
 KEY = re.compile(r'(?:tours/(?:images|thumbnails)/[a-f0-9]{32}\.jpg|'
-                 r'tours/audio/[a-f0-9]{32}\.wav|studio/assets/[a-f0-9]{32})')
+                 r'tours/audio/[a-f0-9]{32}\.wav|tours/exports/[a-f0-9]{32}\.mp4|studio/assets/[a-f0-9]{32})')
 MISSING = {'NoSuchKey', 'NoSuchObject'}
 
 
@@ -103,7 +103,7 @@ class MinioStorage:
         _key(key)
         if not isinstance(data, bytes):
             raise ValueError('Object data must be validated bytes')
-        if content_type not in {'image/jpeg', 'image/png', 'image/webp', 'audio/wav', 'model/gltf-binary'}:
+        if content_type not in {'image/jpeg', 'image/png', 'image/webp', 'audio/wav', 'video/mp4', 'model/gltf-binary'}:
             raise ValueError('Unsupported media content type')
         digest = hashlib.sha256(data).hexdigest()
         with self._write_lock:

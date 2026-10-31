@@ -1,0 +1,11 @@
+# Isolated candidate QA image, not the production application image.
+FROM python:3.13-slim-bookworm
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg=7:5.1.9-0+deb12u1 && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir Pillow==11.3.0 fastapi==0.138.0
+WORKDIR /candidate
+COPY server/exports/ server/exports/
+COPY tests/exports/ tests/exports/
+COPY web/assets/manrope-variable.ttf web/assets/manrope-variable.ttf
+COPY web/assets/Manrope-OFL.txt web/assets/Manrope-OFL.txt
+ENV PYTHONPATH=/candidate
+CMD ["python", "tests/exports/native_proof.py", "/output"]

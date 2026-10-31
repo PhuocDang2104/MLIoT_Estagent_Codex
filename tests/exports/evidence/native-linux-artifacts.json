@@ -1,0 +1,10 @@
+{
+  "portrait": {
+    "sha256": "c11f2a4b9413fcdb73338c37f3e852180551143b980121adb9c81dc2c9a4a463",
+    "identical_to_browser_verified_bytes": true
+  },
+  "landscape": {
+    "sha256": "2fdf538d012950c5deb14c815d8eb4ef492ec190105e9e8af156578ab393ac25",
+    "identical_to_browser_verified_bytes": true
+  }
+}

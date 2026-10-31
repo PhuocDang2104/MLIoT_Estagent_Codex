@@ -1,0 +1,52 @@
+--- a/server/object_storage.py
++++ b/server/object_storage.py
+@@ -12,7 +12,7 @@
+
+
+ KEY = re.compile(r'(?:tours/(?:images|thumbnails)/[a-f0-9]{32}\.jpg|'
+-                 r'tours/audio/[a-f0-9]{32}\.wav|studio/assets/[a-f0-9]{32})')
++                 r'tours/audio/[a-f0-9]{32}\.wav|tours/exports/[a-f0-9]{32}\.mp4|studio/assets/[a-f0-9]{32})')
+ MISSING = {'NoSuchKey', 'NoSuchObject'}
+
+
+@@ -103,7 +103,7 @@
+         _key(key)
+         if not isinstance(data, bytes):
+             raise ValueError('Object data must be validated bytes')
+-        if content_type not in {'image/jpeg', 'image/png', 'image/webp', 'audio/wav', 'model/gltf-binary'}:
++        if content_type not in {'image/jpeg', 'image/png', 'image/webp', 'audio/wav', 'video/mp4', 'model/gltf-binary'}:
+             raise ValueError('Unsupported media content type')
+         digest = hashlib.sha256(data).hexdigest()
+         with self._write_lock:
+--- a/server/assistant/app.py
++++ b/server/assistant/app.py
+@@ -59,6 +59,8 @@
+         try:
+             yield
+         finally:
++            if hasattr(app.state, 'close_video_exports'):
++                app.state.close_video_exports()
+             app.state.creator.close()
+             if client: client.close()
+             connection.close()
+--- a/web/build.mjs
++++ b/web/build.mjs
+@@ -1,6 +1,6 @@
+ import { mkdir, copyFile, cp } from 'node:fs/promises';
+ await mkdir('dist', { recursive: true });
+-for (const file of ['index.html', 'experience.html', 'styles.css', 'motion.css', 'motion.js', 'app.js', 'i18n.js', 'intake.js', 'property.js', 'creator.html', 'viewer.html', 'tour.css', 'tour-common.js', 'creator.js', 'viewer.js', 'panorama.js']) {
++for (const file of ['index.html', 'experience.html', 'styles.css', 'motion.css', 'motion.js', 'app.js', 'i18n.js', 'intake.js', 'property.js', 'creator.html', 'viewer.html', 'tour.css', 'tour-common.js', 'creator.js', 'viewer.js', 'panorama.js', 'export.html', 'export.js', 'export.css']) {
+   await copyFile(file, `dist/${file}`);
+ }
+ await cp('assets', 'dist/assets', { recursive: true });
+--- a/web/package.json
++++ b/web/package.json
+@@ -5,7 +5,7 @@
+   "type": "module",
+   "scripts": {
+     "dev": "python3 -m http.server 5173 --bind 127.0.0.1",
+-    "lint": "node --check app.js && node --check i18n.js && node --check intake.js && node --check property.js && node --check build.mjs && node --check motion.js && node --check tour-common.js && node --check creator.js && node --check viewer.js && node --check panorama.js && node --check assistant.js && node --check studio.js && node --check studio-panorama.js && node --check studio-tour.js",
++    "lint": "node --check app.js && node --check i18n.js && node --check intake.js && node --check property.js && node --check build.mjs && node --check motion.js && node --check tour-common.js && node --check creator.js && node --check viewer.js && node --check panorama.js && node --check assistant.js && node --check studio.js && node --check studio-panorama.js && node --check studio-tour.js && node --check export.js",
+     "build": "node build.mjs",
+     "test": "node --test tests/*.test.js"
+   }

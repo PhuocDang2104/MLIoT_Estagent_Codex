@@ -35,7 +35,7 @@ async page => {
   await page.locator('#reviewed').check();
   const publishing=page.waitForResponse(r=>r.url().endsWith('/publish'));await page.locator('#publish').click();const published=await (await publishing).json();
   await page.locator('#published-link a').waitFor();check(published.status==='published','Publish failed');
-  const draftURL=page.url();check(new URL(draftURL).pathname==='/business/create','Draft is not at canonical Studio entry');
+  const draftURL=page.url();check(draftURL.startsWith(base+'/business/create?'),'Draft is not at canonical Studio entry');
   await page.reload();await page.locator('.scene-card').nth(1).waitFor();
   check(await page.locator('#tour-title').inputValue()==='Căn hộ 2PN Quận 7','Reload lost draft');
   await page.locator('.creator-audio>summary').click();check(await page.locator('#audio-file').isVisible(),'Advanced audio no longer accessible');await page.locator('.creator-audio>summary').click();
@@ -48,7 +48,7 @@ async page => {
   await page.setViewportSize({width:1440,height:1000});await page.evaluate(()=>scrollTo(0,600));
   check(await page.locator('.conversation-panel').evaluate(el=>getComputedStyle(el).position==='sticky'&&el.getBoundingClientRect().top>=0),'Conversation is not sticky on desktop');
   await page.goto(base+'/creator.html?draft='+draft.id);await page.locator('.scene-card').nth(1).waitFor();check(page.url().includes('/business/create?draft='+draft.id),'Legacy draft URL not preserved');
-  await page.goto(base+'/studio.html');await page.locator('#photos').waitFor();check(new URL(page.url()).pathname==='/business/create','Old Studio entry not consolidated');
+  await page.goto(base+'/studio.html');await page.locator('#photos').waitFor();check(page.url()===base+'/business/create','Old Studio entry not consolidated');
   const oldRoute=await page.request.get(base+'/business/projects/'+'a'.repeat(32)+'/generate');check((await oldRoute.text()).includes('workspace-view'),'Existing Studio project route lost');
   check(!errors.length,'JS errors: '+errors.join('; '));
   return {pass:true,keylessCreatePublish:true,descriptionTitle:true,sourceLocalePreserved:true,chatRequests:chatRequests.length,clearedInput:true,advancedAudio:true,canonicalAndLegacyRoutes:true,publishHelp:true,viewports,errors};

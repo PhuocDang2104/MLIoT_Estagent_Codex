@@ -1,4 +1,6 @@
 import {$,t,language,api,node,notice,link,requestID} from './tour-common.js';
+import {mountNarrationPanel} from './narration-panel.js';
+let narrationPanel=null,narrationRevision='',narrationDraft='';
 let manifest=null, session=null, attachments=[], busy=false, dirty=false, pendingCreate=null, pendingTurn=null;
 let chatSceneID=null;
 const creatorPath='/business/create';
@@ -30,9 +32,20 @@ function attach(files){
 $('#photos').onchange=e=>{attach(e.target.files);e.target.value='';};
 $('#drop-zone').ondragover=e=>e.preventDefault();$('#drop-zone').ondrop=e=>{e.preventDefault();attach(e.dataTransfer.files);};
 function field(label,value,change,tag='input'){const wrap=node('label',label);const input=node(tag);input.value=value;input.oninput=()=>{change(input.value);dirtyState();};wrap.append(input);return wrap;}
+function syncNarrationPanel(){
+ if(!manifest){narrationPanel?.destroy();narrationPanel=null;narrationDraft='';narrationRevision='';return;}
+ if(narrationDraft!==manifest.id){narrationPanel?.destroy();narrationPanel=null;narrationDraft=manifest.id;}
+ if(!narrationPanel){narrationPanel=mountNarrationPanel($('#narration-panel'),{api,
+  getManifest:async()=>{if(dirty||busy)throw Error(t('Save draft changes first.','Hãy lưu thay đổi trước.'));return api(`/drafts/${manifest.id}`);},
+  onManifest:async()=>{manifest=await api(`/drafts/${manifest.id}`);resetReview();render();}
+ });narrationRevision=String(manifest.revision);}
+ else if(!busy&&narrationRevision!==String(manifest.revision)){narrationRevision=String(manifest.revision);narrationPanel.refresh();}
+}
+document.addEventListener('narration-preview-start',()=>$('#creator-audio-preview').pause());
 function render(){
   $('#initial-fields').hidden=!!manifest;$('#composer').hidden=!!manifest&&!session?.configured;$('#keyless-help').hidden=!manifest||!!session?.configured;
   $('#creation-help').textContent=manifest?(session?.configured?t('Ask the assistant to improve a description or arrange your stops.','Nhờ trợ lý sửa mô tả hoặc sắp xếp các điểm xem.'):t('Your draft is ready to review.','Bản nháp đã sẵn sàng để kiểm tra.')):t('Your words become the starting title and description. Review them before sharing.','Tên và mô tả sẽ được điền từ nội dung bạn cung cấp. Kiểm tra trước khi chia sẻ.');
+  if(!busy)syncNarrationPanel();
   $('#empty-draft').hidden=!!manifest;$('#draft-editor').hidden=!manifest;$('#drop-zone').hidden=!!manifest;
   $('#send').textContent=manifest?t('Send to assistant ↗','Gửi cho trợ lý ↗'):t('Create draft ↗','Tạo bản nháp ↗');
   $('#connection').textContent=session?.configured?t('AI assistant available','Có trợ lý AI'):t('Photo tour','Tour từ ảnh');
@@ -63,7 +76,7 @@ function render(){
   renderAudioAttachments();
   if(dirty){$('#preview').removeAttribute('href');$('#revision').textContent=t('Unsaved changes — save before preview.','Có thay đổi chưa lưu — lưu trước khi xem thử.');}
 }
-async function refreshList(){session=await api('/session');$('#draft-list').replaceChildren(node('option','—'));$('#draft-list').firstChild.value='';for(const d of session.drafts){const opt=node('option',d.title);opt.value=d.id;$('#draft-list').append(opt);}if(manifest)$('#draft-list').value=manifest.id;}
+async function refreshList(){session=await api('/session');$('#draft-list').replaceChildren(node('option','—'));$('#draft-list').firstChild.value='';$('#saved-drafts').hidden=!session.drafts.length;for(const d of session.drafts){const opt=node('option',d.title);opt.value=d.id;$('#draft-list').append(opt);}if(manifest)$('#draft-list').value=manifest.id;}
 async function load(id){if(manifest?.id!==id)chatSceneID=null;manifest=await api(`/drafts/${id}`);resetReview();$('#messages').replaceChildren();const messages=await api(`/drafts/${id}/messages`);for(const m of messages){if(m.text)bubble(m.role,m.text);}history.replaceState(null,'',`${creatorPath}?draft=${id}`);$('#draft-list').value=id;render();}
 $('#draft-list').onchange=async e=>{if(!e.target.value)return;if(dirty&&!confirm(t('Discard unsaved edits?','Bỏ thay đổi chưa lưu?')))return;try{await load(e.target.value);}catch(e){notice(e.message,true);}};
 $('#new-tour').onclick=()=>{if(dirty&&!confirm(t('Discard unsaved edits?','Bỏ thay đổi chưa lưu?')))return;location.href=creatorPath+'?new=1';};
@@ -75,7 +88,7 @@ $('#save-draft').onclick=async()=>{if(busy)return;setBusy(true);try{
   resetReview();await refreshList();render();notice(t('Changes saved. Open the preview to review.','Đã lưu. Mở xem thử để kiểm tra.'));
 }catch(e){notice(e.message,true);}finally{setBusy(false);}};
 $('#composer').onsubmit=async e=>{
-  e.preventDefault();$('#creator-audio-preview').pause();if(busy)return;const text=$('#message').value.trim();if(!manifest&&!attachments.length){notice(t('Attach at least one photo first.','Thêm ít nhất một ảnh trước.'),true);return;}if(manifest&&(!text||dirty)){notice(t('Save edits and enter a message first.','Lưu thay đổi và nhập tin nhắn trước.'),true);return;}
+  e.preventDefault();narrationPanel?.pause();$('#creator-audio-preview').pause();if(busy)return;const text=$('#message').value.trim();if(!manifest&&!attachments.length){notice(t('Attach at least one photo first.','Thêm ít nhất một ảnh trước.'),true);return;}if(manifest&&(!text||dirty)){notice(t('Save edits and enter a message first.','Lưu thay đổi và nhập tin nhắn trước.'),true);return;}
   setBusy(true);notice(t('Working…','Đang xử lý…'));
   try{
     if(!manifest){
@@ -104,7 +117,7 @@ $('#publish').onclick=async()=>{if(busy||dirty||!$('#reviewed').checked)return;s
   const published=await api(`/drafts/${manifest.id}/publish`,{method:'POST',body:{revision:manifest.revision}});
   const path=`/viewer.html?tour=${published.id}`;
   const copy=node('button',t('Copy link','Sao chép link'),'quiet');copy.type='button';copy.onclick=async()=>{try{await navigator.clipboard.writeText(new URL(path,location.origin).href);notice(t('Link copied.','Đã sao chép link.'));}catch{notice(t('Copy the address after opening the tour.','Mở tour rồi sao chép địa chỉ trên thanh trình duyệt.'));}};
-  $('#published-link').replaceChildren(link(t('Open published tour ↗','Mở tour đã xuất bản ↗'),path),copy);notice(t('Published a separate snapshot. Audio availability is shown for each scene.','Đã xuất bản snapshot riêng. Tình trạng audio được hiển thị theo từng điểm.'));
+  $('#published-link').replaceChildren(link(t('Open published tour ↗','Mở tour đã xuất bản ↗'),path),copy,link(t('Export video','Xuất video'),`/export.html?tour=${published.id}`));notice(t('Published a separate snapshot. Audio availability is shown for each scene.','Đã xuất bản snapshot riêng. Tình trạng audio được hiển thị theo từng điểm.'));
 }catch(e){notice(e.message,true);}finally{setBusy(false);}};
 document.addEventListener('languagechange',()=>{notice('');render();});
 for(const selector of ['#property-name','#content-locale','#message'])$(selector).addEventListener('input',()=>{pendingCreate=null;});

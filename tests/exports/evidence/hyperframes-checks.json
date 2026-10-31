@@ -1,0 +1,1268 @@
+[
+  {
+    "ok": true,
+    "browserSkipped": false,
+    "lint": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 2,
+      "infoCount": 0,
+      "findings": [
+        {
+          "code": "nested_structure_needs_subcomposition",
+          "severity": "warning",
+          "message": "<section id=\"scene-0\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+          "selector": "#scene-0",
+          "dataAttributes": {},
+          "sourceFile": "/private/tmp/estagent-video-export-final/state/tours/exports/106ac670d97ecd70104aba37f52c1204-work/index.html",
+          "bbox": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "time": 0,
+          "fixHint": "Move <section id=\"scene-0\"> and its contents into a sub-composition file and mount it with data-composition-src."
+        },
+        {
+          "code": "nested_structure_needs_subcomposition",
+          "severity": "warning",
+          "message": "<section id=\"scene-1\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+          "selector": "#scene-1",
+          "dataAttributes": {},
+          "sourceFile": "/private/tmp/estagent-video-export-final/state/tours/exports/106ac670d97ecd70104aba37f52c1204-work/index.html",
+          "bbox": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "time": 0,
+          "fixHint": "Move <section id=\"scene-1\"> and its contents into a sub-composition file and mount it with data-composition-src."
+        }
+      ],
+      "filesScanned": 1
+    },
+    "runtime": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "infoCount": 0,
+      "findings": []
+    },
+    "layout": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 1,
+      "infoCount": 1,
+      "findings": [
+        {
+          "code": "container_overflow",
+          "severity": "warning",
+          "time": 3,
+          "selector": "#scene-1 > div:nth-of-type(1) > img:nth-of-type(1)",
+          "message": "Element extends outside a clipping layout container.",
+          "rect": {
+            "left": -25.6,
+            "top": -6.91,
+            "right": 1305.6,
+            "bottom": 741.89,
+            "width": 1331.2,
+            "height": 748.8
+          },
+          "containerSelector": "#scene-1 > div:nth-of-type(1)",
+          "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+          "containerRect": {
+            "left": 0,
+            "top": 0,
+            "right": 1280,
+            "bottom": 720,
+            "width": 1280,
+            "height": 720
+          },
+          "overflow": {
+            "left": 25.6,
+            "right": 25.6,
+            "top": 6.91,
+            "bottom": 21.89
+          },
+          "dataAttributes": {
+            "data-hf-authored-opacity": ""
+          },
+          "sourceFile": "index.html",
+          "bbox": {
+            "x": -25.6,
+            "y": -6.91,
+            "width": 1331.2,
+            "height": 748.8
+          },
+          "firstSeen": 3,
+          "lastSeen": 5.667,
+          "occurrences": 5,
+          "heldMs": 2667,
+          "times": [
+            3,
+            3.667,
+            4.333,
+            5,
+            5.667
+          ]
+        },
+        {
+          "code": "container_overflow",
+          "severity": "info",
+          "time": 0.333,
+          "selector": "#scene-0 > div:nth-of-type(1) > img:nth-of-type(1)",
+          "message": "Element extends outside a clipping layout container.",
+          "rect": {
+            "left": -28.16,
+            "top": -9.83,
+            "right": 1308.16,
+            "bottom": 741.85,
+            "width": 1336.32,
+            "height": 751.68
+          },
+          "containerSelector": "#scene-0 > div:nth-of-type(1)",
+          "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+          "containerRect": {
+            "left": 0,
+            "top": 0,
+            "right": 1280,
+            "bottom": 720,
+            "width": 1280,
+            "height": 720
+          },
+          "overflow": {
+            "left": 28.16,
+            "right": 28.16,
+            "top": 9.83,
+            "bottom": 21.85
+          },
+          "dataAttributes": {
+            "data-hf-authored-opacity": ""
+          },
+          "sourceFile": "index.html",
+          "bbox": {
+            "x": -28.16,
+            "y": -9.83,
+            "width": 1336.32,
+            "height": 751.68
+          },
+          "firstSeen": 0.333,
+          "lastSeen": 2.333,
+          "occurrences": 4,
+          "heldMs": 2000,
+          "times": [
+            0.333,
+            1,
+            1.667,
+            2.333
+          ]
+        }
+      ],
+      "duration": 6,
+      "samples": [
+        0.333,
+        1,
+        1.667,
+        2.333,
+        3,
+        3.667,
+        4.333,
+        5,
+        5.667
+      ],
+      "transitionSamples": [],
+      "transitionSamplesDropped": 0,
+      "tolerance": 2,
+      "totalIssueCount": 2,
+      "truncated": false
+    },
+    "motion": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "infoCount": 0,
+      "findings": [],
+      "enabled": false,
+      "samples": 0
+    },
+    "contrast": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "infoCount": 0,
+      "findings": [],
+      "enabled": true,
+      "samples": [
+        0.333,
+        1.667,
+        3,
+        4.333,
+        5.667
+      ],
+      "checked": 25,
+      "passed": 25
+    },
+    "_meta": {
+      "version": "0.8.167",
+      "latestVersion": "0.8.167",
+      "updateAvailable": false
+    }
+  },
+  {
+    "ok": true,
+    "browserSkipped": false,
+    "lint": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 2,
+      "infoCount": 0,
+      "findings": [
+        {
+          "code": "nested_structure_needs_subcomposition",
+          "severity": "warning",
+          "message": "<section id=\"scene-0\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+          "selector": "#scene-0",
+          "dataAttributes": {},
+          "sourceFile": "/private/tmp/estagent-video-export-final/state/tours/exports/54dc9a76e491e67def55d629eaf5cc14-work/index.html",
+          "bbox": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "time": 0,
+          "fixHint": "Move <section id=\"scene-0\"> and its contents into a sub-composition file and mount it with data-composition-src."
+        },
+        {
+          "code": "nested_structure_needs_subcomposition",
+          "severity": "warning",
+          "message": "<section id=\"scene-1\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+          "selector": "#scene-1",
+          "dataAttributes": {},
+          "sourceFile": "/private/tmp/estagent-video-export-final/state/tours/exports/54dc9a76e491e67def55d629eaf5cc14-work/index.html",
+          "bbox": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "time": 0,
+          "fixHint": "Move <section id=\"scene-1\"> and its contents into a sub-composition file and mount it with data-composition-src."
+        }
+      ],
+      "filesScanned": 1
+    },
+    "runtime": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "infoCount": 0,
+      "findings": []
+    },
+    "layout": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 1,
+      "infoCount": 1,
+      "findings": [
+        {
+          "code": "container_overflow",
+          "severity": "warning",
+          "time": 3,
+          "selector": "#scene-1 > div:nth-of-type(1) > img:nth-of-type(1)",
+          "message": "Element extends outside a clipping layout container.",
+          "rect": {
+            "left": -44.35,
+            "top": -51.2,
+            "right": 733.25,
+            "bottom": 1331.2,
+            "width": 777.6,
+            "height": 1382.4
+          },
+          "containerSelector": "#scene-1 > div:nth-of-type(1)",
+          "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+          "containerRect": {
+            "left": 0,
+            "top": 0,
+            "right": 720,
+            "bottom": 1280,
+            "width": 720,
+            "height": 1280
+          },
+          "overflow": {
+            "left": 44.35,
+            "right": 13.25,
+            "top": 51.2,
+            "bottom": 51.2
+          },
+          "dataAttributes": {
+            "data-hf-authored-opacity": ""
+          },
+          "sourceFile": "index.html",
+          "bbox": {
+            "x": -44.35,
+            "y": -51.2,
+            "width": 777.6,
+            "height": 1382.4
+          },
+          "firstSeen": 3,
+          "lastSeen": 5.667,
+          "occurrences": 5,
+          "heldMs": 2667,
+          "times": [
+            3,
+            3.667,
+            4.333,
+            5,
+            5.667
+          ]
+        },
+        {
+          "code": "container_overflow",
+          "severity": "info",
+          "time": 0.333,
+          "selector": "#scene-0 > div:nth-of-type(1) > img:nth-of-type(1)",
+          "message": "Element extends outside a clipping layout container.",
+          "rect": {
+            "left": -41.24,
+            "top": -51.2,
+            "right": 736.36,
+            "bottom": 1331.2,
+            "width": 777.6,
+            "height": 1382.4
+          },
+          "containerSelector": "#scene-0 > div:nth-of-type(1)",
+          "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+          "containerRect": {
+            "left": 0,
+            "top": 0,
+            "right": 720,
+            "bottom": 1280,
+            "width": 720,
+            "height": 1280
+          },
+          "overflow": {
+            "left": 41.24,
+            "right": 16.36,
+            "top": 51.2,
+            "bottom": 51.2
+          },
+          "dataAttributes": {
+            "data-hf-authored-opacity": ""
+          },
+          "sourceFile": "index.html",
+          "bbox": {
+            "x": -41.24,
+            "y": -51.2,
+            "width": 777.6,
+            "height": 1382.4
+          },
+          "firstSeen": 0.333,
+          "lastSeen": 2.333,
+          "occurrences": 4,
+          "heldMs": 2000,
+          "times": [
+            0.333,
+            1,
+            1.667,
+            2.333
+          ]
+        }
+      ],
+      "duration": 6,
+      "samples": [
+        0.333,
+        1,
+        1.667,
+        2.333,
+        3,
+        3.667,
+        4.333,
+        5,
+        5.667
+      ],
+      "transitionSamples": [],
+      "transitionSamplesDropped": 0,
+      "tolerance": 2,
+      "totalIssueCount": 2,
+      "truncated": false
+    },
+    "motion": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "infoCount": 0,
+      "findings": [],
+      "enabled": false,
+      "samples": 0
+    },
+    "contrast": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "infoCount": 0,
+      "findings": [],
+      "enabled": true,
+      "samples": [
+        0.333,
+        1.667,
+        3,
+        4.333,
+        5.667
+      ],
+      "checked": 25,
+      "passed": 25
+    },
+    "_meta": {
+      "version": "0.8.167",
+      "latestVersion": "0.8.167",
+      "updateAvailable": false
+    }
+  },
+  {
+    "ok": true,
+    "browserSkipped": false,
+    "lint": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 2,
+      "infoCount": 0,
+      "findings": [
+        {
+          "code": "nested_structure_needs_subcomposition",
+          "severity": "warning",
+          "message": "<section id=\"scene-0\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+          "selector": "#scene-0",
+          "dataAttributes": {},
+          "sourceFile": "/private/tmp/estagent-video-export-reviewed/state/tours/exports/391234491195b4b473f575481844b44d-work/index.html",
+          "bbox": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "time": 0,
+          "fixHint": "Move <section id=\"scene-0\"> and its contents into a sub-composition file and mount it with data-composition-src."
+        },
+        {
+          "code": "nested_structure_needs_subcomposition",
+          "severity": "warning",
+          "message": "<section id=\"scene-1\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+          "selector": "#scene-1",
+          "dataAttributes": {},
+          "sourceFile": "/private/tmp/estagent-video-export-reviewed/state/tours/exports/391234491195b4b473f575481844b44d-work/index.html",
+          "bbox": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "time": 0,
+          "fixHint": "Move <section id=\"scene-1\"> and its contents into a sub-composition file and mount it with data-composition-src."
+        }
+      ],
+      "filesScanned": 1
+    },
+    "runtime": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "infoCount": 0,
+      "findings": []
+    },
+    "layout": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 1,
+      "infoCount": 1,
+      "findings": [
+        {
+          "code": "container_overflow",
+          "severity": "warning",
+          "time": 3,
+          "selector": "#scene-1 > div:nth-of-type(1) > img:nth-of-type(1)",
+          "message": "Element extends outside a clipping layout container.",
+          "rect": {
+            "left": -25.6,
+            "top": -6.91,
+            "right": 1305.6,
+            "bottom": 741.89,
+            "width": 1331.2,
+            "height": 748.8
+          },
+          "containerSelector": "#scene-1 > div:nth-of-type(1)",
+          "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+          "containerRect": {
+            "left": 0,
+            "top": 0,
+            "right": 1280,
+            "bottom": 720,
+            "width": 1280,
+            "height": 720
+          },
+          "overflow": {
+            "left": 25.6,
+            "right": 25.6,
+            "top": 6.91,
+            "bottom": 21.89
+          },
+          "dataAttributes": {
+            "data-hf-authored-opacity": ""
+          },
+          "sourceFile": "index.html",
+          "bbox": {
+            "x": -25.6,
+            "y": -6.91,
+            "width": 1331.2,
+            "height": 748.8
+          },
+          "firstSeen": 3,
+          "lastSeen": 5.667,
+          "occurrences": 5,
+          "heldMs": 2667,
+          "times": [
+            3,
+            3.667,
+            4.333,
+            5,
+            5.667
+          ]
+        },
+        {
+          "code": "container_overflow",
+          "severity": "info",
+          "time": 0.333,
+          "selector": "#scene-0 > div:nth-of-type(1) > img:nth-of-type(1)",
+          "message": "Element extends outside a clipping layout container.",
+          "rect": {
+            "left": -28.16,
+            "top": -9.83,
+            "right": 1308.16,
+            "bottom": 741.85,
+            "width": 1336.32,
+            "height": 751.68
+          },
+          "containerSelector": "#scene-0 > div:nth-of-type(1)",
+          "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+          "containerRect": {
+            "left": 0,
+            "top": 0,
+            "right": 1280,
+            "bottom": 720,
+            "width": 1280,
+            "height": 720
+          },
+          "overflow": {
+            "left": 28.16,
+            "right": 28.16,
+            "top": 9.83,
+            "bottom": 21.85
+          },
+          "dataAttributes": {
+            "data-hf-authored-opacity": ""
+          },
+          "sourceFile": "index.html",
+          "bbox": {
+            "x": -28.16,
+            "y": -9.83,
+            "width": 1336.32,
+            "height": 751.68
+          },
+          "firstSeen": 0.333,
+          "lastSeen": 2.333,
+          "occurrences": 4,
+          "heldMs": 2000,
+          "times": [
+            0.333,
+            1,
+            1.667,
+            2.333
+          ]
+        }
+      ],
+      "duration": 6,
+      "samples": [
+        0.333,
+        1,
+        1.667,
+        2.333,
+        3,
+        3.667,
+        4.333,
+        5,
+        5.667
+      ],
+      "transitionSamples": [],
+      "transitionSamplesDropped": 0,
+      "tolerance": 2,
+      "totalIssueCount": 2,
+      "truncated": false
+    },
+    "motion": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "infoCount": 0,
+      "findings": [],
+      "enabled": false,
+      "samples": 0
+    },
+    "contrast": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "infoCount": 0,
+      "findings": [],
+      "enabled": true,
+      "samples": [
+        0.333,
+        1.667,
+        3,
+        4.333,
+        5.667
+      ],
+      "checked": 25,
+      "passed": 25
+    },
+    "_meta": {
+      "version": "0.8.167",
+      "latestVersion": "0.8.167",
+      "updateAvailable": false
+    }
+  },
+  {
+    "ok": true,
+    "browserSkipped": false,
+    "lint": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 2,
+      "infoCount": 0,
+      "findings": [
+        {
+          "code": "nested_structure_needs_subcomposition",
+          "severity": "warning",
+          "message": "<section id=\"scene-0\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+          "selector": "#scene-0",
+          "dataAttributes": {},
+          "sourceFile": "/private/tmp/estagent-video-export-reviewed/state/tours/exports/c5c1ae42fdcc835676764c90a83241ff-work/index.html",
+          "bbox": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "time": 0,
+          "fixHint": "Move <section id=\"scene-0\"> and its contents into a sub-composition file and mount it with data-composition-src."
+        },
+        {
+          "code": "nested_structure_needs_subcomposition",
+          "severity": "warning",
+          "message": "<section id=\"scene-1\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+          "selector": "#scene-1",
+          "dataAttributes": {},
+          "sourceFile": "/private/tmp/estagent-video-export-reviewed/state/tours/exports/c5c1ae42fdcc835676764c90a83241ff-work/index.html",
+          "bbox": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "time": 0,
+          "fixHint": "Move <section id=\"scene-1\"> and its contents into a sub-composition file and mount it with data-composition-src."
+        }
+      ],
+      "filesScanned": 1
+    },
+    "runtime": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "infoCount": 0,
+      "findings": []
+    },
+    "layout": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 1,
+      "infoCount": 1,
+      "findings": [
+        {
+          "code": "container_overflow",
+          "severity": "warning",
+          "time": 3,
+          "selector": "#scene-1 > div:nth-of-type(1) > img:nth-of-type(1)",
+          "message": "Element extends outside a clipping layout container.",
+          "rect": {
+            "left": -44.35,
+            "top": -51.2,
+            "right": 733.25,
+            "bottom": 1331.2,
+            "width": 777.6,
+            "height": 1382.4
+          },
+          "containerSelector": "#scene-1 > div:nth-of-type(1)",
+          "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+          "containerRect": {
+            "left": 0,
+            "top": 0,
+            "right": 720,
+            "bottom": 1280,
+            "width": 720,
+            "height": 1280
+          },
+          "overflow": {
+            "left": 44.35,
+            "right": 13.25,
+            "top": 51.2,
+            "bottom": 51.2
+          },
+          "dataAttributes": {
+            "data-hf-authored-opacity": ""
+          },
+          "sourceFile": "index.html",
+          "bbox": {
+            "x": -44.35,
+            "y": -51.2,
+            "width": 777.6,
+            "height": 1382.4
+          },
+          "firstSeen": 3,
+          "lastSeen": 5.667,
+          "occurrences": 5,
+          "heldMs": 2667,
+          "times": [
+            3,
+            3.667,
+            4.333,
+            5,
+            5.667
+          ]
+        },
+        {
+          "code": "container_overflow",
+          "severity": "info",
+          "time": 0.333,
+          "selector": "#scene-0 > div:nth-of-type(1) > img:nth-of-type(1)",
+          "message": "Element extends outside a clipping layout container.",
+          "rect": {
+            "left": -41.24,
+            "top": -51.2,
+            "right": 736.36,
+            "bottom": 1331.2,
+            "width": 777.6,
+            "height": 1382.4
+          },
+          "containerSelector": "#scene-0 > div:nth-of-type(1)",
+          "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+          "containerRect": {
+            "left": 0,
+            "top": 0,
+            "right": 720,
+            "bottom": 1280,
+            "width": 720,
+            "height": 1280
+          },
+          "overflow": {
+            "left": 41.24,
+            "right": 16.36,
+            "top": 51.2,
+            "bottom": 51.2
+          },
+          "dataAttributes": {
+            "data-hf-authored-opacity": ""
+          },
+          "sourceFile": "index.html",
+          "bbox": {
+            "x": -41.24,
+            "y": -51.2,
+            "width": 777.6,
+            "height": 1382.4
+          },
+          "firstSeen": 0.333,
+          "lastSeen": 2.333,
+          "occurrences": 4,
+          "heldMs": 2000,
+          "times": [
+            0.333,
+            1,
+            1.667,
+            2.333
+          ]
+        }
+      ],
+      "duration": 6,
+      "samples": [
+        0.333,
+        1,
+        1.667,
+        2.333,
+        3,
+        3.667,
+        4.333,
+        5,
+        5.667
+      ],
+      "transitionSamples": [],
+      "transitionSamplesDropped": 0,
+      "tolerance": 2,
+      "totalIssueCount": 2,
+      "truncated": false
+    },
+    "motion": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "infoCount": 0,
+      "findings": [],
+      "enabled": false,
+      "samples": 0
+    },
+    "contrast": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "infoCount": 0,
+      "findings": [],
+      "enabled": true,
+      "samples": [
+        0.333,
+        1.667,
+        3,
+        4.333,
+        5.667
+      ],
+      "checked": 25,
+      "passed": 25
+    },
+    "_meta": {
+      "version": "0.8.167",
+      "latestVersion": "0.8.167",
+      "updateAvailable": false
+    }
+  },
+  {
+    "ok": true,
+    "browserSkipped": false,
+    "lint": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 2,
+      "infoCount": 0,
+      "findings": [
+        {
+          "code": "nested_structure_needs_subcomposition",
+          "severity": "warning",
+          "message": "<section id=\"scene-0\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+          "selector": "#scene-0",
+          "dataAttributes": {},
+          "sourceFile": "/private/tmp/estagent-video-export-reviewed/state/tours/exports/208ef0059b3e1f1947d0487f7e1b810e-work/index.html",
+          "bbox": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "time": 0,
+          "fixHint": "Move <section id=\"scene-0\"> and its contents into a sub-composition file and mount it with data-composition-src."
+        },
+        {
+          "code": "nested_structure_needs_subcomposition",
+          "severity": "warning",
+          "message": "<section id=\"scene-1\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+          "selector": "#scene-1",
+          "dataAttributes": {},
+          "sourceFile": "/private/tmp/estagent-video-export-reviewed/state/tours/exports/208ef0059b3e1f1947d0487f7e1b810e-work/index.html",
+          "bbox": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "time": 0,
+          "fixHint": "Move <section id=\"scene-1\"> and its contents into a sub-composition file and mount it with data-composition-src."
+        }
+      ],
+      "filesScanned": 1
+    },
+    "runtime": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "infoCount": 0,
+      "findings": []
+    },
+    "layout": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 1,
+      "infoCount": 1,
+      "findings": [
+        {
+          "code": "container_overflow",
+          "severity": "warning",
+          "time": 3,
+          "selector": "#scene-1 > div:nth-of-type(1) > img:nth-of-type(1)",
+          "message": "Element extends outside a clipping layout container.",
+          "rect": {
+            "left": -25.6,
+            "top": -6.91,
+            "right": 1305.6,
+            "bottom": 741.89,
+            "width": 1331.2,
+            "height": 748.8
+          },
+          "containerSelector": "#scene-1 > div:nth-of-type(1)",
+          "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+          "containerRect": {
+            "left": 0,
+            "top": 0,
+            "right": 1280,
+            "bottom": 720,
+            "width": 1280,
+            "height": 720
+          },
+          "overflow": {
+            "left": 25.6,
+            "right": 25.6,
+            "top": 6.91,
+            "bottom": 21.89
+          },
+          "dataAttributes": {
+            "data-hf-authored-opacity": ""
+          },
+          "sourceFile": "index.html",
+          "bbox": {
+            "x": -25.6,
+            "y": -6.91,
+            "width": 1331.2,
+            "height": 748.8
+          },
+          "firstSeen": 3,
+          "lastSeen": 5.667,
+          "occurrences": 5,
+          "heldMs": 2667,
+          "times": [
+            3,
+            3.667,
+            4.333,
+            5,
+            5.667
+          ]
+        },
+        {
+          "code": "container_overflow",
+          "severity": "info",
+          "time": 0.333,
+          "selector": "#scene-0 > div:nth-of-type(1) > img:nth-of-type(1)",
+          "message": "Element extends outside a clipping layout container.",
+          "rect": {
+            "left": -28.16,
+            "top": -9.83,
+            "right": 1308.16,
+            "bottom": 741.85,
+            "width": 1336.32,
+            "height": 751.68
+          },
+          "containerSelector": "#scene-0 > div:nth-of-type(1)",
+          "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+          "containerRect": {
+            "left": 0,
+            "top": 0,
+            "right": 1280,
+            "bottom": 720,
+            "width": 1280,
+            "height": 720
+          },
+          "overflow": {
+            "left": 28.16,
+            "right": 28.16,
+            "top": 9.83,
+            "bottom": 21.85
+          },
+          "dataAttributes": {
+            "data-hf-authored-opacity": ""
+          },
+          "sourceFile": "index.html",
+          "bbox": {
+            "x": -28.16,
+            "y": -9.83,
+            "width": 1336.32,
+            "height": 751.68
+          },
+          "firstSeen": 0.333,
+          "lastSeen": 2.333,
+          "occurrences": 4,
+          "heldMs": 2000,
+          "times": [
+            0.333,
+            1,
+            1.667,
+            2.333
+          ]
+        }
+      ],
+      "duration": 6,
+      "samples": [
+        0.333,
+        1,
+        1.667,
+        2.333,
+        3,
+        3.667,
+        4.333,
+        5,
+        5.667
+      ],
+      "transitionSamples": [],
+      "transitionSamplesDropped": 0,
+      "tolerance": 2,
+      "totalIssueCount": 2,
+      "truncated": false
+    },
+    "motion": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "infoCount": 0,
+      "findings": [],
+      "enabled": false,
+      "samples": 0
+    },
+    "contrast": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "infoCount": 0,
+      "findings": [],
+      "enabled": true,
+      "samples": [
+        0.333,
+        1.667,
+        3,
+        4.333,
+        5.667
+      ],
+      "checked": 25,
+      "passed": 25
+    },
+    "_meta": {
+      "version": "0.8.167",
+      "latestVersion": "0.8.167",
+      "updateAvailable": false
+    }
+  },
+  {
+    "ok": true,
+    "browserSkipped": false,
+    "lint": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 2,
+      "infoCount": 0,
+      "findings": [
+        {
+          "code": "nested_structure_needs_subcomposition",
+          "severity": "warning",
+          "message": "<section id=\"scene-0\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+          "selector": "#scene-0",
+          "dataAttributes": {},
+          "sourceFile": "/private/tmp/estagent-video-export-reviewed/state/tours/exports/ce271611ac80224b4ab1586baef1317f-work/index.html",
+          "bbox": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "time": 0,
+          "fixHint": "Move <section id=\"scene-0\"> and its contents into a sub-composition file and mount it with data-composition-src."
+        },
+        {
+          "code": "nested_structure_needs_subcomposition",
+          "severity": "warning",
+          "message": "<section id=\"scene-1\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+          "selector": "#scene-1",
+          "dataAttributes": {},
+          "sourceFile": "/private/tmp/estagent-video-export-reviewed/state/tours/exports/ce271611ac80224b4ab1586baef1317f-work/index.html",
+          "bbox": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "time": 0,
+          "fixHint": "Move <section id=\"scene-1\"> and its contents into a sub-composition file and mount it with data-composition-src."
+        }
+      ],
+      "filesScanned": 1
+    },
+    "runtime": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "infoCount": 0,
+      "findings": []
+    },
+    "layout": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 1,
+      "infoCount": 1,
+      "findings": [
+        {
+          "code": "container_overflow",
+          "severity": "warning",
+          "time": 3,
+          "selector": "#scene-1 > div:nth-of-type(1) > img:nth-of-type(1)",
+          "message": "Element extends outside a clipping layout container.",
+          "rect": {
+            "left": -44.35,
+            "top": -51.2,
+            "right": 733.25,
+            "bottom": 1331.2,
+            "width": 777.6,
+            "height": 1382.4
+          },
+          "containerSelector": "#scene-1 > div:nth-of-type(1)",
+          "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+          "containerRect": {
+            "left": 0,
+            "top": 0,
+            "right": 720,
+            "bottom": 1280,
+            "width": 720,
+            "height": 1280
+          },
+          "overflow": {
+            "left": 44.35,
+            "right": 13.25,
+            "top": 51.2,
+            "bottom": 51.2
+          },
+          "dataAttributes": {
+            "data-hf-authored-opacity": ""
+          },
+          "sourceFile": "index.html",
+          "bbox": {
+            "x": -44.35,
+            "y": -51.2,
+            "width": 777.6,
+            "height": 1382.4
+          },
+          "firstSeen": 3,
+          "lastSeen": 5.667,
+          "occurrences": 5,
+          "heldMs": 2667,
+          "times": [
+            3,
+            3.667,
+            4.333,
+            5,
+            5.667
+          ]
+        },
+        {
+          "code": "container_overflow",
+          "severity": "info",
+          "time": 0.333,
+          "selector": "#scene-0 > div:nth-of-type(1) > img:nth-of-type(1)",
+          "message": "Element extends outside a clipping layout container.",
+          "rect": {
+            "left": -41.24,
+            "top": -51.2,
+            "right": 736.36,
+            "bottom": 1331.2,
+            "width": 777.6,
+            "height": 1382.4
+          },
+          "containerSelector": "#scene-0 > div:nth-of-type(1)",
+          "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+          "containerRect": {
+            "left": 0,
+            "top": 0,
+            "right": 720,
+            "bottom": 1280,
+            "width": 720,
+            "height": 1280
+          },
+          "overflow": {
+            "left": 41.24,
+            "right": 16.36,
+            "top": 51.2,
+            "bottom": 51.2
+          },
+          "dataAttributes": {
+            "data-hf-authored-opacity": ""
+          },
+          "sourceFile": "index.html",
+          "bbox": {
+            "x": -41.24,
+            "y": -51.2,
+            "width": 777.6,
+            "height": 1382.4
+          },
+          "firstSeen": 0.333,
+          "lastSeen": 2.333,
+          "occurrences": 4,
+          "heldMs": 2000,
+          "times": [
+            0.333,
+            1,
+            1.667,
+            2.333
+          ]
+        }
+      ],
+      "duration": 6,
+      "samples": [
+        0.333,
+        1,
+        1.667,
+        2.333,
+        3,
+        3.667,
+        4.333,
+        5,
+        5.667
+      ],
+      "transitionSamples": [],
+      "transitionSamplesDropped": 0,
+      "tolerance": 2,
+      "totalIssueCount": 2,
+      "truncated": false
+    },
+    "motion": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "infoCount": 0,
+      "findings": [],
+      "enabled": false,
+      "samples": 0
+    },
+    "contrast": {
+      "ok": true,
+      "errorCount": 0,
+      "warningCount": 0,
+      "infoCount": 0,
+      "findings": [],
+      "enabled": true,
+      "samples": [
+        0.333,
+        1.667,
+        3,
+        4.333,
+        5.667
+      ],
+      "checked": 25,
+      "passed": 25
+    },
+    "_meta": {
+      "version": "0.8.167",
+      "latestVersion": "0.8.167",
+      "updateAvailable": false
+    }
+  }
+]

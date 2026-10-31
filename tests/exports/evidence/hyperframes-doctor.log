@@ -1,0 +1,109 @@
+{
+  "ok": false,
+  "platform": "darwin",
+  "arch": "arm64",
+  "checks": [
+    {
+      "name": "Version",
+      "ok": true,
+      "detail": "0.8.167 (latest)"
+    },
+    {
+      "name": "Node.js",
+      "ok": true,
+      "detail": "v26.10.0 (darwin arm64)"
+    },
+    {
+      "name": "CPU",
+      "ok": true,
+      "detail": "8 cores · Apple M2 @ 2400MHz"
+    },
+    {
+      "name": "Memory",
+      "ok": true,
+      "detail": "16.0 GB total · 3.3 GB available"
+    },
+    {
+      "name": "Disk",
+      "ok": true,
+      "detail": "20.9 GB free"
+    },
+    {
+      "name": "Frames cache",
+      "ok": true,
+      "detail": "/var/folders/n7/_dhl8gf55xq1n4h7sjg9hfqw0000gn/T/hyperframes-extract-cache-501 · 20.9 GB free at /var/folders/n7/_dhl8gf55xq1n4h7sjg9hfqw0000gn/T · default"
+    },
+    {
+      "name": "Archive extractor",
+      "ok": true,
+      "detail": "unzip"
+    },
+    {
+      "name": "Settings lock",
+      "ok": true,
+      "detail": "Not locked"
+    },
+    {
+      "name": "Environment",
+      "ok": true,
+      "detail": "non-TTY"
+    },
+    {
+      "name": "whisper-cpp",
+      "ok": true,
+      "detail": "/opt/homebrew/bin/whisper-cli"
+    },
+    {
+      "name": "TTS (Kokoro)",
+      "ok": false,
+      "detail": "Not installed (optional — local voice fallback)",
+      "hint": "pip install kokoro-onnx soundfile"
+    },
+    {
+      "name": "BGM (MusicGen)",
+      "ok": true,
+      "detail": "MusicGen deps installed"
+    },
+    {
+      "name": "onnxruntime-node",
+      "ok": true,
+      "detail": "Not installed (installs on first use)"
+    },
+    {
+      "name": "@google/genai",
+      "ok": true,
+      "detail": "Not installed (installs on first use)"
+    },
+    {
+      "name": "FFmpeg",
+      "ok": true,
+      "detail": "ffmpeg 8.0 at $HOME/.local/bin/ffmpeg"
+    },
+    {
+      "name": "FFprobe",
+      "ok": true,
+      "detail": "ffprobe 9.0.2 at /opt/homebrew/bin/ffprobe"
+    },
+    {
+      "name": "Chrome",
+      "ok": true,
+      "detail": "cache: $HOME/.cache/hyperframes/chrome/chrome-headless-shell/mac_arm-152.0.7977.30/chrome-headless-shell-mac-arm64/chrome-headless-shell"
+    },
+    {
+      "name": "Docker",
+      "ok": true,
+      "detail": "Docker version 27.4.0, build bde2b89"
+    },
+    {
+      "name": "Docker running",
+      "ok": false,
+      "detail": "Not running",
+      "hint": "Start Docker Desktop or run: sudo systemctl start docker"
+    }
+  ],
+  "_meta": {
+    "version": "0.8.167",
+    "latestVersion": "0.8.167",
+    "updateAvailable": false
+  }
+}

@@ -40,6 +40,18 @@ def read_catalog(path):
                     or item['scope'] != 'neutral_tour_intro_not_room_specific'):
                 raise ValueError()
             locales.add(item['locale'])
+        guide_keys=set()
+        for item in doc.get('guide', []):
+            pair=(item['capture_id'],item['locale'])
+            if (item['locale'] not in {'en','vi'} or pair in guide_keys
+                    or not re.fullmatch(r'pano_[0-9]+', item['capture_id'])
+                    or not re.fullmatch(r'complete_room_[0-9]+', item['room_id'])
+                    or item['asset'] not in doc['assets']
+                    or doc['assets'][item['asset']]['content_type'] != 'audio/wav'
+                    or item['sha256'] != doc['assets'][item['asset']]['sha256']
+                    or item['source'] != 'openai_generated'):
+                raise ValueError()
+            guide_keys.add(pair)
         return doc
     except (OSError, ValueError, TypeError, KeyError):
         raise ValueError('DEMO_CATALOG_PATH: missing or invalid allowlisted demo catalog') from None
@@ -66,6 +78,13 @@ def install_demos(app, env, web):
             raise HTTPException(404)
         return [{k:v for k,v in item.items() if k != 'asset'} |
                 {'url':f'/api/demos/{DEMO_ID}/assets/{item["asset"]}'} for item in catalog.get('intro', [])]
+
+    @app.get('/api/demos/{demo_id}/guide')
+    def demo_guide(demo_id: str):
+        if demo_id != DEMO_ID or not catalog:
+            raise HTTPException(404)
+        return [{k:v for k,v in item.items() if k != 'asset'} |
+                {'url':f'/api/demos/{DEMO_ID}/assets/{item["asset"]}'} for item in catalog.get('guide', [])]
 
     @app.get('/demos/{demo_id}')
     def demo_page(demo_id: str):

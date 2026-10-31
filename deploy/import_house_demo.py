@@ -76,6 +76,9 @@ def run(bundle, output):
                 # Fixed, audited bundle: namespace requests; never expose root /house.
                 data=data.replace(b'/house/',(PREFIX+'house/').encode())
                 data=data.replace(b'PanSplat rendering pending',b'Cached source captures')
+                anchor=b'ArrowRight:[5,0]'
+                if data.count(anchor)!=1:raise ValueError('Audited renderer keyboard adapter anchor changed')
+                data=data.replace(anchor,anchor+b',EstagentRotate:[.05,0]')
             put('runtime/'+filename,data,'text/css' if filename.endswith('.css') else 'application/javascript',hashlib.sha256(raw).hexdigest())
     doc={'id':DEMO,'source_bundle_sha256':SHA,'source_manifest_sha256':MANIFEST_SHA,'assets':assets,
          'thumbnail':manifest['captures'][0]['url'].removeprefix(PREFIX),'total_bytes':total}

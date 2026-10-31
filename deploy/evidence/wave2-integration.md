@@ -4,7 +4,7 @@ Sources: audio `f095ad1`, guards `0decde3`, teammate Studio `b504dfe`; all merge
 
 - Shared guards now installed in app and included in release/Docker allowlists; Studio admission paths included.
 - Web lint/test/build and both manifest schemas PASS. Strict all still fails only baseline missing core SKIP.
-- AI suite after wiring: 80 tests PASS (uv pinned requirements).
+- AI suite after wiring: 87 tests PASS after contextual chat integration (uv pinned requirements).
 - Recorded WAV local browser/upload/reload/publish/playback/ducking and server restart PASS; synthetic tones only.
 - Studio actual keyless browser/save/reload PASS.
 - Studio graph/spatial review/SSE/reload/waiting-worker browser PASS with fixture provider.
@@ -15,3 +15,5 @@ Sources: audio `f095ad1`, guards `0decde3`, teammate Studio `b504dfe`; all merge
 Evidence: `wave2-audio.log`, `wave2-studio/`. No provider live calls, production keys or real reconstructed geometry were used.
 
 Before live Studio: uploaded images currently retain source EXIF; strip metadata before enabling publish with real data. Studio admission limits count enqueue/review attempts, not provider calls or worker lifetime. Realtime limits only SDP setup, not stream duration. Keep release keyless. H0 unknown; no build-during-competition claim.
+
+Contextual chat: actual Chromium/HTTP/SQLite PASS for Creator selected scene, Viewer active scene, follow-up history isolation, mobile390 and zero page errors; `wave2-chat/`. Synthetic interpreter only.

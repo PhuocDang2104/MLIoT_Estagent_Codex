@@ -99,6 +99,7 @@ class Chat(Revision):
     text: str = Field(min_length=1,max_length=2000)
     request_id: str = Field(pattern=r'^[a-zA-Z0-9-]{8,80}$')
     locale: Literal['en','vi'] = 'en'
+    scene_id: str | None = Field(default=None,pattern=r'^[a-f0-9]{32}$')
 
 class Rename(Strict):
     scene_id: str

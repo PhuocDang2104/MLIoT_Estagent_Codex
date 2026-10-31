@@ -147,3 +147,15 @@ Owner: `feature/tour-audio`, base `a28e431`; implementation SHA and commands in
 - Local WAV decoding, serving, media clocks and controls were exercised, including restart.
   No TTS, transcription, provider, model or paid call; no subjective listening-quality test.
   Device speech remains explicitly labelled fallback and was not validated as real narration.
+
+## 9. Integrated release and contextual chat — 2026-10-31
+
+Audio from `feature/tour-audio`, guards from `feature/live-api-guards`, and teammate Studio
+from `web/creator-studio-integrated` are integrated with their original commits retained.
+Codex assisted integration, guard wiring, route navigation, contextual chat and regression QA.
+Claude assisted read-only release review; it has no Git write or co-author attribution.
+No new runtime dependencies, external assets or paid provider requests are introduced by integration.
+Studio's existing model adapters are retained; synthetic provider/triangle GLB/silence tests do not
+demonstrate real property reconstruction or real speech generation. Uploaded narration and music
+remain uploader-provided, not bundled demo audio. Sources and prior asset-license caveats above remain.
+H0 is still unconfirmed; today's commits do not prove build during the competition window.

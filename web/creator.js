@@ -1,5 +1,6 @@
 import {$,t,language,api,node,notice,link,requestID} from './tour-common.js';
 let manifest=null, session=null, attachments=[], busy=false, dirty=false, pendingCreate=null, pendingTurn=null;
+let chatSceneID=null;
 function dirtyState(){dirty=true;$('#reviewed').checked=false;$('#publish').disabled=true;$('#preview').removeAttribute('href');$('#revision').textContent=t('Unsaved changes — save before preview.','Có thay đổi chưa lưu — lưu trước khi xem thử.');}
 function resetReview(){dirty=false;$('#reviewed').checked=false;$('#publish').disabled=true;}
 function setBusy(value){
@@ -45,6 +46,7 @@ function render(){
       const warning=node('p',t('Uncaptured space stays blank. This is not 3D.','Phần chưa chụp để trống. Đây không phải 3D.'),'hint');body.append(warning);
     }
     const controls=node('div',undefined,'scene-actions');
+    const ask=node('button',scene.id===chatSceneID?t('Chat context ✓','Đang hỏi điểm này ✓'):t('Ask about this scene','Hỏi về điểm này'),'quiet');ask.type='button';ask.ariaPressed=String(scene.id===chatSceneID);ask.onclick=()=>{chatSceneID=chatSceneID===scene.id?null:scene.id;render();$('#message').focus();notice(chatSceneID?t(`Chat context: ${scene.name}`,`Ngữ cảnh chat: ${scene.name}`):t('Chat context: whole tour.','Ngữ cảnh chat: toàn tour.'));};controls.append(ask);
     for(const [label,delta] of [['↑',-1],['↓',1]]){const button=node('button',label,'quiet');button.type='button';button.ariaLabel=delta<0?t('Move up','Đưa lên'):t('Move down','Đưa xuống');button.disabled=index+delta<0||index+delta>=manifest.scenes.length;button.onclick=()=>{[manifest.scenes[index],manifest.scenes[index+delta]]=[manifest.scenes[index+delta],manifest.scenes[index]];dirtyState();render();};controls.append(button);}
     const start=node('button',scene.id===manifest.start_scene_id?t('Opening scene ✓','Điểm mở đầu ✓'):t('Start here','Bắt đầu ở đây'),'quiet');start.type='button';start.onclick=()=>{manifest.start_scene_id=scene.id;dirtyState();render();};controls.append(start);body.append(controls);card.append(body);$('#scene-cards').append(card);
   });
@@ -52,7 +54,7 @@ function render(){
   if(dirty){$('#preview').removeAttribute('href');$('#revision').textContent=t('Unsaved changes — save before preview.','Có thay đổi chưa lưu — lưu trước khi xem thử.');}
 }
 async function refreshList(){session=await api('/session');$('#draft-list').replaceChildren(node('option','—'));$('#draft-list').firstChild.value='';for(const d of session.drafts){const opt=node('option',d.title);opt.value=d.id;$('#draft-list').append(opt);}if(manifest)$('#draft-list').value=manifest.id;}
-async function load(id){manifest=await api(`/drafts/${id}`);resetReview();$('#messages').replaceChildren();const messages=await api(`/drafts/${id}/messages`);for(const m of messages){if(m.text)bubble(m.role,m.text);}history.replaceState(null,'',`?draft=${id}`);$('#draft-list').value=id;render();}
+async function load(id){if(manifest?.id!==id)chatSceneID=null;manifest=await api(`/drafts/${id}`);resetReview();$('#messages').replaceChildren();const messages=await api(`/drafts/${id}/messages`);for(const m of messages){if(m.text)bubble(m.role,m.text);}history.replaceState(null,'',`?draft=${id}`);$('#draft-list').value=id;render();}
 $('#draft-list').onchange=async e=>{if(!e.target.value)return;if(dirty&&!confirm(t('Discard unsaved edits?','Bỏ thay đổi chưa lưu?')))return;try{await load(e.target.value);}catch(e){notice(e.message,true);}};
 $('#new-tour').onclick=()=>{if(dirty&&!confirm(t('Discard unsaved edits?','Bỏ thay đổi chưa lưu?')))return;location.href='/creator.html?new=1';};
 $('#tour-title').oninput=e=>{manifest.title=e.target.value;dirtyState();};
@@ -75,8 +77,8 @@ $('#composer').onsubmit=async e=>{
     }
     if(text){
       // Actual backend; no local fake NLP. Failure keeps the message for retry.
-      const fingerprint=JSON.stringify({id:manifest.id,text,revision:manifest.revision,locale:language()});
-      if(pendingTurn?.fingerprint!==fingerprint)pendingTurn={fingerprint,body:{text,request_id:requestID(),revision:manifest.revision,locale:language()}};
+      const fingerprint=JSON.stringify({id:manifest.id,text,revision:manifest.revision,locale:language(),scene_id:chatSceneID});
+      if(pendingTurn?.fingerprint!==fingerprint)pendingTurn={fingerprint,body:{text,request_id:requestID(),revision:manifest.revision,locale:language(),scene_id:chatSceneID}};
       const result=await api(`/drafts/${manifest.id}/chat`,{method:'POST',body:pendingTurn.body});
       pendingTurn=null;
       manifest=result.manifest;resetReview();await load(manifest.id);$('#message').value='';notice(t('Assistant response saved. Review any proposed edits.','Đã lưu phản hồi trợ lý. Kiểm tra các thay đổi được đề xuất.'));

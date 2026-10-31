@@ -1,0 +1,96 @@
+
+◆  Rendering probe → /private/tmp/estagent-video-export-probe.mp4
+   24fps · draft · 1 workers
+   GPU: browser GPU (auto-detect)
+
+[?25l│
+◒  Checking browser[1G[J◇  Browser: cache
+[?25h
+  Lint: 1 error(s), 1 warning(s) — run with --lint-verbose for full output.
+  Continuing render despite lint issues. Use --strict to block errors.
+
+[INFO] [Render] Pipeline started {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","platform":"darwin","arch":"arm64","nodeVersion":"v26.10.0","fps":{"num":24,"den":1},"format":"mp4","quality":"draft","browserGpuMode":"auto","forceScreenshot":false,"protocolTimeout":300000,"browserTimeout":120000,"pageNavigationTimeout":60000,"playerReadyTimeout":45000}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"pipeline","status":"checkpoint","elapsedMs":3,"message":"started","format":"mp4","quality":"draft","browserGpuMode":"auto","forceScreenshot":false,"protocolTimeoutMs":300000,"pageNavigationTimeoutMs":60000,"playerReadyTimeoutMs":45000,"requestedWorkers":1}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"compile","status":"start","elapsedMs":4,"needsAlpha":false}
+  █░░░░░░░░░░░░░░░░░░░░░░░░  5%  Compiling composition
+@hf-progress {"code":"compile","pct":5}
+[INFO] [Compiler] Fetched 11 font face(s) for "Inter" from Google Fonts (cached to /Users/anhoaithai/.cache/hyperframes/fonts/inter)
+[INFO] [Compiler] Injected deterministic @font-face rules for 1 requested font families
+[INFO] Compiled composition metadata {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","entryFile":"index.html","staticDuration":1,"width":720,"height":1280,"videoCount":0,"audioCount":0,"renderModeHints":{"recommendScreenshot":false,"reasons":[]}}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"compile","status":"end","elapsedMs":1493,"durationMs":1489,"needsAlpha":false}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"compile","status":"checkpoint","elapsedMs":1493,"message":"composition metadata resolved","width":720,"height":1280,"videoCount":0,"audioCount":0,"imageCount":0,"deviceScaleFactor":1,"forceScreenshot":false,"compositionHash":"aa7695652aae1dd2"}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"browser_probe","status":"start","elapsedMs":1493,"forceScreenshot":false,"stagePhase":"calibrating"}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"browser_probe","status":"end","elapsedMs":1496,"durationMs":3,"forceScreenshot":false,"stagePhase":"calibrating"}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"browser_probe","status":"checkpoint","elapsedMs":1496,"message":"duration resolved","durationSeconds":1,"totalFrames":24,"compositionHash":"aa7695652aae1dd2","beginFrameStalled":false}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"video_extract","status":"start","elapsedMs":1496,"videoCount":0}
+  ██░░░░░░░░░░░░░░░░░░░░░░░  10%  Extracting video frames
+@hf-progress {"code":"extract_video","pct":10}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"video_extract","status":"end","elapsedMs":1496,"durationMs":0,"videoCount":0}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"video_extract","status":"checkpoint","elapsedMs":1497,"message":"frames resolved","videoCount":0,"extractedVideoCount":0,"totalFramesExtracted":0,"maxFramesPerVideo":0,"avgFramesPerExtractedVideo":null,"vfrPreflightCount":null,"vfrPreflightMs":null,"cacheHits":null,"cacheMisses":null,"transientRetries":null,"minVideoFrameCoverageRatio":null,"authoredTimedClipCount":0}
+[INFO] [Render] No HDR sources detected, rendering SDR {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00"}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"hdr_detection","status":"checkpoint","elapsedMs":1498,"message":"resolved","requestedHdrMode":"auto","effectiveHdr":"sdr","nativeHdrVideoCount":0,"nativeHdrImageCount":0}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"audio_process","status":"start","elapsedMs":1498,"audioCount":0}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"audio_process","status":"end","elapsedMs":1498,"durationMs":0,"audioCount":0}
+  █████░░░░░░░░░░░░░░░░░░░░  20%  Processing audio tracks
+@hf-progress {"code":"process_audio","pct":20}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"file_server","status":"start","elapsedMs":1498,"reused":false}
+  ██████░░░░░░░░░░░░░░░░░░░  25%  Starting frame capture
+@hf-progress {"code":"start_browsers","pct":25}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"file_server","status":"end","elapsedMs":1502,"durationMs":4}
+  ██████░░░░░░░░░░░░░░░░░░░  25%  Checking browser GPU
+@hf-progress {"code":"start_browsers","pct":25}
+[hyperframes] browserGpuMode probe → hardware (WebGL renderer vendor="Google Inc. (Apple)" renderer="ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)")
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"capture_calibration","status":"checkpoint","elapsedMs":2100,"message":"skipped","requestedWorkers":1,"totalFrames":24,"htmlInCanvasDetected":false,"lowMemoryMode":false,"deInversionEligible":false,"deParallelRouterEligible":false}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"worker_resolution","status":"checkpoint","elapsedMs":2101,"message":"resolved","workerCount":1}
+[INFO] streaming-encode gate {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","enabled":true,"reason":"single_worker","configFlag":true,"durationCapEnabled":false,"outputFormat":"mp4","workerCount":1,"durationSeconds":1,"maxDurationSeconds":240}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"capture_strategy","status":"checkpoint","elapsedMs":2101,"message":"resolved","workerCount":1,"forceScreenshot":false,"captureBeyondViewport":null,"useStreamingEncode":true,"useLayeredComposite":false,"usePageSideCompositing":false,"hasHdrContent":false,"hasShaderTransitions":false,"isPngSequence":false}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"capture_streaming","status":"start","elapsedMs":2101,"stagePhase":"capturing","workerCount":1,"forceScreenshot":false,"totalFrames":24,"framesCompleted":0,"captureMode":"drawelement","captureOperation":"drawElement"}
+[BrowserManager] Browser launched (HeadlessChrome/152.0.7977.30, screenshot, gl=--use-gl=angle --use-angle=metal, headlessShell=true, platform=darwin)
+[initSession:screenshot] page.goto start (0ms)
+[HyperFrames] render runtime fps {"canonicalFps":24,"source":"render-options","rawFpsSource":"render-options","rawFps":24}
+[initSession:screenshot] page.goto complete (246ms)
+[initSession:screenshot] GSAP proxy flush complete (284ms)
+[initSession:screenshot] pollHfReady complete (285ms)
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"capture_streaming","status":"checkpoint","elapsedMs":32103,"message":"stage still running","stagePhase":"capturing","workerCount":1,"forceScreenshot":false,"totalFrames":24,"framesCompleted":0,"captureMode":"drawelement","captureOperation":"drawElement","heartbeatIndex":1,"stageElapsedMs":30000}
+[FrameCapture] Sub-composition timelines not registered after 45000ms: main. Compositions that load data asynchronously (e.g. fetch) must register window.__timelines[id] after setup completes. Compositions intentionally driven without GSAP timelines (CSS animations / rAF) can mark the host with data-no-timeline to skip this wait.
+[initSession:screenshot] pollSubCompositionTimelines complete (timeout) (45325ms)
+[FrameCapture:sub_timeline_readiness_timeout] Sub-composition timelines did not become ready within 45000ms (still unregistered: main). This can be intentional: a composition driven by CSS animations or rAF never registers window.__timelines[id], and marking its host with data-no-timeline skips the wait entirely. Otherwise, a composition that sets up asynchronously must register window.__timelines[id] once setup completes. { timeoutMs: 45000, sources: [], pendingCompositionIds: [ 'main' ] }
+[initSession:screenshot] applyVideoMetadataHints complete (45326ms)
+[initSession:screenshot] media + fonts + tailwind ready (45329ms)
+[initSession:screenshot] timeline at-risk predictor: 0/24 frames (0%) (45367ms)
+[initSession:screenshot] static-frame dedup: disabled (no GSAP tweens (non-GSAP animation)) (45371ms)
+[initSession:screenshot] drawElement self-verify armed: 3 ground-truth frame(s) @ [6, 12, 18] of 24 (45823ms)
+[initSession:drawelement] drawElement canvas injected (45825ms)
+[initSession:drawelement] screenshot fallback: 5 clip-boundary frame(s) (45829ms)
+[initSession:drawelement] drawElement worker encode initialized (45833ms)
+  ██████░░░░░░░░░░░░░░░░░░░  27%  Streaming frame 1/24
+@hf-progress {"code":"capture","done":1,"total":24,"pct":27}
+[INFO] [Render] drawElement self-verify passed {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","frame":6,"psnrDb":"inf"}
+[WARN] [Render] drawElement blank-frame suspect; re-capturing {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","frame":12,"bytes":16000,"floor":20000}
+[INFO] [Render] drawElement small frame is deterministic; accepted {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","frame":12,"bytes":16000}
+[INFO] [Render] drawElement self-verify passed {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","frame":12,"psnrDb":"inf"}
+  █████████████░░░░░░░░░░░░  55%  Streaming frame 13/24
+@hf-progress {"code":"capture","done":13,"total":24,"pct":55}
+[INFO] [Render] drawElement self-verify passed {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","frame":18,"psnrDb":"inf"}
+  ████████████████████░░░░░  80%  Streaming frame 24/24
+@hf-progress {"code":"capture","done":24,"total":24,"pct":80}
+  ████████████████████░░░░░  80%  Encoding frame 0/24
+@hf-progress {"code":"encode","done":0,"total":24,"pct":80}
+  ██████████████████████░░░  90%  Encoding frame 24/24
+@hf-progress {"code":"encode","done":24,"total":24,"pct":90}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"capture_streaming","status":"end","elapsedMs":48720,"durationMs":46618,"stagePhase":"capturing","workerCount":1,"forceScreenshot":false,"totalFrames":24,"framesCompleted":24,"captureMode":"drawelement","captureOperation":"encode"}
+[WARN] Render completed capture with correctness warnings {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","strictness":"best-effort","warningCodes":["sub_timeline_readiness_timeout"],"warningReasons":[],"warningStages":[],"warningOwners":[]}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"assemble","status":"start","elapsedMs":48721,"stagePhase":"capturing","hasAudio":false,"workerCount":1,"forceScreenshot":false,"totalFrames":24,"framesCompleted":24,"captureMode":"drawelement","captureOperation":"encode"}
+  ██████████████████████░░░  90%  Assembling final video
+@hf-progress {"code":"assemble","done":0,"total":1,"pct":90}
+  ████████████████████████░  99%  Assembling final video
+@hf-progress {"code":"assemble","done":1,"total":1,"pct":99}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"assemble","status":"end","elapsedMs":48743,"durationMs":22,"stagePhase":"capturing","hasAudio":false,"workerCount":1,"forceScreenshot":false,"totalFrames":24,"framesCompleted":24,"captureMode":"drawelement","captureOperation":"encode"}
+[INFO] [Render:trace] {"renderJobId":"aeeb30a5-c355-46c0-a1a1-2d63013e8f00","phase":"pipeline","status":"checkpoint","elapsedMs":48831,"message":"artifact validated","totalElapsedMs":48831}
+  █████████████████████████  100%  Render complete
+  [sub_timeline_readiness_timeout] Sub-composition timelines did not become ready within 45000ms (still unregistered: main). This can be intentional: a composition driven by CSS animations or rAF never registers window.__timelines[id], and marking its host with data-no-timeline skips the wait entirely. Otherwise, a composition that sets up asynchronously must register window.__timelines[id] once setup completes.
+
+◇  /private/tmp/estagent-video-export-probe.mp4
+   12.2 KB · 1.0s video · rendered in 48.8s
+   drawelement capture · hardware gpu · compile 1.5s · extract 0.0s · audio 0.0s · probe 0.0s · setup 0.6s · capture 46.6s · encode (during capture) 46.6s · assemble 0.0s
+   Keep editing by chatting with Framey in the HyperFrames desktop app → https://hyperframes.dev/studio/download

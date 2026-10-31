@@ -1,0 +1,18 @@
+{
+  "portrait.mp4": {
+    "music_under_voice": 149.89,
+    "music_between_voice": 749.25,
+    "duck_ratio": 0.2,
+    "scene_one_440Hz": 2996.76,
+    "scene_two_660Hz": 2998.77,
+    "wrong_scene_frequency_below_5_percent": true
+  },
+  "landscape.mp4": {
+    "music_under_voice": 149.89,
+    "music_between_voice": 749.25,
+    "duck_ratio": 0.2,
+    "scene_one_440Hz": 2996.76,
+    "scene_two_660Hz": 2998.77,
+    "wrong_scene_frequency_below_5_percent": true
+  }
+}

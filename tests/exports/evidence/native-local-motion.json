@@ -1,0 +1,10 @@
+{
+  "portrait.mp4": {
+    "real_pixel_motion_mean_difference": 33.567,
+    "second_scene_frame_seconds": 3.5
+  },
+  "landscape.mp4": {
+    "real_pixel_motion_mean_difference": 19.811,
+    "second_scene_frame_seconds": 3.5
+  }
+}

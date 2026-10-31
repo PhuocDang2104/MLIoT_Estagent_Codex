@@ -1,0 +1,15 @@
+▶ web lint
+  ok
+▶ web test
+  ok
+▶ web build
+  ok
+▶ core
+  SKIP (chưa có code)
+▶ ai compile
+  ok
+▶ ai pytest
+  ok
+▶ contract tour.json
+  ok
+GATE FAIL (strict: còn SKIP)

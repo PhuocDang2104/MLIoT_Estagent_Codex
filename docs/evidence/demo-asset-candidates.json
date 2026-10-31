@@ -1,0 +1,59 @@
+{
+  "research_date": "2026-10-31",
+  "license": "CC0",
+  "license_url": "https://polyhaven.com/license",
+  "api_terms_url": "https://github.com/Poly-Haven/Public-API/blob/master/ToS.md",
+  "projection_evidence_url": "https://docs.polyhaven.com/en/faq",
+  "projection": "equirectangular_360x180_source_hdri_tonemapped_to_jpg",
+  "images_are_independent_locations": true,
+  "production_imported": false,
+  "resized": false,
+  "need_before_legacy_upload": "Resize to4096x2048 or2048x1024; original8192x4096 exceeds32Mpixel cap",
+  "candidates": [
+    {
+      "id": "lebombo",
+      "source_page": "https://polyhaven.com/a/lebombo",
+      "download_url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/extra/Tonemapped%20JPG/lebombo.jpg",
+      "author": "Greg Zaal",
+      "bytes": 1873244,
+      "dimensions": [8192, 4096],
+      "sha256": "2e70777b9947b8a74809c22b9485bea6c4d67955e1ab2747507890b429eb1e9b",
+      "md5_matches_official_api": true,
+      "local_path": "/private/tmp/estagent-demo-candidates/lebombo.jpg",
+      "visually_inspected": true
+    },
+    {
+      "id": "entrance_hall",
+      "source_page": "https://polyhaven.com/a/entrance_hall",
+      "download_url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/extra/Tonemapped%20JPG/entrance_hall.jpg",
+      "author": "Sergej Majboroda",
+      "bytes": 4284028,
+      "dimensions": [8192, 4096],
+      "sha256": "4cf8de63a3243a9a761c542db839924a408a4f5bbfe2ed4c9a829d8c760b48a4",
+      "md5_matches_official_api": true,
+      "local_path": "/private/tmp/estagent-demo-candidates/entrance_hall.jpg",
+      "visually_inspected": true
+    },
+    {
+      "id": "artist_workshop",
+      "source_page": "https://polyhaven.com/a/artist_workshop",
+      "download_url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/extra/Tonemapped%20JPG/artist_workshop.jpg",
+      "author": "Oliksiy Yakovlyev",
+      "bytes": 5156645,
+      "dimensions": [8192, 4096],
+      "sha256": "3d1a24d3255246fd53a3eeefca5b30dc0540c62406dd5be93ada1912557f61b1",
+      "md5_matches_official_api": true,
+      "local_path": "/private/tmp/estagent-demo-candidates/artist_workshop.jpg",
+      "visually_inspected": true
+    },
+    {
+      "id": "small_empty_room_1",
+      "source_page": "https://polyhaven.com/a/small_empty_room_1",
+      "download_url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/extra/Tonemapped%20JPG/small_empty_room_1.jpg",
+      "author": "Sergej Majboroda",
+      "official_api_bytes": 28316012,
+      "downloaded": false,
+      "need": "Exceeds12MiB; normalize before upload"
+    }
+  ]
+}

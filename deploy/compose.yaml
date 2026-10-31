@@ -11,6 +11,12 @@ services:
       OPENAI_MODEL_VISION: ${OPENAI_MODEL_VISION:-gpt-6.1-sol}
       OPENAI_MODEL_TTS: ${OPENAI_MODEL_TTS:-gpt-4o-mini-tts}
       STUDIO_DATA_DIR: /data/studio
+      MEDIA_STORAGE_BACKEND: ${MEDIA_STORAGE_BACKEND:-local}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-}
+      MINIO_SECURE: ${MINIO_SECURE:-0}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-}
+      MINIO_BUCKET: ${MINIO_BUCKET:-}
       OPENAI_MODEL_TEXT: ${OPENAI_MODEL_TEXT:?Set OPENAI_MODEL_TEXT}
       OPENAI_MODEL_REALTIME: ${OPENAI_MODEL_REALTIME:?Set OPENAI_MODEL_REALTIME}
       OPENAI_MODEL_TRANSCRIBE: ${OPENAI_MODEL_TRANSCRIBE:?Set OPENAI_MODEL_TRANSCRIBE}
@@ -36,6 +42,7 @@ services:
     volumes:
       - checkpoints:/data
     networks:
+      storage: {}
       edge:
         aliases:
           - estagent-assistant-api
@@ -61,3 +68,6 @@ volumes:
 networks:
   edge:
     name: estagent-assistant-edge
+  storage:
+    name: estagent-object-store
+    external: true

@@ -163,3 +163,38 @@ Nhận card từ Tatejo (`w6B:p1`), cwd `/Users/anhoaithai/Documents/AHT/1. PROJ
 Deploy tooling mới bằng Codex; không thêm dependency app hoặc copy source Minute/House VR Tour, không dùng API trả phí. FE dùng source/asset đã có trong snapshot; quyền hero reference còn nêu trong audit frontend, chưa tự claim license mới. H0 chưa xác nhận, không claim build trong giờ thi. Dữ liệu browser smoke là fixture, không phải dữ liệu khách hàng.
 
 Tham khảo: [Docker build context](https://docs.docker.com/build/concepts/context/), [Caddy reverse_proxy](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy). Bằng chứng FE Vercel cũ ở `web/evidence/production-check.log` chỉ là lịch sử, không mô tả production hiện tại.
+
+## Wave 3 — private MinIO instance on the existing Estagent VM
+
+Dedicated instance (not a new VM/cloud resource): `deploy/minio.compose.yaml`,
+volume `estagent-minio-objects`, network `estagent-object-store`, loopback-only
+ports 19000/19001, UID 10001, RAM 512 MiB. Initialize ownership only on the newly
+created dedicated volume. Never alter another project's volumes or edge routes.
+Root/app credentials are independently generated with `secrets`, stored outside
+Git mode 0600. `deploy/provision_minio.py` reads them from environment, creates
+private `estagent-media`, app-only bucket policy and hard quota 536870912.
+Optional `--verify-quota-before-rollout` temporarily lowers quota to test refusal;
+run only before any application uses this new bucket, and always restores quota.
+`deploy/minio_smoke.py` verifies synthetic put/stat/get/SHA/Range, anonymous denial
+and app isolation; rerun `--read-only` after restarting only this MinIO instance.
+Never expose raw env/inspect output, operator credentials or bucket access in FE.
+
+Backend receives `MEDIA_STORAGE_BACKEND=minio` and all `MINIO_*` fields from the
+private app env; joins external `estagent-object-store`. Empty required fields or
+unavailable configured bucket fail startup; no silent local fallback. Existing
+unmarked local files and SQLite BLOBs remain readable. No migration/deletion is
+part of this release. Back up object data alongside SQLite metadata from now on.
+
+Production keyless release must explicitly use `ESTAGENT_KEYLESS_PREVIEW=1`, empty
+`OPENAI_API_KEY`, `API_LIMITS_ENABLED=1` (AI 6/60s/concurrency1, attempts50/3600s,
+upload6/60s/concurrency1), and `STORAGE_LIMITS_ENABLED=1` (/data, max536870912,
+minfree1073741824). The local guard is admission control, not a hard OS quota.
+
+Legacy rollback gate now requires **both standalone backups**:
+`python deploy/rollback_preflight.py --tour-db <backup-tours.sqlite> --creator-db <backup-creator.sqlite> --target-commit 346a0ba40051f3e5b739a318e86549a26730d439`.
+It refuses recorded-audio manifests and any remote marker in `media_storage`
+or `media_refs`, including image-only tours with unavailable audio. Missing
+Creator input cannot certify compatibility. Once any MinIO refs exist, retain a
+MinIO-aware image/config and bucket for rollback; never reset/restore/delete
+production data to make an old binary pass. Preserve old image/env/data as a
+recovery reference, not an unconditional downgrade target.

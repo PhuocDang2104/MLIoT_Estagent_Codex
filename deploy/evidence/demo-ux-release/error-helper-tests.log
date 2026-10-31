@@ -1,0 +1,11 @@
+✔ legacy config errors are localized without exposing operator details (1.69725ms)
+✔ validation keeps the field and actionable limit (0.314833ms)
+✔ network errors use the selected UI language (0.753916ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 100.148041

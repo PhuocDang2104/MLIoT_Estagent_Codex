@@ -104,7 +104,8 @@ def test_scene_validation_and_missing_key_are_honest(tmp_path):
         body['scenes'][0].update(coverage_degrees=240,coverage_source='user_provisional')
         assert c.put('/api/tours'+route,json=body,headers=HEADERS).status_code==200
         response=post(c,route+'/chat',{'revision':2,'text':'Rename first to Lobby','request_id':'chat-no-key','locale':'en'})
-        assert response.status_code==503 and 'OPENAI_API_KEY' in response.json()['detail']
+        assert response.status_code==503 and 'assistant' in response.json()['detail']
+        assert 'OPENAI_API_KEY' not in response.json()['detail']
         assert c.get('/api/tours'+route).json()['revision']==2
         assert post(c,route+'/review',{'revision':2}).status_code==200
         published=post(c,route+'/publish',{'revision':2}).json()
@@ -147,10 +148,10 @@ def test_unknown_ai_scene_and_stale_response_do_not_mutate(tmp_path):
 def test_same_origin_static_product_and_schema(tmp_path):
     with TestClient(app_at(tmp_path)) as c:
         assert 'FROM PHOTOS' not in c.get('/').text
-        assert '/demos/zind-house-000' in c.get('/').text and '/creator.html' in c.get('/').text
+        assert '/demos/zind-house-000' in c.get('/').text and '/business/create' in c.get('/').text
         for path in ['/creator.html','/viewer.html','/experience.html','/motion.js','/motion.css','/tour-common.js','/panorama.js','/assets/favicon.svg']:
             assert c.get(path).status_code==200,path
-        assert 'creator.html' in c.get('/experience.html').text
+        assert '/business/create' in c.get('/experience.html').text
         schema=json.loads(Path('fixtures/tour.schema.json').read_text())
         fixture=json.loads(Path('fixtures/checkpoint-tour/tour.json').read_text())
         jsonschema.validate(fixture,schema)

@@ -263,3 +263,38 @@ Source bad806c accepted from clean main, artifact SHA82368c0f…; full values in
 Production landing/Creator/guide QA PASS; no production QA publication. Original public manifest/8assets unchanged. Production export job not submitted; actual native/MinIO proof used separate synthetic DB in same image under1CPU768MiB. Corestrict SKIP known, physicaliOS/subjective listening unverified.
 
 Contentv2 live279da1a after endedguard2b6a332. New readonly catalog guide-v2 pinned8d22cafb…; all22WAVs independently verified through HTTPS.8rooms receive16new detailed recordings,7rooms retain6uniquev1recordings; all15 descriptions now grounded in images. Exact transcript stays separately visible, retained shorter audio disclosed. Oldguidecatalog/image/env preserved. No data restoration or new provider call by release. Runtimeflags unchanged: video1, narrationgeneration0, bothproviderkeys empty.
+## Demo UX release preparation — 2026-10-31
+
+Actual container metadata checked over the existing Estagent SSH target: current
+source bad806c0caa4c8c5981d6a97d48e651082397eac, healthy image
+a5399bf0102a08f9a3c78ec78e78b3cf419c9c983ba7a803a9b0bb20cb196443.
+Compose `/opt/estagent/releases/bad806c0caa4c8c5981d6a97d48e651082397eac/deploy/compose.yaml`,
+private runtime env `/opt/estagent/runtime/preview-bad806c0.env`. This is the
+pre-release rollback baseline; do not use older historical paths above.
+
+Keep keyless1, empty text OpenAI key, narration0, video export1, private MinIO and
+API/storage guards1. The UX release changes no DB schema. Package accepted clean
+main, use a new immutable release/image/env path, preserve existing data/catalog,
+and take a stopped-instance backup before cutover. Production browser tests are
+GET-only; the upload/review/publish golden path runs with synthetic assets in
+isolated localhost SQLite. New public manifest+8image hashes must match the
+pre-release baseline. Final cutover metadata: `deploy/evidence/demo-ux-release/release.json`.
+
+## Demo UX deployed — 2026-10-31
+
+Production source `fc3fdd301a30d72d3de554b7d4894a27124c08f9`, image
+`fc63867e0a1dadad41212f8796fe9d4e443f53d8eb22685918e47cf5766689d2`, healthy.
+This supersedes the preparation baseline above: concurrent main279da1a and its
+production guide-v2 catalog were preserved before release. Rollback baseline is
+`/opt/estagent/releases/279da1a07cab0eb7fcd301a84cbccefd66ca9c79/deploy/compose.yaml`
+with `/opt/estagent/runtime/preview-279da1a0.env`; never restore old volumes blindly.
+Current compose lives under `/opt/estagent/releases/fc3fdd301a30d72d3de554b7d4894a27124c08f9/deploy/compose.yaml`,
+current env `/opt/estagent/runtime/demo-ux-fc3fdd301a30d72d3de554b7d4894a27124c08f9.env`.
+Keyless1/narration0/video1/MinIO/API+storageguards1 unchanged, no provider keys;
+guide-v2 catalog bind retained. Dedicated checkpoints+MinIO stopped backups and
+12SQLite integrity checks PASS; archives/private paths in
+`deploy/evidence/demo-ux-release/release.json`. Deployment lock + image/env baseline
+preconditions guarded cutover; edge/other projects untouched. GET-only production
+browser and independent root review PASS; original manifest/8images unchanged.
+No production QA drafts or paid calls. Later evidence-only main commits do not
+change this deployed application SHA. Core strict remains known SKIP.

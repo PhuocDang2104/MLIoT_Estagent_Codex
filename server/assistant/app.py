@@ -172,6 +172,8 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
     def home(): return FileResponse(WEB/'index.html')
 
     @app.get('/business/create')
+    def create_tour(): return FileResponse(WEB/'creator.html')
+
     @app.get('/business/projects/{project_id}/generate')
     def studio(project_id: str = ''): return FileResponse(WEB/'studio.html')
 

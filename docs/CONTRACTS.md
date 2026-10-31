@@ -14,7 +14,7 @@ are enforced by backend. Geometry HTTP v1: [STUDIO-RUNTIME.md](STUDIO-RUNTIME.md
 
 ## Additive: AI Generation Studio
 
-Đọc `CREATOR-STUDIO.md` cho luồng LangGraph dài tại `/business/create`.
+Đọc `CREATOR-STUDIO.md` cho luồng LangGraph dài của các dự án Studio đã lưu tại `/business/projects/{id}/generate`. Cửa vào `/business/create` hiện phục vụ luồng tour ảnh bên dưới.
 Luồng này dùng `/api/studio/*`, `/api/studio-tours/*` và cookie/storage riêng;
 giữ nguyên `/api/tours/*`, schema Manifest và các trang Creator/Viewer hiện có.
 Schema mới: `fixtures/studio-tour.schema.json`, fixture tổng hợp
@@ -175,7 +175,7 @@ No manifest schema or existing-record migration is required. See `CHAT-FLOW-HAND
 | `GET /api/tours/session` | Sets HttpOnly/SameSite Strict cookie scoped `/api/tours/` (30 days); lists only own drafts and configured AI flag |
 | `POST /api/tours/assets` | Raw JPEG/PNG/WebP bytes, max 12 MiB; decode/verify/EXIF-orient, strip metadata, JPEG texture ≤8192 px and thumbnail ≤480×300; max 32M pixels, source side ≤16000; HEIC unsupported 415. Per-owner byte digest dedupe. ≤100 images/session. Returns asset ID/URLs/dimensions; projection unknown |
 | `GET /api/tours/assets/{asset}` | Private image, owned session only; `?thumbnail=1` for thumbnail |
-| `POST /api/tours/drafts` | `{asset_ids,title?,text?,locale,request_id}`; 1–20 distinct owned assets; IDs and default `Photo N` labels generated server-side; records same-turn text+asset references. Idempotent request ID, mismatch 409 |
+| `POST /api/tours/drafts` | `{asset_ids,title?,text?,locale,request_id}`; 1–20 distinct owned assets; IDs and neutral localized `Overview` / `Viewpoint N` labels generated server-side; omitted or legacy placeholder titles derive from the supplied description, with the first scene retaining that description; records same-turn text+asset references. Idempotent request ID, mismatch 409 |
 | `GET /api/tours/drafts/{id}` | Own manifest; unknown/other owner 404 |
 | `PUT /api/tours/drafts/{id}` | `{revision,title,locale,scenes,start_scene_id}`; scene fields exclude URL fields; exact existing scene→asset mapping required; name/order/calibration edit increments revision and invalidates review. Stale 409 |
 | `POST /api/tours/drafts/{id}/review` | `{revision}` marks explicit reviewed revision; stale 409 |
@@ -288,3 +288,29 @@ come from the pinned supplied manifest; existing Hackathon snapshot unchanged.
 
 ### Cached demo guide (direct Thái follow-up, 2026-10-31)
 `GET /api/demos/{id}/intro` and `/guide` expose allowlisted generated-audio metadata/URLs. Guide preserves `capture_id`, `room_id`, `locale`, `script`, `description`, `source_id`, `source=openai_generated`, model/voice/script SHA/audio SHA/duration. It adapts the pinned TTS handoff; 15 rooms×2 locales =30 room bindings, expanded to16 selected markers×2 =32 capture bindings,16 unique WAVs. Sequence follows existing selected marker order, not physical adjacency. Missing locale stops, manual interaction/Pause/chat cancel auto-next, final capture finishes, no autoplay. Schema of existing immutable published tours unchanged.
+
+## Demo UX — canonical Creator and immersive Viewer, 2026-10-31
+
+User-authorized demo fixes preserve the manifest/API/storage schemas and source
+locale default. `/business/create` now serves the photo Creator Studio using
+`/api/tours/*`; `/creator.html` and `/experience.html` converge on that entry while
+preserving draft/new query parameters. Existing `/business/projects/{id}/generate`
+projects keep the original Studio runtime and `/api/studio/*` contracts. New
+creation uses one limit: 20 images, 12 MiB each, as before for `/api/tours/assets`.
+
+Creator explicitly selects content language, and Save retains it independently
+of interface EN/VI. Creation without a configured assistant stores defaults from
+the user's text and does not attempt chat. These defaults are deterministic copy,
+not image analysis or an AI completion; room identity and spatial facts are not
+inferred. Recorded audio fields live under Advanced; unavailable generated-voice
+controls are hidden without weakening the backend's consent/budget checks.
+
+Viewer presents both ordinary photos and cylindrical panoramas in one viewport.
+Camera bounds account for visible rays and captured vertical/horizontal extent.
+The chosen opening scene is presented first without mutating published ordering.
+Unavailable AI/empty audio controls are hidden; a real narration track exposes a
+Listen button. Source details are expandable. Interface switching does not
+translate supplied text. An explicitly selected audio language is retained;
+otherwise narration follows the interface locale, and locale changes pause playback. Chat
+history/suggestions are page-local UI; existing server history boundaries remain.
+Missing/provider AI errors preserve 503/429/502 while returning safe localized text.

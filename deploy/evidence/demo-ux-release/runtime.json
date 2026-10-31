@@ -1,0 +1,16 @@
+{
+  "image": "sha256:fc63867e0a1dadad41212f8796fe9d4e443f53d8eb22685918e47cf5766689d2",
+  "healthy": "healthy",
+  "compose": "/opt/estagent/releases/fc3fdd301a30d72d3de554b7d4894a27124c08f9/deploy/compose.yaml",
+  "env_file": "/opt/estagent/runtime/demo-ux-fc3fdd301a30d72d3de554b7d4894a27124c08f9.env",
+  "flags": {
+    "ESTAGENT_KEYLESS_PREVIEW": "1",
+    "NARRATION_ENABLED": "0",
+    "VIDEO_EXPORT_ENABLED": "1",
+    "MEDIA_STORAGE_BACKEND": "minio",
+    "API_LIMITS_ENABLED": "1",
+    "STORAGE_LIMITS_ENABLED": "1"
+  },
+  "provider_keys_present": false,
+  "catalog_mount": "/opt/estagent/runtime/demo-cache-guide-v2"
+}

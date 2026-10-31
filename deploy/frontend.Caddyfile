@@ -8,7 +8,9 @@
     root * /srv
     encode gzip zstd
     header Cache-Control "no-cache"
-    @studio path /business/create /business/projects/*/generate
+    @creator path /business/create
+    rewrite @creator /creator.html
+    @studio path /business/projects/*/generate
     rewrite @studio /studio.html
     @api path /api/*
     handle @api {

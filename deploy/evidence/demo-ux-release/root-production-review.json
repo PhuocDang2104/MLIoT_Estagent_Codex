@@ -1,0 +1,17 @@
+{
+  "pass": true,
+  "source": "Root independent fresh production browser, no overrides, GET-only",
+  "canonical_creator": true,
+  "opening": "1/4",
+  "keyless_controls_hidden": true,
+  "viewport": [
+    390,
+    844
+  ],
+  "boundary_arrow_right_presses": 30,
+  "empty_fraction": 0,
+  "language_retains_source_title": true,
+  "javascript_errors": [],
+  "writes": [],
+  "screenshots": "local-only /private/tmp/estagent-demo-ux-review/production-{creator,viewer}-390.png"
+}

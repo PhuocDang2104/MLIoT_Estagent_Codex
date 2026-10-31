@@ -101,3 +101,34 @@
 [data-page=viewer].is-immersive{--viewer-glass:#243234}
 [data-page=viewer].is-immersive .panel-body{background:#243234;-webkit-backdrop-filter:none;backdrop-filter:none}
 }
+
+/* Viewer demo readiness: every image shares the same viewport and controls. */
+[data-page=viewer].is-immersive #photo{object-fit:cover;object-position:center}
+[data-page=viewer].is-immersive #listen{pointer-events:auto;margin-top:14px;padding:10px 18px;background:#fff2cc;color:#202a29;border-color:#fff2cc;text-shadow:none;font-weight:650}
+[data-page=viewer].is-immersive input[type=range],[data-page=viewer].is-immersive input[type=checkbox]{accent-color:#e7c68f}
+[data-page=viewer].is-immersive .source-disclosure{font-size:12px;line-height:1.6;border-top:1px solid #ffffff26;padding-top:16px;margin-top:18px}
+[data-page=viewer].is-immersive .source-disclosure>summary{cursor:pointer;color:#e4e7df}
+[data-page=viewer].is-immersive .source-disclosure p{font-size:12px;color:#d5dfdb}
+[data-page=viewer].is-immersive #question-suggestions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+[data-page=viewer].is-immersive #question-suggestions button{font-size:11px;text-align:left;padding:8px 12px}
+[data-page=viewer].is-immersive #conversation{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow:auto}
+[data-page=viewer].is-immersive .viewer-message{padding:10px 13px;margin:0;white-space:pre-wrap;border-radius:14px;background:#ffffff14}
+[data-page=viewer].is-immersive .viewer-message.user{align-self:flex-end;background:#e7c68f26;border:1px solid #e7c68f50}
+/* Studio photo Creator: self-contained layout, shared Viewer styles stay untouched. */
+[data-page=creator] .product-main{padding-top:32px}
+[data-page=creator] .product-main>h1{font-size:clamp(32px,4vw,52px);margin:18px 0}
+[data-page=creator] .product-columns{margin-top:28px;grid-template-columns:minmax(0,.9fr) minmax(0,1.2fr)}
+[data-page=creator] .conversation-panel{position:sticky;top:20px;max-height:calc(100dvh - 40px);overflow:auto}
+[data-page=creator] #initial-fields{display:grid;gap:7px;margin-bottom:18px}
+[data-page=creator] .attach-zone{position:relative;display:flex;min-height:150px;align-items:center;justify-content:center;flex-direction:column;gap:12px;text-align:center;border:1.5px dashed #a7b4ac;background:#f5f7f4;padding:24px}
+[data-page=creator] .attach-zone:focus-within{outline:2px solid #9c7d5a;outline-offset:3px}
+[data-page=creator] .attach-zone input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;margin:0}
+[data-page=creator] #photo-count{font-size:12px;font-weight:600;border:1px solid #cad2cc;border-radius:8px;padding:8px 12px;background:white}
+[data-page=creator] .creator-audio>summary,[data-page=creator] #studio-drafts>summary{font-size:13px;font-weight:600;cursor:pointer;padding:8px 0}
+[data-page=creator] .scene-image-options>summary{font-size:11px;color:#687470;cursor:pointer;padding:5px 0}
+[data-page=creator] .scene-image-options[open]{padding:8px;border-radius:8px;background:#f4f6f3}
+[data-page=creator] #studio-projects{display:flex;flex-wrap:wrap;gap:8px;padding:12px 0}
+[data-page=creator] #publish-help{margin-bottom:12px}
+[data-page=creator] .draft-panel .panel-heading{display:flex;align-items:center;justify-content:space-between}
+[data-page=creator] #messages{max-height:240px}
+@media(max-width:850px){[data-page=creator] .product-columns{grid-template-columns:1fr}[data-page=creator] .conversation-panel{position:static;max-height:none;overflow:visible}}

@@ -1,0 +1,41 @@
+{
+  "deployed_commit": "fc3fdd301a30d72d3de554b7d4894a27124c08f9",
+  "image": "sha256:fc63867e0a1dadad41212f8796fe9d4e443f53d8eb22685918e47cf5766689d2",
+  "artifact_sha256": "da4292c17ee25040ec81b6e397c676278cca53adc43d01306b1e58edf59d3d49",
+  "previous_commit": "279da1a07cab0eb7fcd301a84cbccefd66ca9c79",
+  "previous_image": "sha256:8f39ac968d0d3bfdb0553265a45309467c43331b3131da3795a40cda3046a727",
+  "previous_env": "/opt/estagent/runtime/preview-279da1a0.env",
+  "backup": "/opt/estagent/backups/demo-ux-fc3fdd301a30d72d3de554b7d4894a27124c08f9",
+  "backup_sha256": {
+    "checkpoints.tar.gz": "187feda21500e89356b8528f82098ec8ecf8eeb4a8d2c579cabfde7487fc4374",
+    "minio.tar.gz": "732eacf19d09bde5a2d9bcffd88109a4bab0ca725b6ae07b9856b7116d698577"
+  },
+  "backup_sqlite_integrity_checks": 12,
+  "runtime": {
+    "image": "sha256:fc63867e0a1dadad41212f8796fe9d4e443f53d8eb22685918e47cf5766689d2",
+    "healthy": "healthy",
+    "compose": "/opt/estagent/releases/fc3fdd301a30d72d3de554b7d4894a27124c08f9/deploy/compose.yaml",
+    "env_file": "/opt/estagent/runtime/demo-ux-fc3fdd301a30d72d3de554b7d4894a27124c08f9.env",
+    "flags": {
+      "ESTAGENT_KEYLESS_PREVIEW": "1",
+      "NARRATION_ENABLED": "0",
+      "VIDEO_EXPORT_ENABLED": "1",
+      "MEDIA_STORAGE_BACKEND": "minio",
+      "API_LIMITS_ENABLED": "1",
+      "STORAGE_LIMITS_ENABLED": "1"
+    },
+    "provider_keys_present": false,
+    "catalog_mount": "/opt/estagent/runtime/demo-cache-guide-v2"
+  },
+  "strict": {
+    "web": "PASS",
+    "ai": "PASS",
+    "core": "SKIP: existing missing implementation"
+  },
+  "production_browser": "PASS landing, Creator and aliases, Viewer desktop/mobile, recorded guide, independent root acceptance",
+  "published_manifest_and_eight_media_unchanged": true,
+  "production_qa_writes": 0,
+  "paid_calls": 0,
+  "release_lock": "/opt/estagent/runtime/deploy.lock",
+  "notes": "Evidence-only commits after deployed_commit do not change runtime; no restoration/migration, retained guide-v2 catalog and native exports."
+}

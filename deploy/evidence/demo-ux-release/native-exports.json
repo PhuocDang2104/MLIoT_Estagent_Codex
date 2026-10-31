@@ -1,0 +1,54 @@
+{
+  "actual_render": true,
+  "synthetic": true,
+  "snapshot_immutable": true,
+  "owner_isolation": true,
+  "range": true,
+  "idempotent": true,
+  "restart_ready": true,
+  "interrupted_state": true,
+  "outputs": [
+    {
+      "aspect": "portrait",
+      "job": "3531917841a4de2e8c33428db76adfdc",
+      "streams": [
+        {
+          "codec_type": "video",
+          "codec_name": "h264",
+          "width": 720,
+          "height": 1280,
+          "duration": "6.000000"
+        },
+        {
+          "codec_type": "audio",
+          "codec_name": "aac",
+          "width": null,
+          "height": null,
+          "duration": "6.000000"
+        }
+      ],
+      "duration": "6.000000"
+    },
+    {
+      "aspect": "landscape",
+      "job": "abffc23ccd92666ebcbb6f6e547d7f9e",
+      "streams": [
+        {
+          "codec_type": "video",
+          "codec_name": "h264",
+          "width": 1280,
+          "height": 720,
+          "duration": "6.000000"
+        },
+        {
+          "codec_type": "audio",
+          "codec_name": "aac",
+          "width": null,
+          "height": null,
+          "duration": "6.000000"
+        }
+      ],
+      "duration": "6.000000"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "source": "root independent GET-only production panorama assets with integrated local frontend",
+  "viewports": [
+    [
+      1440,
+      1000
+    ],
+    [
+      390,
+      844
+    ],
+    [
+      320,
+      740
+    ]
+  ],
+  "camera_boundary_checks": 48,
+  "max_missing_shader_color_fraction": 4.223e-06,
+  "opening_counter": "1 / 4",
+  "keyless_controls_hidden": true,
+  "js_errors": 0,
+  "real_media_screenshots": "local only, not committed"
+}

@@ -51,6 +51,8 @@ UI thì thêm bằng chứng nhìn thấy: screenshot hoặc log Playwright. Pip
 - Trunk-based. Nhánh `<lane>/<task-id>-<slug>`, worktree ở `../CodexHackathon-wt/<task-id>` (tạo bằng `scripts/spawn.sh`).
 - Commit nhỏ, message `<lane>: <việc>`. PR/merge ≤ 90 phút một lần mỗi lane; `main` luôn xanh.
 - `main` đỏ → **dừng mọi merge** cho tới khi Dev 1 xanh lại (andon).
+- Không thêm trailer `Co-Authored-By` cho Claude/Anthropic; giữ tác giả người thật và khai báo AI hỗ trợ trong `docs/DECLARATION.md`. Không dùng `--no-verify` để bỏ kiểm tra.
+- Mỗi clone bật hook bằng `git config --local core.hooksPath .githooks` (nếu đã có hook riêng thì tích hợp checker, không ghi đè cấu hình đó). Trước push chạy `python3 scripts/check_commit_attribution.py --all`.
 
 ## 6. Báo cáo cuối task (dòng cuối cùng của agent)
 ```text

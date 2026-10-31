@@ -1,0 +1,15 @@
+#!/bin/sh
+set -eu
+root=$(git rev-parse --show-toplevel)
+# Check every branch/tag being pushed, including non-current refs.
+while read -r local_ref local_sha remote_ref remote_sha; do
+    case "$local_sha" in *[!0]*) ;; *) continue ;; esac
+    git log "$local_sha" --format=%B > /dev/null
+    # Use a message file to avoid changing HEAD or worktree state.
+    message=$(mktemp)
+    trap 'rm -f "$message"' EXIT HUP INT TERM
+    git log "$local_sha" --format=%B > "$message"
+    python3 "$root/scripts/check_commit_attribution.py" --message-file "$message"
+    rm -f "$message"
+    trap - EXIT HUP INT TERM
+done

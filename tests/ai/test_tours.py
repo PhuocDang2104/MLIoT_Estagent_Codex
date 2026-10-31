@@ -104,7 +104,8 @@ def test_scene_validation_and_missing_key_are_honest(tmp_path):
         body['scenes'][0].update(coverage_degrees=240,coverage_source='user_provisional')
         assert c.put('/api/tours'+route,json=body,headers=HEADERS).status_code==200
         response=post(c,route+'/chat',{'revision':2,'text':'Rename first to Lobby','request_id':'chat-no-key','locale':'en'})
-        assert response.status_code==503 and 'OPENAI_API_KEY' in response.json()['detail']
+        assert response.status_code==503 and 'assistant' in response.json()['detail']
+        assert 'OPENAI_API_KEY' not in response.json()['detail']
         assert c.get('/api/tours'+route).json()['revision']==2
         assert post(c,route+'/review',{'revision':2}).status_code==200
         published=post(c,route+'/publish',{'revision':2}).json()

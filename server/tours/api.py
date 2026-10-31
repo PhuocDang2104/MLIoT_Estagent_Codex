@@ -15,6 +15,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from openai import OpenAI, APIError
 from PIL import Image, ImageOps, UnidentifiedImageError
 from pydantic import ValidationError
+from server.storage import upload_reservation
 from .audio import MAX_AUDIO_BYTES, install_audio, summarize_audio, audio_urls
 from .models import CreateDraft, EditDraft, Revision, Manifest, Chat, TourReply
 
@@ -133,9 +134,19 @@ def install(app, env, root, *, interpreter=None):
                 id=secrets.token_hex(16); width,height=image.size
                 assets=data_root/'assets'; assets.mkdir(exist_ok=True,mode=0o700)
                 image.thumbnail((8192,8192))
-                image.save(assets/f'{id}.jpg','JPEG',quality=90)
-                image.thumbnail((480,300)); image.save(assets/f'{id}-thumb.jpg','JPEG',quality=80)
-                conn.execute('INSERT INTO assets VALUES(?,?,?,?,?)',(id,who,digest,width,height))
+                texture=io.BytesIO();image.save(texture,'JPEG',quality=90)
+                image.thumbnail((480,300));thumb=io.BytesIO();image.save(thumb,'JPEG',quality=80)
+                outputs={assets/f'{id}.jpg':texture.getvalue(),assets/f'{id}-thumb.jpg':thumb.getvalue()}
+                with upload_reservation(request,sum(len(value) for value in outputs.values())):
+                    try:
+                        for target,content in outputs.items():
+                            with target.open('xb') as output:output.write(content)
+                        conn.execute('INSERT INTO assets VALUES(?,?,?,?,?)',(id,who,digest,width,height))
+                        conn.commit()
+                    except BaseException:
+                        conn.rollback()
+                        for target in outputs:target.unlink(missing_ok=True)
+                        raise
         return {'id':id,'width':width,'height':height,'image_url':f'/api/tours/assets/{id}','thumbnail_url':f'/api/tours/assets/{id}?thumbnail=1','projection':'unknown'}
 
     @router.get('/assets/{id}')

@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import StreamingResponse
 from .models import ProjectInput, Action, Review
 from .store import image_info, wav_duration
+from server.storage import upload_reservation
 
 COOKIE = 'estagent_studio'
 
@@ -78,10 +79,11 @@ def router(origin):
             if sum(a['kind'] == kind for a in assets) >= (12 if kind == 'panorama' else 1):
                 raise HTTPException(422, 'Đã đạt giới hạn tệp của loại này.')
             projection = 'equirectangular' if project.get('panorama_confirmed') and kind == 'panorama' and abs(width/height-2) <= .15 else 'photo'
-            return service.store.put_asset(project_id, name, kind, mime, data,
-                {**({'projection': projection} if kind == 'panorama' else {}),
-                 'width': width, 'height': height, 'duration': duration, 'credit': credit.strip(),
-                 'warning': 'Ảnh không có tỷ lệ panorama 2:1; hãy kiểm tra.' if kind == 'panorama' and abs(width/height-2) > .15 else None})
+            with upload_reservation(request,len(data)):
+                return service.store.put_asset(project_id, name, kind, mime, data,
+                    {**({'projection': projection} if kind == 'panorama' else {}),
+                     'width': width, 'height': height, 'duration': duration, 'credit': credit.strip(),
+                     'warning': 'Ảnh không có tỷ lệ panorama 2:1; hãy kiểm tra.' if kind == 'panorama' and abs(width/height-2) > .15 else None})
 
     @routes.delete('/projects/{project_id}/assets/{asset_id}')
     def remove(project_id: str, asset_id: str, request: Request):

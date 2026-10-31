@@ -1,0 +1,1 @@
+{"health": "healthy", "image": "sha256:a5399bf0102a08f9a3c78ec78e78b3cf419c9c983ba7a803a9b0bb20cb196443", "uid": "10001:10001", "read_only": true, "video_enabled": "1", "video_renderer": "ffmpeg", "tts_generation_enabled": "0", "global_key_empty": true, "tts_key_empty": true, "api_guard": "1", "storage_guard": "1"}

@@ -28,10 +28,9 @@ phân biệt được fix với reproduce sai; tiếp tục phần độc lập 
 
 ## Trạng thái vòng này
 
-- Production source `e0002f4`, image `ea236835…`, https://estagent.duckdns.org: Viewer glass,2CTA landing, MinIO và Studio runtime đã deploy/kiểm thật. Bằng chứng đầy đủ: `deploy/evidence/wave3-release/release.json`, `status/web.md`.
-- Main đồng thời nhận Studio472280f; ancestry guard chặn push cũ. Thái xác nhận được gộp, release lane merge và chạy lại AI/web strict +26rollback tests trước clean artifact/cutover. Không force-push hoặc đụng root `.env.example` riêng user.
-- E2E design c33e843 chỉ docs/inventory metadata được merge sau rollout; ZIP/dataset không publish, rights public/export chưa chốt. TTS EN/VI và Video Export được giao lane khác cho phiên bản kế tiếp.
-- Không paid AI/geometry/3D reconstruction claim; giữ keyless và guards. Screenshot demo thật local-only; không stage/publish env/DB/user video.
+- Accepted candidate bad806c integrates all teammate heads (UXd07e869, Video0b3c935, TTS3298792, assetsdocs2fa58cb) and release implementatione30f6bd. Main normal push; root user .env.example untouched.
+- Public Nhà Demo/guide and pitch UX shipped; actual image/flags/browser/hash evidence: status/web.md + deploy/evidence/house-demo. Globalkeys empty, speech generation disabled; cached generated guides play, native video enabled after integrated private MinIO smoke.
+- H returned integration lease after clean handoff; root coordinates/reviews, release lane owns main/prod. No duplicate cherry-picks or force pushes. No raw ZIP/BLEND/dataset download, no new reconstruction claim.
 
 ## Đồng đội đồng bộ
 

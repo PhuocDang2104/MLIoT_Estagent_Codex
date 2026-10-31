@@ -66,6 +66,7 @@ async page => {
   check((await page.locator('#audio-state').innerText()).includes('Giọng AI tạo'),'Generated source label lost');check(await page.locator('#subtitle').getAttribute('lang')==='en','English subtitle has wrong lang');
   await page.locator('#listen').click();await page.waitForFunction(()=>document.querySelector('#narration-track').currentTime>.1);
   await page.locator('#viewer-chat summary').click();check(await page.locator('#narration-track').evaluate(el=>el.paused),'Opening chat did not pause');
+  await page.locator('#viewer-chat summary').click();await page.waitForTimeout(200);check(await page.locator('#narration-track').evaluate(el=>el.paused),'Closing chat automatically resumed audio');await page.locator('#viewer-chat summary').click();
   await page.locator('#question-suggestions button').first().click();await page.locator('#ask').click();await page.locator('.viewer-message.assistant').waitFor();
   check(await page.locator('.viewer-message.user').count()===1,'Question not retained');
   check(await page.locator('#question').inputValue()==='','Sent question not cleared');
@@ -76,5 +77,5 @@ async page => {
   check(await page.locator('.immersive-header').isVisible(),'Chat hid header');
   await page.screenshot({path:'tests/demo-ux/viewer-chat.png'});
   check(errors.length===0,errors.join('; '));
-  return {pass:true,source:'synthetic image/WAV with mocked API, actual Chromium/WebGL/media',photoViewport:[1440,390,320],openingFirst:true,blankPixels:0,cameraInputs:['keyboard','drag','wheel','resize'],hiddenUnavailable:true,recordedPlayback:true,chatHistory:true,sanitizedError:true,errors};
+  return {pass:true,source:'synthetic image/WAV with mocked API, actual Chromium/WebGL/media',photoViewport:[1440,390,320],openingFirst:true,blankPixels:0,cameraInputs:['keyboard','drag','wheel','resize'],hiddenUnavailable:true,recordedPlayback:true,chatCloseNoAutoResume:true,chatHistory:true,sanitizedError:true,errors};
 }

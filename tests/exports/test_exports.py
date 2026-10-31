@@ -24,8 +24,9 @@ EVIDENCE=Path(__file__).parent/'evidence'
 
 def make_app(root):
     cli=os.environ.get('VIDEO_EXPORT_HYPERFRAMES')
-    assert cli,'Set VIDEO_EXPORT_HYPERFRAMES to installed CLI; real render cannot be skipped'
-    return create_app(db_path=root/'assistant.sqlite',env={'ASSISTANT_ORIGIN':ORIGIN,'VIDEO_EXPORT_ENABLED':'1','VIDEO_EXPORT_LOCAL_QA':'1','VIDEO_EXPORT_HYPERFRAMES':cli})
+    renderer=os.environ.get('VIDEO_EXPORT_RENDERER','hyperframes')
+    if renderer=='hyperframes': assert cli,'Set VIDEO_EXPORT_HYPERFRAMES to installed CLI; real render cannot be skipped'
+    return create_app(db_path=root/'assistant.sqlite',env={'ASSISTANT_ORIGIN':ORIGIN,'VIDEO_EXPORT_ENABLED':'1','VIDEO_EXPORT_LOCAL_QA':'1','VIDEO_EXPORT_HYPERFRAMES':cli or '', 'VIDEO_EXPORT_RENDERER':renderer})
 
 
 def source(client, music_seconds=6):

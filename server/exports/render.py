@@ -135,11 +135,17 @@ def composition(edit, directory, web):
     (directory / 'index.html').write_text(source)
 
 
-def render(edit, directory, output, cli, web, timeout=180, scope=None):
-    composition(edit, directory, web)
-    run_process(['node', str(cli), 'check', str(directory), '--json'], directory, 60, directory/'check.json', scope)
-    run_process(['node', str(cli), 'render', str(directory), '--workers', '1', '--fps', '24',
-                 '--quality', 'draft', '--output', str(output)], directory, timeout, directory/'renderer.log', scope)
+def render(edit, directory, output, cli, web, timeout=180, scope=None, renderer="hyperframes"):
+    if renderer == 'ffmpeg':
+        from .ffmpeg import render_native
+        render_native(edit,directory,output,web,timeout,scope)
+    elif renderer == 'hyperframes':
+        composition(edit, directory, web)
+        run_process(['node', str(cli), 'check', str(directory), '--json'], directory, 60, directory/'check.json', scope)
+        run_process(['node', str(cli), 'render', str(directory), '--workers', '1', '--fps', '24',
+                     '--quality', 'draft', '--output', str(output)], directory, timeout, directory/'renderer.log', scope)
+    else:
+        raise ValueError('VIDEO_EXPORT_RENDERER must be hyperframes or ffmpeg')
     raw = run_process(['ffprobe', '-v', 'error', '-show_streams', '-show_format', '-of', 'json', str(output)],
                       directory, 15, directory/'probe.json')
     info = json.loads(raw)

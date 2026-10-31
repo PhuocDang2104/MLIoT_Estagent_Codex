@@ -29,11 +29,14 @@ def install(app, env, data_root, db, owner, storage, web):
     local = env.get('VIDEO_EXPORT_LOCAL_QA', '0')
     if enabled not in {'0','1'} or local not in {'0','1'}:
         raise ValueError('VIDEO_EXPORT_ENABLED/VIDEO_EXPORT_LOCAL_QA must be 0 or 1')
+    renderer = env.get('VIDEO_EXPORT_RENDERER', 'hyperframes')
+    if renderer not in {'hyperframes','ffmpeg'}:
+        raise ValueError('VIDEO_EXPORT_RENDERER must be hyperframes or ffmpeg')
     cli = Path(env.get('VIDEO_EXPORT_HYPERFRAMES', ''))
-    if enabled=='1' and (not cli.is_absolute() or not cli.is_file()):
+    if enabled=='1' and renderer=='hyperframes' and (not cli.is_absolute() or not cli.is_file()):
         raise ValueError('VIDEO_EXPORT_HYPERFRAMES must name an installed absolute CLI .mjs path')
     if enabled=='1':
-        for executable in ('node','ffmpeg','ffprobe'):
+        for executable in (('node','ffmpeg','ffprobe') if renderer=='hyperframes' else ('ffmpeg','ffprobe')):
             if shutil.which(executable) is None:
                 raise ValueError(f'Video export requires {executable} on PATH')
     folder = data_root/'exports'
@@ -96,7 +99,7 @@ def install(app, env, data_root, db, owner, storage, web):
                     edit=json.loads(row['edit'])
                     materialize(edit,workdir,data_root,db,storage)
                     update(id,'rendering','renderer-running')
-                    render(edit,workdir,output,cli,web,scope=processes)
+                    render(edit,workdir,output,cli,web,scope=processes,renderer=renderer)
                     if output.stat().st_size>50*1024*1024: raise RuntimeError('Export exceeds 50 MiB output limit')
                     if local=='1': backend='local-qa'
                     else:

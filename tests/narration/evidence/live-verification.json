@@ -1,0 +1,28 @@
+{
+  "model": "gpt-4o-mini-tts",
+  "voice": "coral",
+  "max_retries": 0,
+  "timeout_seconds": 30,
+  "samples": [
+    {
+      "locale": "en",
+      "characters": 56,
+      "bytes": 237644,
+      "rate": 24000,
+      "channels": 1,
+      "bits": 16,
+      "duration_seconds": 4.95
+    },
+    {
+      "locale": "vi",
+      "characters": 73,
+      "bytes": 295244,
+      "rate": 24000,
+      "channels": 1,
+      "bits": 16,
+      "duration_seconds": 6.15
+    }
+  ],
+  "private_output": "/private/tmp/tour-tts-live-i9txpz9m",
+  "note": "Actual two authorized OpenAI calls. Format/duration verified; human listening quality not assessed."
+}

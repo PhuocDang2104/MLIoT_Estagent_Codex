@@ -1,9 +1,10 @@
 import {$,t,language,api,node,notice,link,requestID} from './tour-common.js';
 import {PanoramaCamera,constrainView} from './panorama.js';
 let configured=false,manifest=null,libraryTours=[],index=0,camera=null,loadGeneration=0,view={yaw:0,pitch:0,fov:70,coverage:240};
-let speech=null,utterance=null,paused=false;
+let speech=null,utterance=null,paused=false,audioLocale=null;
+const narrationLanguage=()=>audioLocale||language();
 const params=new URLSearchParams(location.search),draftID=params.get('draft'),tourID=params.get('tour');
-// Two actual media elements, one narration source at a time. No generated audio.
+// Two actual media elements, one narration source at a time. Uploaded or generated immutable audio.
 class RecordedTourPlayer {
   constructor(){
     this.voice=$('#narration-track');this.music=$('#music-track');this.active=false;this.generation=0;this.narrating=false;this.track=null;this.musicTrack=null;this.error='';
@@ -33,10 +34,11 @@ class RecordedTourPlayer {
     $('#audio-seek').disabled=!this.track;$('#audio-seek').max=this.track?.track.duration_seconds||0;$('#audio-seek').value=0;
     $('#device-voice').disabled=!!this.track;if(this.track)$('#device-voice').checked=false;
     if(this.track?.transcript)$('#subtitle').textContent=this.track.transcript;$('#full-subtitle').textContent=this.track?.transcript||'';
+    $('#subtitle').lang=$('#full-subtitle').lang=this.track?.locale||manifest.locale;
     this.mix();this.progress();this.describe();syncAudio();if(auto&&(this.track||this.musicTrack))this.play();
   }
   describe(){
-    const voice=this.track?t('Uploaded recording','Bản thu đã tải lên'):this.wrongLocale?t('No recording in this language','Không có bản thu theo ngôn ngữ này'):t('No recording for this scene','Chưa có bản thu cho điểm này');
+    const voice=this.track?(this.track.track.generation?t('AI-generated voice','Giọng AI tạo'):t('Uploaded recording','Bản thu đã tải lên')):this.wrongLocale?t('No recording in this language','Không có bản thu theo ngôn ngữ này'):t('No recording for this scene','Chưa có bản thu cho điểm này');
     const music=this.musicTrack?t('uploaded music','có nhạc đã tải'):t('no music','chưa có nhạc');
     $('#audio-state').textContent=this.error||`${voice} · ${music}. `+(this.track&&!this.track.transcript?t('No transcript supplied.','Chưa có lời chép của bản thu.'):'');
     const sources=[this.track?.track,this.musicTrack].filter(Boolean).map(track=>`${track.source_label} · ${track.rights}: ${track.rights_note}`);
@@ -81,7 +83,10 @@ class RecordedTourPlayer {
 }
 const recorded=new RecordedTourPlayer();
 function syncAudio(){
-  const available=!!(recorded.track||recorded.musicTrack);
+  const hasNarration=(manifest?.audio?.narration||[]).some(n=>n.scene_id===recorded.scene?.id);
+  const available=!!(hasNarration||recorded.musicTrack);
+  $('#audio-language').closest('label').hidden=!hasNarration;
+  $('#play').hidden=$('#pause').hidden=!(recorded.track||recorded.musicTrack);
   $('#viewer-audio').hidden=!available;if(!available)$('#viewer-audio').open=false;
   $('#listen').hidden=!recorded.track;
   $('#listen').textContent=recorded.active?t('Ⅱ Pause introduction','Ⅱ Dừng lời giới thiệu'):t('▶ Listen to introduction','▶ Nghe giới thiệu');
@@ -100,19 +105,19 @@ function say(){
   if(!$('#device-voice').checked){notice(t('Enable device voice to use the labelled fallback. Recorded audio is unavailable.','Bật giọng thiết bị để dùng fallback. Chưa có lời thu âm.'),true);return;}
   if(!('speechSynthesis' in window)){notice(t('Device speech is unavailable in this browser.','Trình duyệt chưa hỗ trợ giọng thiết bị.'),true);return;}
   const scene=manifest.scenes[index];
-  if(manifest.locale!==language()){notice(t('No narration in this language. Switch to the tour language.','Chưa có lời theo ngôn ngữ này. Chuyển sang ngôn ngữ gốc của tour.'),true);return;}
+  if(manifest.locale!==narrationLanguage()){notice(t('No narration in this language. Switch to the tour language.','Chưa có lời theo ngôn ngữ này. Chuyển sang ngôn ngữ gốc của tour.'),true);return;}
   if(paused){window.speechSynthesis.resume();paused=false;$('#play').ariaPressed='true';return;}
-  const localVoice=window.speechSynthesis.getVoices().find(v=>v.localService&&v.lang.toLowerCase().startsWith(language()));
+  const localVoice=window.speechSynthesis.getVoices().find(v=>v.localService&&v.lang.toLowerCase().startsWith(narrationLanguage()));
   if(!localVoice){notice(t('No local device voice is available for this language. Subtitles remain available.','Thiết bị chưa có giọng cục bộ cho ngôn ngữ này. Bạn vẫn có thể đọc phụ đề.'),true);return;}
   stop();const text=scene.description||scene.name;
-  utterance=new SpeechSynthesisUtterance(text);utterance.voice=localVoice;utterance.lang=language()==='vi'?'vi-VN':'en-US';utterance.volume=Number($('#voice-volume').value);
+  utterance=new SpeechSynthesisUtterance(text);utterance.voice=localVoice;utterance.lang=narrationLanguage()==='vi'?'vi-VN':'en-US';utterance.volume=Number($('#voice-volume').value);
   const active=utterance;active.onend=()=>{if(utterance===active){speech=null;utterance=null;$('#play').ariaPressed='false';}};active.onerror=()=>{if(utterance===active)notice(t('Device voice failed. Read the subtitle instead.','Giọng thiết bị bị lỗi. Bạn vẫn có thể đọc phụ đề.'),true);};speech='device';window.speechSynthesis.speak(active);$('#play').ariaPressed='true';notice(t('Device voice fallback — not recorded narration.','Giọng thiết bị fallback — không phải lời thu âm.'));
 }
 async function select(next){
   const continueAudio=recorded.active;stop();index=(next+manifest.scenes.length)%manifest.scenes.length;const scene=manifest.scenes[index],generation=++loadGeneration;
   $('#scene-title').textContent=scene.name;$('#scene-description').textContent=scene.description||scene.name;$('#projection-label').textContent=scene.projection==='cylindrical'?`${scene.coverage_degrees}° · ${scene.coverage_source==='user_calibrated'?t('calibrated panorama','panorama đã hiệu chỉnh'):t('provisional panorama','panorama góc tạm tính')}`:t('Photo · original perspective','Ảnh · góc nhìn gốc');$('#subtitle').textContent='';$('#scene-counter').textContent=`${index+1} / ${manifest.scenes.length}`;
   $('#coverage').textContent=scene.projection==='photo'?t('Original photo · no view behind the camera.','Ảnh thường · không có góc nhìn phía sau camera.'):t(`Cylindrical panorama · ${scene.coverage_degrees}° (${scene.coverage_source==='user_provisional'?'provisional coverage':'creator calibrated'}) · blank areas were not captured · not 3D. Drag to look around.`,`Panorama chiếu trụ · ${scene.coverage_degrees}° (${scene.coverage_source==='user_provisional'?'góc phủ tạm':'người dùng hiệu chỉnh'}) · vùng trống chưa được chụp · không phải 3D. Kéo để nhìn quanh.`);
-  recorded.select(scene,manifest.audio,language(),continueAudio);
+  recorded.select(scene,manifest.audio,narrationLanguage(),continueAudio);
   $('#scene-nav').querySelectorAll('button').forEach((b,i)=>b.setAttribute('aria-current',i===index?'true':'false'));
   const keepPanorama=scene.projection==='cylindrical'&&camera&&!$('#panorama').hidden;$('#panorama').hidden=!keepPanorama;$('#photo').hidden=!!keepPanorama;$('#stage').ariaBusy='true';$('#photo').src=scene.image_url;$('#photo').alt=scene.name;
   for(const id of ['zoom-in','zoom-out','reset-view'])$('#'+id).hidden=scene.projection==='photo';
@@ -144,6 +149,8 @@ function renderLibrary(){
   if(!libraryTours.length)$('#tour-library').append(node('p',t('No published tours yet. A Creator must review and publish a tour first.','Chưa có tour được xuất bản. Creator cần xem thử và duyệt tour trước.'),'empty-state'));
   for(const tour of libraryTours){const card=link('',tour.kind==='cached_demo'?tour.href:`/viewer.html?tour=${tour.id}`,'library-card');const img=node('img');img.src=tour.thumbnail_url;img.alt='';card.append(img,node('h2',tour.title),node('span',tour.kind==='cached_demo'?t('Cached model + 32 panoramas ↗','Model mẫu + 32 panorama ↗'):t('Open tour ↗','Mở tour ↗')));$('#tour-library').append(card);}
 }
+$('#audio-language').value=narrationLanguage();
+$('#audio-language').onchange=()=>{stop();audioLocale=$('#audio-language').value;if(manifest)select(index);};
 $('#previous').onclick=()=>select(index-1);$('#next').onclick=()=>select(index+1);
 $('#zoom-in').onclick=()=>{view.fov=Math.max(.25,view.fov-8);draw();};$('#zoom-out').onclick=()=>{view.fov=Math.min(110,view.fov+8);draw();};$('#reset-view').onclick=()=>{view.yaw=0;view.pitch=0;view.fov=fittedFov();draw();};
 $('#fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if($('#tour-view').requestFullscreen)await $('#tour-view').requestFullscreen();else throw new Error();}catch{notice(t('Fullscreen is unavailable in this browser.','Trình duyệt chưa hỗ trợ toàn màn hình.'),true);}};
@@ -175,7 +182,7 @@ $('#question-form').onsubmit=async e=>{
     $('#question').value=text;
   }finally{$('#ask').disabled=false;}
 };
-window.addEventListener('pagehide',stop);document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});document.addEventListener('languagechange',()=>{stop();notice('');renderText();syncFullscreen();});
+window.addEventListener('pagehide',stop);document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});document.addEventListener('languagechange',()=>{stop();$('#audio-language').value=narrationLanguage();notice('');renderText();syncFullscreen();});
 $('#photo').onerror=()=>notice(t('This scene image is unavailable. Other scenes remain accessible.','Ảnh này không tải được. Bạn vẫn xem được các điểm khác.'),true);
 try{
   const session=await api('/session');configured=!!session.configured;

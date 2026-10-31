@@ -1,0 +1,6 @@
+browser.js: {"pass":true,"component":"generate-preview-attach EN/VI","media":"actual playable fixture PCM WAV","viewer":"language/missing-track/chat-pause","snapshot":"fa43d02c2d3e4a2d9f0bb0587ae976c5"}
+
+browser-keyless.js: {"pass":true,"missing_key":"visible reason and disabled generation"}
+
+browser-live.js: {"pass":true,"actual_openai_audio_playback":[{"locale":"en","duration":4.95,"played":0.159272},{"locale":"vi","duration":6.15,"played":0.18857}],"note":"Existing authorized outputs only; zero new API calls; no human quality assessment"}
+

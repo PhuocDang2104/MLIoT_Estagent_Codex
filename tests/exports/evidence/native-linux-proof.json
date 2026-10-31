@@ -1,0 +1,73 @@
+{
+  "pass": true,
+  "actual_native_render": true,
+  "synthetic": true,
+  "platform": "linux",
+  "results": [
+    {
+      "aspect": "portrait",
+      "elapsed_seconds": 2.626,
+      "streams": [
+        {
+          "codec_type": "video",
+          "codec_name": "h264",
+          "width": 720,
+          "height": 1280,
+          "duration": "6.000000"
+        },
+        {
+          "codec_type": "audio",
+          "codec_name": "aac",
+          "width": null,
+          "height": null,
+          "duration": "6.000000"
+        }
+      ],
+      "audio": {
+        "music_under_voice": 149.89,
+        "music_between_voice": 749.25,
+        "duck_ratio": 0.2,
+        "scene_one_440Hz": 2996.76,
+        "scene_two_660Hz": 2998.77,
+        "wrong_scene_frequency_below_5_percent": true
+      }
+    },
+    {
+      "aspect": "landscape",
+      "elapsed_seconds": 2.788,
+      "streams": [
+        {
+          "codec_type": "video",
+          "codec_name": "h264",
+          "width": 1280,
+          "height": 720,
+          "duration": "6.000000"
+        },
+        {
+          "codec_type": "audio",
+          "codec_name": "aac",
+          "width": null,
+          "height": null,
+          "duration": "6.000000"
+        }
+      ],
+      "audio": {
+        "music_under_voice": 149.89,
+        "music_between_voice": 749.25,
+        "duck_ratio": 0.2,
+        "scene_one_440Hz": 2996.76,
+        "scene_two_660Hz": 2998.77,
+        "wrong_scene_frequency_below_5_percent": true
+      }
+    }
+  ],
+  "cgroup": {
+    "memory.max": "805306368",
+    "cpu.max": "100000 100000",
+    "pids.max": "64",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0"
+  },
+  "child_maxrss": 177628,
+  "self_maxrss": 61744,
+  "rss_units": "KiB on Linux, bytes on macOS"
+}

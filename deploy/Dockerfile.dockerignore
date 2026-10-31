@@ -29,3 +29,9 @@
 !web/demos/*.html
 !web/demos/*.js
 !web/demos/*.css
+
+!server/narration/
+!server/narration/*.py
+
+!server/exports/
+!server/exports/*.py

@@ -285,3 +285,6 @@ bucket key, dataset export or write API. Backend-only DEMO_CATALOG_PATH is optio
 if explicitly configured, invalid/missing catalog fails startup. Catalog/data and
 renderer bundle remain outsideGit. Projection and room/capture/marker mapping
 come from the pinned supplied manifest; existing Hackathon snapshot unchanged.
+
+### Cached demo guide (direct Thái follow-up, 2026-10-31)
+`GET /api/demos/{id}/intro` and `/guide` expose allowlisted generated-audio metadata/URLs. Guide preserves `capture_id`, `room_id`, `locale`, `script`, `description`, `source_id`, `source=openai_generated`, model/voice/script SHA/audio SHA/duration. It adapts the pinned TTS handoff; 15 rooms×2 locales =30 room bindings, expanded to16 selected markers×2 =32 capture bindings,16 unique WAVs. Sequence follows existing selected marker order, not physical adjacency. Missing locale stops, manual interaction/Pause/chat cancel auto-next, final capture finishes, no autoplay. Schema of existing immutable published tours unchanged.

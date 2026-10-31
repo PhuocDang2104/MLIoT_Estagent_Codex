@@ -65,3 +65,21 @@ def test_fail_closed_config_and_storage(tmp_path):
     with pytest.raises(ValueError,match='DEMO_CATALOG_PATH'):read_catalog(tmp_path/'absent')
     base=FastAPI();base.state.object_storage=None;install_demos(base,{},tmp_path)
     assert TestClient(base).get('/api/demos').json()==[]
+
+
+def test_intro_is_explicit_locale_provenance_and_membership(tmp_path):
+    _,sdk,path,doc=setup(tmp_path)
+    data=b'RIFF-synthetic-route-fixture';sha=hashlib.sha256(data).hexdigest();name='house/intro/vi.wav'
+    key=f'demos/{DEMO_ID}/{sha}/{name}';sdk.objects[key]=data
+    doc['assets'][name]={'key':key,'sha256':sha,'bytes':len(data),'content_type':'audio/wav'}
+    doc['intro']=[{'locale':'vi','asset':name,'sha256':sha,'source':'openai_generated',
+        'scope':'neutral_tour_intro_not_room_specific','script':'Synthetic route fixture'}]
+    path.write_text(json.dumps(doc));app=FastAPI();app.state.object_storage=SimpleNamespace(client=sdk,bucket='private-test')
+    install_demos(app,{'DEMO_CATALOG_PATH':str(path)},Path(__file__).resolve().parents[2]/'web');c=TestClient(app)
+    tracks=c.get(f'/api/demos/{DEMO_ID}/intro').json()
+    assert len(tracks)==1 and tracks[0]['locale']=='vi' and tracks[0]['source']=='openai_generated'
+    assert 'key' not in tracks[0] and 'asset' not in tracks[0]
+    assert c.get(tracks[0]['url'],headers={'Range':'bytes=0-3'}).content==b'RIFF'
+    assert c.get('/api/demos/other/intro').status_code==404
+    doc['intro'][0]['locale']='en';path.write_text(json.dumps(doc))
+    with pytest.raises(ValueError):read_catalog(path)

@@ -74,3 +74,13 @@ if (input) {
 
 document.addEventListener('languagechange', () => { toggle?.setAttribute('aria-label', toggle.getAttribute('aria-expanded') === 'true' ? t('Close menu', 'Đóng menu') : t('Open menu', 'Mở menu')); });
 if (toggle) toggle.setAttribute('aria-label', t('Open menu', 'Mở menu'));
+
+// Public demo descriptor owns the thumbnail; never substitute unrelated property photos.
+if(document.querySelector('#demo-hero')){
+ fetch('/api/demos').then(async response=>{if(!response.ok)throw new Error('Demo catalog unavailable');return response.json();}).then(catalog=>{
+  const demo=catalog.find(item=>item.id==='zind-house-000');if(!demo?.thumbnail_url)return;
+  const image=document.querySelector('#demo-hero');const url=new URL(demo.thumbnail_url,location.origin);
+  if(url.origin!==location.origin)return;
+  image.onload=()=>{image.hidden=false;document.querySelector('#demo-image-state').hidden=true;};image.src=url.href;
+ }).catch(()=>{/* Keep the canonical sample link usable when catalog imagery is unavailable. */});
+}

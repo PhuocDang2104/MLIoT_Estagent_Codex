@@ -26,7 +26,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     blob = subprocess.check_output([
-        'git', 'archive', sha, 'server/assistant', 'server/demos', 'server/tours', 'server/creator', 'server/limits.py', 'server/storage.py', 'server/object_storage.py', 'web', 'tests/ai',
+        'git', 'archive', sha, 'server/assistant', 'server/demos', 'server/narration', 'server/exports', 'server/tours', 'server/creator', 'server/limits.py', 'server/storage.py', 'server/object_storage.py', 'web', 'tests/ai',
     ], cwd=ROOT)
     print(f'Application snapshot: {sha}; deploy tooling: current uncommitted files', flush=True)
     with tempfile.TemporaryDirectory(prefix='estagent-native-qa-') as directory:
@@ -36,7 +36,7 @@ def main():
         shutil.copytree(ROOT / 'deploy', stage / 'deploy', ignore=shutil.ignore_patterns(
             'evidence', '__pycache__', '.env', '.env.*', 'runtime', '*.tar', '*.tar.gz'))
         env = {k: v for k, v in os.environ.items() if not k.startswith((
-            'OPENAI_', 'ASSISTANT_', 'TOUR_', 'STUDIO_', 'CREATOR_', 'ESTAGENT_', 'API_LIMITS_', 'STORAGE_LIMITS_', 'DEMO_', 'MINIO_', 'MEDIA_STORAGE_', 'LANGCHAIN_', 'LANGSMITH_'))}
+            'VIDEO_EXPORT_', 'NARRATION_', 'OPENAI_', 'ASSISTANT_', 'TOUR_', 'STUDIO_', 'CREATOR_', 'ESTAGENT_', 'API_LIMITS_', 'STORAGE_LIMITS_', 'DEMO_', 'MINIO_', 'MEDIA_STORAGE_', 'LANGCHAIN_', 'LANGSMITH_'))}
         env.update({
             'PYTHONDONTWRITEBYTECODE': '1', 'NO_PROXY': '127.0.0.1,localhost',
             'ASSISTANT_DB': str(stage / 'data' / 'checkpoints.sqlite'),

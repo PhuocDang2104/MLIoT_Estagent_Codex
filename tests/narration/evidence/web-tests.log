@@ -1,0 +1,18 @@
+
+> estagent-web@0.2.0 test
+> node --test tests/*.test.js
+
+✔ extract English details without inventing missing fields (1.500458ms)
+✔ Vietnamese, explicit address, and no windows (1.84625ms)
+✔ questions and uncertainty do not become facts (0.376167ms)
+✔ conflicting repeated fields require manual review (0.781375ms)
+✔ studio can have zero bedrooms and unknown is omitted (0.230417ms)
+✔ invalid counts and conflicting totals rejected (0.12125ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 62.648208

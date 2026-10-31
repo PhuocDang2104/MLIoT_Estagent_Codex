@@ -25,11 +25,32 @@ class SceneView(Scene):
     image_url: str
     thumbnail_url: str
 
+class AudioProvenance(Strict):
+    source_label: str = Field(min_length=3,max_length=200)
+    rights: Literal['owned','licensed']
+    rights_note: str = Field(min_length=3,max_length=500)
+
+class AudioTrack(AudioProvenance):
+    asset_id: str = Field(pattern=r'^[a-f0-9]{32}$')
+    url: str
+    content_type: Literal['audio/wav'] = 'audio/wav'
+    duration_seconds: float = Field(gt=0,le=180)
+    channels: Literal[1,2]
+    sample_rate: int = Field(ge=8000,le=48000)
+    sample_width: Literal[2] = 2
+
+class SceneNarration(Strict):
+    scene_id: str = Field(pattern=r'^[a-f0-9]{32}$')
+    locale: Literal['en','vi']
+    transcript: str = Field(default='',max_length=2000)
+    track: AudioTrack
+
 class Audio(Strict):
-    status: Literal['unavailable'] = 'unavailable'
-    narration: None = None
-    music: None = None
-    source: Literal['none'] = 'none'
+    status: Literal['unavailable','partial','ready'] = 'unavailable'
+    narration: list[SceneNarration] | None = Field(default=None,max_length=20)
+    music: AudioTrack | None = None
+    source: Literal['none','user_uploaded'] = 'none'
+
 
 class Manifest(Strict):
     schema_version: Literal['checkpoint-tour-v1'] = 'checkpoint-tour-v1'
@@ -47,6 +68,15 @@ class Manifest(Strict):
         ids = [s.id for s in self.scenes]
         if len(set(ids)) != len(ids) or self.start_scene_id not in ids:
             raise ValueError('Scene IDs must be unique and contain the start scene.')
+        narrations = self.audio.narration or []
+        bindings = [(n.scene_id,n.locale) for n in narrations]
+        if len(set(bindings)) != len(bindings) or any(n.scene_id not in ids for n in narrations):
+            raise ValueError('Narration must reference unique existing scene/locale pairs.')
+        has_audio = bool(narrations or self.audio.music)
+        complete = all(any(n.scene_id==id and n.locale==self.locale for n in narrations) for id in ids)
+        expected = 'ready' if complete else 'partial' if has_audio else 'unavailable'
+        if self.audio.status != expected or self.audio.source != ('user_uploaded' if has_audio else 'none'):
+            raise ValueError('Audio availability/source must match actual referenced tracks.')
         return self
 
 class CreateDraft(Strict):
@@ -80,3 +110,14 @@ class TourReply(Strict):
     changes: list[Rename]
     order: list[str] | None
     start_scene_id: str | None
+
+
+class NarrationBinding(Strict):
+    scene_id: str = Field(pattern=r'^[a-f0-9]{32}$')
+    asset_id: str = Field(pattern=r'^[a-f0-9]{32}$')
+    locale: Literal['en','vi']
+    transcript: str = Field(default='',max_length=2000)
+
+class AudioUpdate(Revision):
+    music_asset_id: str | None = Field(default=None,pattern=r'^[a-f0-9]{32}$')
+    narration: list[NarrationBinding] = Field(default_factory=list,max_length=20)

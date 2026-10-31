@@ -31,10 +31,56 @@
   ],
   "start_scene_id": "00000000000000000000000000000001",
   "audio": {
-    "status": "unavailable",
-    "source": "none",
-    "narration": null,
-    "music": null
+    "status": "ready",
+    "source": "user_uploaded",
+    "music": {
+      "asset_id": "0000000000000000000000000000000a",
+      "url": "/api/tours/audio-assets/0000000000000000000000000000000a",
+      "content_type": "audio/wav",
+      "duration_seconds": 2.0,
+      "channels": 1,
+      "sample_rate": 16000,
+      "sample_width": 2,
+      "source_label": "Synthetic PCM tone schema fixture",
+      "rights": "owned",
+      "rights_note": "Test-generated tone, not human speech or licensed music; no binary asset bundled."
+    },
+    "narration": [
+      {
+        "scene_id": "00000000000000000000000000000001",
+        "locale": "en",
+        "transcript": "Synthetic tone, not speech.",
+        "track": {
+          "asset_id": "0000000000000000000000000000000b",
+          "url": "/api/tours/audio-assets/0000000000000000000000000000000b",
+          "content_type": "audio/wav",
+          "duration_seconds": 2.0,
+          "channels": 1,
+          "sample_rate": 16000,
+          "sample_width": 2,
+          "source_label": "Synthetic PCM tone schema fixture",
+          "rights": "owned",
+          "rights_note": "Test-generated tone, not human speech or licensed music; no binary asset bundled."
+        }
+      },
+      {
+        "scene_id": "00000000000000000000000000000002",
+        "locale": "en",
+        "transcript": "Synthetic tone, not speech.",
+        "track": {
+          "asset_id": "0000000000000000000000000000000c",
+          "url": "/api/tours/audio-assets/0000000000000000000000000000000c",
+          "content_type": "audio/wav",
+          "duration_seconds": 2.0,
+          "channels": 1,
+          "sample_rate": 16000,
+          "sample_width": 2,
+          "source_label": "Synthetic PCM tone schema fixture",
+          "rights": "owned",
+          "rights_note": "Test-generated tone, not human speech or licensed music; no binary asset bundled."
+        }
+      }
+    ]
   },
   "credits": [
     "Generated synthetic schema fixture; no user assets. Image routes are placeholders until uploaded in runtime tests."

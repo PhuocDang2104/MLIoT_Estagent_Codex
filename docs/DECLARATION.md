@@ -95,3 +95,27 @@ are recorded in `docs/INTEGRATION-HANDOFF.md`.
 - Private `Codex-Hackathon.pdf` consulted through the supplied context note only; not copied/published.
   Small interviews and unverified desk-research numbers are not used as product-effectiveness claims.
 - Existing hero image provenance/license uncertainty remains; integration does not clear the asset audit.
+
+## 8. W2 recorded-audio preparation — 2026-10-31
+
+H0 remains unconfirmed; no claim that this work was written during competition hours.
+Owner: `feature/tour-audio`, base `a28e431`; implementation SHA and commands in
+`docs/AUDIO-HANDOFF.md`. This supersedes §7's audio limitation for this feature branch only.
+
+- New, Codex-assisted implementation: validated PCM WAV upload, immutable local assets,
+  per-scene/source-locale narration references, reviewed publication, Creator attachment UI,
+  real two-element Viewer playback/ducking/controls, and synthetic API/browser checks.
+- Reused: this repository's tour API/SQLite/session/revision contracts, Creator/Viewer UI,
+  Python 3.13 standard-library `wave` (PSF license), existing FastAPI/Pydantic/Pillow and
+  Playwright test environment. No new dependency, copied external code or downloaded asset.
+- Test media: locally generated sine tones (220/440/660 Hz) and solid-color PNGs; source is
+  `tests/audio/run_browser.py`. API fixtures use generated constant PCM samples. They are
+  synthetic test signals, **not human narration, licensed music or property evidence**.
+  Runtime WAV/PNG/DB files are temporary and removed; only test code, logs and synthetic
+  browser screenshots are included. No user media, env, keys, PDF or private demo assets.
+- App source/rights fields record the uploader's owned/licensed declaration; this is not
+  independent verification of rights. No bundled music license is claimed. Existing repo
+  and landing-image licensing questions remain unchanged and are not cleared by this lane.
+- Local WAV decoding, serving, media clocks and controls were exercised, including restart.
+  No TTS, transcription, provider, model or paid call; no subjective listening-quality test.
+  Device speech remains explicitly labelled fallback and was not validated as real narration.

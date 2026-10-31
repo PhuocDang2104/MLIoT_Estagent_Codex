@@ -15,6 +15,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from openai import OpenAI, APIError
 from PIL import Image, ImageOps, UnidentifiedImageError
 from pydantic import ValidationError
+from .audio import MAX_AUDIO_BYTES, install_audio, summarize_audio, audio_urls
 from .models import CreateDraft, EditDraft, Revision, Manifest, Chat, TourReply
 
 COOKIE = 'estagent_tours'
@@ -56,10 +57,10 @@ def install(app, env, root, *, interpreter=None):
             if request.headers.get('origin') != origin:
                 return JSONResponse({'error':'Invalid request origin / Nguồn yêu cầu không hợp lệ.'},status_code=403)
             size=0; parts=[]
-            cap = MAX_UPLOAD if request.url.path == '/api/tours/assets' else 65536
+            cap = MAX_AUDIO_BYTES if request.url.path == '/api/tours/audio-assets' else MAX_UPLOAD if request.url.path == '/api/tours/assets' else 65536
             async for part in request.stream():
                 size += len(part)
-                if size > cap: return JSONResponse({'error':'Upload too large (12 MB/image) / Dữ liệu quá lớn.'},status_code=413)
+                if size > cap: return JSONResponse({'error':'Upload too large (12 MiB/image, 20 MiB/WAV) / Dữ liệu quá lớn.'},status_code=413)
                 parts.append(part)
             request._body=b''.join(parts)
         return await call_next(request)
@@ -170,7 +171,7 @@ def install(app, env, root, *, interpreter=None):
             after={s.id:s.asset_id for s in data.scenes}
             if before!=after or len(after)!=len(data.scenes): raise HTTPException(422,'Edit may rename/reorder but cannot replace scene assets.')
             doc.update(data.model_dump(exclude={'revision'})); doc['revision']+=1
-            doc=validate_doc(asset_urls(doc,'/api/tours/assets'))
+            doc=validate_doc(summarize_audio(asset_urls(doc,'/api/tours/assets')))
             conn.execute('UPDATE drafts SET doc=?,reviewed=NULL WHERE id=?',(json.dumps(doc),id))
         return doc
 
@@ -189,9 +190,10 @@ def install(app, env, root, *, interpreter=None):
             existing=conn.execute('SELECT doc FROM published WHERE draft=? AND revision=?',(id,data.revision)).fetchone()
             if existing:return json.loads(existing['doc'])
             for s in doc['scenes']: file(s['asset_id'])
+            verify_audio_publish(conn,doc,owner(request))
             snapshot=secrets.token_hex(16)
             doc.update(id=snapshot,status='published')
-            doc=validate_doc(asset_urls(doc,f'/api/tours/published/{snapshot}/assets'))
+            doc=validate_doc(audio_urls(asset_urls(doc,f'/api/tours/published/{snapshot}/assets'),f'/api/tours/published/{snapshot}/audio'))
             conn.execute('INSERT INTO published VALUES(?,?,?,?)',(snapshot,id,data.revision,json.dumps(doc)))
         return doc
 
@@ -280,4 +282,5 @@ def install(app, env, root, *, interpreter=None):
         if reply.start_scene_id is not None and reply.start_scene_id not in [s['id'] for s in doc['scenes']]: raise HTTPException(502,'Unknown navigation target.')
         return {'reply':reply.reply,'scene_id':reply.start_scene_id,'source':'configured_interpreter' if interpreter else 'openai'}
 
+    verify_audio_publish = install_audio(router,db,owner,draft,check_revision,validate_doc,published,data_root)
     app.include_router(router)

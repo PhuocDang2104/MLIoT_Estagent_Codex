@@ -1,0 +1,2 @@
+PASS TLS; original public manifest + 8 asset hashes unchanged; deployed index/viewer/JS/glass CSS match accepted source; Studio dispatcher ready, geometry unconfigured
+HEALTH PASS (HTTP + checkpoint read; no model/quota check)

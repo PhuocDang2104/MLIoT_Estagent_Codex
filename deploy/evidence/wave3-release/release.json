@@ -1,0 +1,36 @@
+{
+  "source_sha": "37962a3d6ab198dfde7e336e9c61d697a47a0a3f",
+  "image": "sha256:7bcd22d5d901564823eda926585c413a9f8a77ea789dbb4b728ac9dabd5d0c71",
+  "artifact_sha256": "8d146a0a74ef68061ca79b7c21d868a3df5f78cdca629ba0ccce01d5de80aed4",
+  "url": "https://estagent.duckdns.org",
+  "source_clean_main_at_build": true,
+  "health": "healthy",
+  "keyless": true,
+  "geometry_configured": false,
+  "api_upload_storage_guards_verified": true,
+  "minio_private_quota_bytes": 536870912,
+  "backup_consistent_stopped_volumes": true,
+  "backup_sqlite_integrity_count": 10,
+  "public_manifest_unchanged": true,
+  "public_asset_hashes_unchanged": 8,
+  "browser": [
+    "landing EN/VI1440/390/320 two entries",
+    "Creator private PNG+PCM upload/play/pause/reload",
+    "Studio private save/reload/keyless",
+    "Viewer glass1440/390/320 fullscreen/panels/drag/keyboard",
+    "current scene POST503"
+  ],
+  "multipart": {
+    "bytes": 5600044,
+    "seconds": 175,
+    "parts": 2,
+    "range_sha_restart_private": true
+  },
+  "deferred": [
+    "paid OpenAI/TTS EN/VI",
+    "Video Export9:16/16:9",
+    "geometry reconstruction",
+    "physical iOS QA"
+  ],
+  "dataset_zip_published": false
+}

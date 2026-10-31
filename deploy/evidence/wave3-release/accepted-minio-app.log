@@ -1,0 +1,4 @@
+PASS private multipart PCM WAV: 5600044 bytes, 175 seconds, two-part ETag, cross-part Range and SHA/restart; no publication
+PASS real MinIO app upload/dedupe/private401/isolated publish/Range206+416/Studio empty BLOB/restart/no fallback; no AI calls
+CONFIG OK (presence/format only; model access and quota not verified)
+Initial read-only SQLite helper backup failed; automatic pre-migration fallback restored6c505723. Successful offline snapshot/cutover is recorded in accepted-cutover.log.

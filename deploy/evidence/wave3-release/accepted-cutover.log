@@ -1,0 +1,16 @@
+ Container estagent-assistant-assistant-1 Stopping 
+ Container estagent-assistant-assistant-1 Stopped 
+ Container estagent-storage-minio-1 Stopping 
+ Container estagent-storage-minio-1 Stopped 
+{"consistent_stopped_volumes": true, "sqlite_integrity_checked": 10, "sha256": {"metadata": "73d1bbf45e6c7aa34df63d8ff19c0ed9201f2924c4484fadd4a08c2d5f42d221", "objects": "7b2db106ab2cebc5b29f42ab5db341c6c46e4aaf358dab3676439ba5ace1ffa4"}}
+ Container estagent-storage-minio-1 Starting 
+ Container estagent-storage-minio-1 Started 
+ Container estagent-storage-minio-1 Waiting 
+ Container estagent-storage-minio-1 Healthy 
+ Container estagent-assistant-assistant-1 Recreate 
+ Container estagent-assistant-assistant-1 Recreated 
+ Container estagent-assistant-assistant-1 Starting 
+ Container estagent-assistant-assistant-1 Started 
+ Container estagent-assistant-assistant-1 Waiting 
+{"source": "37962a3d6ab198dfde7e336e9c61d697a47a0a3f", "image": "sha256:7bcd22d5d901564823eda926585c413a9f8a77ea789dbb4b728ac9dabd5d0c71", "health": "healthy", "keyless": true, "guards": "enabled", "geometry": "unconfigured", "consistent_snapshot": true}
+ Container estagent-assistant-assistant-1 Healthy 

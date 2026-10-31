@@ -28,12 +28,10 @@ phân biệt được fix với reproduce sai; tiếp tục phần độc lập 
 
 ## Trạng thái vòng này
 
-- Đã merge nhánh `integration/product-sync`: same-origin Creator/draft/preview/review/publish/Viewer.
-- Đã giữ và merge commit đồng đội `23504e9` (chuyển/bổ sung tài liệu LangGraph và UI workflow), không có conflict nội dung khi merge.
-- Đã cập nhật release allowlist/Docker để chứa tour backend và frontend mới; native QA PASS, chưa build/release container tích hợp.
-- Core reconstruction còn thiếu; nhạc/narration thật và OpenAI live chưa nghiệm thu. Không gọi sản phẩm hoàn tất chỉ vì test visual PASS.
-- `docs/Business Workflow Langgraph/` là bộ design mới của đồng đội, không phải toàn bộ feature đã triển khai trong bản panorama hiện tại.
-- PDF/demo ảnh/ZIP/env/DB giữ local, không được stage/publish. Không push nhánh backup chứa attribution cũ.
+- Production source `37962a3`, image `7bcd22d5…`, https://estagent.duckdns.org: Viewer glass,2CTA landing, MinIO và Studio runtime đã deploy/kiểm thật. Bằng chứng đầy đủ: `deploy/evidence/wave3-release/release.json`, `status/web.md`.
+- Main đồng thời nhận Studio472280f; ancestry guard chặn push cũ. Thái xác nhận được gộp, release lane merge và chạy lại AI/web strict +26rollback tests trước clean artifact/cutover. Không force-push hoặc đụng root `.env.example` riêng user.
+- E2E design c33e843 chỉ docs/inventory metadata được merge sau rollout; ZIP/dataset không publish, rights public/export chưa chốt. TTS EN/VI và Video Export được giao lane khác cho phiên bản kế tiếp.
+- Không paid AI/geometry/3D reconstruction claim; giữ keyless và guards. Screenshot demo thật local-only; không stage/publish env/DB/user video.
 
 ## Đồng đội đồng bộ
 

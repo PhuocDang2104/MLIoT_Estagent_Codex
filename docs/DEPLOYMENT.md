@@ -227,3 +227,26 @@ Actual production backups now contain3tour and1Studio MinIO refs; the legacy
 346a0ba preflight correctly returns incompatible. No restore/reset is required
 or permitted to make a downgrade succeed. Core reconstruction, paid AI and
 physical iOS device acceptance are not claimed by these checks.
+
+## Accepted wave3 final — 2026-10-31
+
+Current production source37962a3, image7bcd22d5; exact hashes and acceptance are
+in deploy/evidence/wave3-release/release.json. Studio472280f was explicitly
+confirmed by Thái for inclusion after concurrent-main detection, then merged
+and regated. Glassdee0618 and two-entry landing are included. Before additive
+Studio migration, both writers were stopped and metadata+MinIO volumes were
+snapshotted consistently outside /data;10SQLite integrity checks passed on
+private extracted copies. Initial helper backup against a read-only volume failed;
+automatic fallback restored the old app before migration. Offline snapshot then
+succeeded. No restore, original-media migration or original-data deletion.
+
+After this Studio runtime upgrade,6c505723 is NOT an unconditional downgrade:
+new edit-node checkpoints require a Studio-runtime-aware binary/forward fix.
+Retain current37962a3 image/env as the accepted baseline for subsequent hotfixes.
+The older346a0ba remains blocked by real MinIO markers. Core strict is a known
+SKIP; OpenAI live/TTS, geometry, Video Export and physical iOS remain unverified.
+
+Production browser passed actual deployed files without overrides. Harness fixes
+only: timer polling for the same animation-settled condition, and scene selection
+computed from manifest.start_scene_id (the demo starts at index1). Neither change
+modified the application to satisfy an invented test assumption.

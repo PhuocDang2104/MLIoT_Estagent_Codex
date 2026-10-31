@@ -1,0 +1,1 @@
+{"assistant_image": "sha256:7bcd22d5d901564823eda926585c413a9f8a77ea789dbb4b728ac9dabd5d0c71", "assistant_healthy": true, "minio_healthy": true, "exact_guard_bounds_verified": true, "keyless": true, "operator_credentials_not_in_app": true, "nonroot_readonly_1GiB": true, "minio_512MiB": true}

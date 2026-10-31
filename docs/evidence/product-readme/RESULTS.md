@@ -12,7 +12,7 @@ No application code, environment, dependency, API contract or deployment changes
   Preview uses GitHub-rendered HTML and local review CSS, not the live GitHub site.
 - Both user-supplied 1920×1080 PNGs kept byte-for-byte; SHA-256 in validation.json.
 - `bash scripts/gate.sh web --strict`: PASS lint, tests, build and fixture contracts.
-- `git diff --check`: PASS. No paid model or production requests were submitted.
+- `git diff --check`: PASS. No paid model calls or production mutations were submitted.
 
 Layout references and image provenance are recorded in docs/DECLARATION.md and
 the product writeup. No prose, logos or cover artwork were copied from reference READMEs.

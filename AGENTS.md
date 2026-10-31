@@ -69,7 +69,7 @@ NOTES: <bẫy gặp phải, ≤3 dòng>
 
 ## Đang ở đâu
 2026-10-31 — quyết định vai trò mới nhất của Thái: root Tatejo chỉ điều phối, review và nghiệm thu, không trực tiếp implementation/SSH rollout. Lane integration/release là owner thực thi maintain `main`, merge/resolve/push và SSH/deploy production theo scope Thái đã giao; lane UI implement Viewer. Quyền đã giao tiếp tục hiệu lực, không thêm vòng approval; tin nhắn điều phối không phải phê duyệt mới của Thái. Đích hiện tại là VM + DuckDNS `estagent.duckdns.org`; Vercel đã gỡ theo chỉ đạo mới. Không đổi stack/DB của project khác. Runbook và trạng thái thật: `docs/DEPLOYMENT.md`.
-Checkout `main` đã tích hợp same-origin landing/Creator/Viewer, upload ảnh/chat, draft/review/publish snapshot, FastAPI/LangGraph/SQLite, audio WAV người dùng tải lên và Studio từ teammate. Chạy `bash scripts/dev.sh`; đọc `docs/INTEGRATION-HANDOFF.md`, `docs/AUDIO-HANDOFF.md`, `docs/CREATOR-STUDIO.md`. Core reconstruction và OpenAI live chưa nghiệm thu; fixture geometry/tones không phải model/giọng thật. Thông tin bootstrap bên dưới là lịch sử chuẩn bị.
+Checkout `main` đã tích hợp same-origin landing/Creator/Viewer, upload ảnh/chat, draft/review/publish snapshot, FastAPI/LangGraph/SQLite, audio WAV người dùng tải lên và Studio từ teammate. Chạy `bash scripts/dev.sh`; đọc `docs/INTEGRATION-HANDOFF.md`, `docs/AUDIO-HANDOFF.md`, `docs/CREATOR-STUDIO.md`. Cached Nhà Demo + actual OpenAI guide EN/VI đã lên production; generation mới vẫn tắt. Video FFmpeg/MinIO đã kiểm thật trên image tích hợp. Core reconstruction chưa nghiệm thu; fixture tones không phải giọng thật. Thông tin bootstrap bên dưới là lịch sử chuẩn bị.
 2026-10-31: có bộ luật + script điều phối (`spawn/review/done/gate/doctor/pack-ref`, đã chạy thử với codex giả); chưa có code sản phẩm.
 Remote chính: `github.com/PhuocDang2104/MLIoT_Estagent_Codex` (nhánh `main`). Remote cũ giữ dưới tên `previous-origin` để đối chiếu; không push các nhánh backup chứa attribution cũ.
 Đã thêm quy định khai báo nguồn/build trong ngày thi ở `docs/DECLARATION.md`; mốc H0 và phân loại thực tế còn chờ xác minh.
@@ -80,7 +80,7 @@ Remote chính: `github.com/PhuocDang2104/MLIoT_Estagent_Codex` (nhánh `main`). 
 - [ ] H0: Dev 1 chạy kickoff theo `docs/ORCHESTRATION.md §3`
 
 ## Đang kẹt
-API tour đã tích hợp và deploy same-origin lên `estagent.duckdns.org`, source `346a0ba`, chế độ keyless preview; production browser/HTTP PASS. Strict còn core SKIP; thiếu audio assets và OpenAI live. Manifest/rollback: `docs/DEPLOYMENT.md`; local integration: `docs/INTEGRATION-HANDOFF.md`.
+Production đã tích hợp pitch UX, cached Nhà Demo và guide thật EN/VI/auto-next, native Video/MinIO. Source/image/evidence mới nhất: `status/web.md` và `deploy/evidence/house-demo/release.json`. Strict còn core SKIP; global chat/realtime và TTS generation mới vẫn tắt. Manifest/rollback: `docs/DEPLOYMENT.md`; local integration: `docs/INTEGRATION-HANDOFF.md`.
 Chưa có đề chính thức của hackathon và chưa có tên 3 dev.
 
 ## Quyết định đã chốt

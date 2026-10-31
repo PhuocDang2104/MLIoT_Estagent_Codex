@@ -96,7 +96,7 @@ async function mountGuidedTour(){
  }
  play.addEventListener('click',()=>{if(finished){index=0;finished=false;play.textContent='Play tour';}step();});
  pause.addEventListener('click',()=>stop());
- audio.addEventListener('ended',()=>{if(!running)return;index++;if(index>=selected.length){finished=true;stop('Đã hoàn tất tour.');play.textContent='Replay tour';}else step();});
+ audio.addEventListener('ended',()=>{if(!running||changing||!audio.ended)return;index++;if(index>=selected.length){finished=true;stop('Đã hoàn tất tour.');play.textContent='Replay tour';}else step();});
  audio.addEventListener('pause',()=>{if(running&&!changing&&!audio.ended)stop();});
  audio.addEventListener('error',()=>{if(running)stop('Không tải được lời dẫn. Tour đã dừng.');});
  locale.addEventListener('change',()=>{stop('Đã đổi ngôn ngữ. Nhấn Play tour để bắt đầu.');index=0;finished=false;play.textContent='Play tour';});

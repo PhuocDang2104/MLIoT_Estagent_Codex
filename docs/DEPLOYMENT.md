@@ -257,3 +257,7 @@ release.json). Web strict + actual production Viewer1440/390/320 panels, fullscr
 drag/keyboard PASS; exact CSS/landing source and original manifest/8asset hashes
 verified. Backend/config unchanged from37962a3; that runtime-aware release is kept
 as rollback baseline. No additional data migration or TTS/Video work.
+
+## P0 pitch final — 2026-10-31 14:45 VN
+Source bad806c accepted from clean main, artifact SHA82368c0f…; full values in deploy/evidence/house-demo/release.json. Native FFmpeg pinnedBookworm5.1.9, exports+ narration packaged. Demo read-only catalog points to separately verified guide catalog; no old catalog/object/data deleted. VIDEO_EXPORT_ENABLED1 after actual isolated integrated-image private MinIO render/Range/owner/restart acceptance; NARRATION_ENABLED0 and both providerkeys empty. API/storage guards preserved. New additive export metadata table may exist; no original rows migrated/restored. Rollback to d73ba6a with its own old env/catalog is retained but hides new UX/guide/export; validate any newly created content before downgrade, never restore old volumes blindly. Legacy346a0ba remains forbidden by MinIO markers.
+Production landing/Creator/guide QA PASS; no production QA publication. Original public manifest/8assets unchanged. Production export job not submitted; actual native/MinIO proof used separate synthetic DB in same image under1CPU768MiB. Corestrict SKIP known, physicaliOS/subjective listening unverified.

@@ -1,10 +1,11 @@
 # Studio runtime acceptance — 2026-10-31
 
-Integrated upstream main `5498fdc` (contextual Creator/Viewer chat) before final QA.
+Integrated upstream main `6c50572` (contextual chat, private MinIO/quota, immersive
+Viewer) before final QA; both storage adapters and durable runtime are retained.
 Runtime framework source commits: `298c933`, `bfe1560`, `2a097d5`; final refinement
 also sorts navigation neighbors by the requested checkpoint preference.
 
-- `bash scripts/gate.sh ai --strict`: PASS, **109 passed, 0 failed, 0 skipped**,
+- `bash scripts/gate.sh ai --strict`: PASS, **171 passed, 0 failed, 0 skipped**,
   pinned Python 3.13 requirements. Full machine-readable results: `pytest.xml`.
 - `bash scripts/gate.sh web --strict`: PASS lint/test/build and both package schemas.
 - `python -m tests.ai.run_studio_qa`: PASS full, waiting-worker, keyless modes;
@@ -16,6 +17,11 @@ also sorts navigation neighbors by the requested checkpoint preference.
   no-key/fake-key HTTP/cookies/Origin/body/static/Studio health, SQLite reopen and
   quick_check, 11 assistant tests. `native-qa.json` records actual output.
 - Compose example `config --quiet`: PASS, no daemon/model call.
+- `python -m pytest tests/deploy -q`: 26 passed, including legacy rollback guards.
+  Windows tests close SQLite handles and emulate symlink metadata when the OS
+  denies symlink creation; POSIX keeps the real symlink/0600 checks. No skips.
+  Production backup CLI requires an external private output mount; MinIO objects
+  require a separate consistent snapshot with metadata, per the updated runbook.
 - Mermaid 11.12.1 local parse/render: PASS Business/native/reference; runtime has
   15 nodes, 22 declared edges. Export JSON source hash matches current graph.py.
 - Separate targeted coverage: cross-process lock, atomic immediate-review wakeup,

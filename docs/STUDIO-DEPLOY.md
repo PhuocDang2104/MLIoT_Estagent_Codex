@@ -73,6 +73,7 @@ p.write_text('\n'.join('ASSISTANT_IMAGE=estagent-assistant:'+sys.argv[2]
     if line.startswith('ASSISTANT_IMAGE=') else line for line in lines)+'\n')
 p.chmod(0o600)
 PY
+docker network inspect estagent-object-store > /dev/null
 docker compose --env-file "$STUDIO_ENV" -f deploy/compose.yaml config --quiet
 docker compose --env-file "$STUDIO_ENV" -f deploy/compose.yaml run --rm --no-deps --entrypoint python assistant /app/deploy/entrypoint.py --check-config
 printf '%s\n' "$PREVIOUS_IMAGE" > "$RELEASE/PREVIOUS_IMAGE"
@@ -83,16 +84,29 @@ Bật OpenAI live bằng env riêng: `ESTAGENT_KEYLESS_PREVIEW=0`, key thật,
 `API_LIMITS_ENABLED=1` và đầy đủ rate/concurrency/attempt bounds theo
 `deploy/.env.example`. Key có cấu hình không chứng minh model/quota hợp lệ.
 Geometry URL/token tùy chọn theo [STUDIO-RUNTIME.md](STUDIO-RUNTIME.md).
+Giữ cấu hình `STORAGE_LIMITS_*`, `MEDIA_STORAGE_BACKEND` và `MINIO_*` của release
+hiện tại; đối chiếu `deploy/.env.example` mới trước check-config. Không dùng
+binary cũ hoặc đổi về local để bỏ qua media_refs của MinIO.
+Compose main mới yêu cầu network `estagent-object-store` ngay cả khi local mode.
+Nếu lệnh inspect trên thất bại, chuẩn bị network/MinIO theo MINIO-INTEGRATION-HANDOFF.md
+trước khi stop assistant; không đổi sang stack/network của project khác.
 
 ## Stop riêng assistant → backup → cutover → smoke
 
 Có downtime ngắn. Không `down -v`, prune, restart edge hoặc database chung.
 Backup cần dung lượng tương đương dữ liệu đang có; kiểm dung lượng trước khi stop.
+Nếu đang chọn MinIO, snapshot `/data` chỉ chứa metadata và local media cũ; phải
+backup thêm volume `estagent-minio-objects` nhất quán trước cutover, theo
+[MinIO integration](MINIO-INTEGRATION-HANDOFF.md) và [rollback safety](ROLLBACK-SAFETY.md).
+Giữ MinIO env/network/volume hiện tại; không đổi backend về local khi có media_refs.
 
 ```bash
 df -h /var/lib/docker
+BACKUP_DIR="/opt/estagent/backups/pre-$SHA"
+test ! -e "$BACKUP_DIR"
+sudo install -d -o 10001 -g 10001 -m 700 "$BACKUP_DIR"
 docker compose --env-file "$STUDIO_ENV" -f deploy/compose.yaml stop -t 120 assistant
-docker compose --env-file "$STUDIO_ENV" -f deploy/compose.yaml run --rm --no-deps --entrypoint python assistant /app/deploy/backup_data.py --root /data --label "pre-$SHA"
+docker compose --env-file "$STUDIO_ENV" -f deploy/compose.yaml run --rm --no-deps -v "$BACKUP_DIR:/backup" --entrypoint python assistant /app/deploy/backup_data.py --root /data --out-dir /backup --label "pre-$SHA"
 docker compose --env-file "$STUDIO_ENV" -f deploy/compose.yaml up -d --no-build --wait --wait-timeout 180 assistant
 docker compose --env-file "$STUDIO_ENV" -f deploy/compose.yaml exec -T assistant python /app/deploy/smoke.py --base-url http://127.0.0.1:5180 --origin https://estagent.duckdns.org --check-static
 curl --fail --silent --show-error https://estagent.duckdns.org/api/studio/health
@@ -108,11 +122,13 @@ TLS hoặc OpenAI live đã pass trên VM.
 
 ## Rollback
 
-Giữ image/release/env cũ và volume. Backup tại `/data/backups/<timestamp>-pre-<SHA>`
+Giữ image/release/env cũ và volume. Backup tại `/opt/estagent/backups/pre-<SHA>/<timestamp>-pre-<SHA>`
 kèm `BACKUP.json`; sao lưu thêm ra nơi operator quản lý. Nếu build/config/backup
 lỗi, chạy lại assistant bằng Compose release trước + `PREVIOUS_ENV` (image cũ).
 Nếu cutover không healthy, cũng dùng release/env cũ để `up -d --no-build --wait`.
 Không dùng env mới đang chứa tag mới để rollback và không restore backup đè dữ
 liệu phát sinh sau rollout. Migration chỉ thêm bảng/cột, published schema giữ
 nguyên, nhưng binary cũ không chạy checkpoint `edit` mới: pending edits cần
-runtime mới/forward fix. Docker rollback release này chưa được diễn tập trên VM.
+runtime mới/forward fix. Bắt buộc chạy rollback preflight mới trong ROLLBACK-SAFETY.md
+cho recorded audio/MinIO refs; không coi binary cũ là tương thích. Docker rollback
+release này chưa được diễn tập trên VM.

@@ -10,8 +10,9 @@ Deploy: [STUDIO-DEPLOY.md](STUDIO-DEPLOY.md).
 - Một ASGI process, một dispatcher, một volume local. `runtime.lock` là OS lock
   trên Windows/Linux; process thứ hai cùng `STUDIO_DATA_DIR` bị từ chối. Đây
   không phải queue nhiều máy; không dùng NFS hoặc nhiều replica.
-- `creator.sqlite`: project/assets, generation, jobs outbox, request dedup,
+- `creator.sqlite`: project/assets (local BLOB hoặc private MinIO media_refs), generation, jobs outbox, request dedup,
   proposal, events và published snapshots. `graph.sqlite`: SqliteSaver checkpoints.
+  Adapter storage/quota từ main mới được giữ nguyên; MinIO không được public bucket.
   Start/review/retry/apply ghi job và trạng thái trong cùng transaction với action.
 - HTTP trả 202 sau commit; dispatcher đọc SQLite, không dựa vào callback trong RAM.
   Job queued tự chạy sau restart. Crash khi running chuyển failed để người dùng

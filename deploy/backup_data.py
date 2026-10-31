@@ -13,13 +13,16 @@ import shutil
 import sqlite3
 
 
-def backup(root, label):
+def backup(root, label, out_dir=None):
     root = root.resolve(strict=True)
     if root == Path(root.anchor) or not root.is_dir():
         raise ValueError('Require a dedicated data directory')
     if not label or len(label) > 80 or any(c not in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_' for c in label):
         raise ValueError('Invalid backup label')
-    output = root / 'backups' / (datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')+'-'+label)
+    destination = Path(out_dir).resolve(strict=True) if out_dir is not None else root/'backups'
+    if out_dir is not None and (destination == root or root in destination.parents):
+        raise ValueError('Production backup destination must be outside the data tree')
+    output = destination / (datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')+'-'+label)
     source = []
     for path in root.rglob('*'):
         relative = path.relative_to(root)
@@ -32,6 +35,7 @@ def backup(root, label):
     if not source:
         raise ValueError('Refuse empty data backup')
     output.mkdir(parents=True,exist_ok=False)
+    output.chmod(0o700)
     manifest = {}
     for path, relative in source:
         target = output / relative
@@ -60,6 +64,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,required=True)
     parser.add_argument('--label',required=True)
+    parser.add_argument('--out-dir',type=Path,required=True,help='separately mounted private backup directory')
     args = parser.parse_args()
-    result = backup(args.root,args.label)
+    result = backup(args.root,args.label,args.out_dir)
     print('BACKUP READY:', result.name)

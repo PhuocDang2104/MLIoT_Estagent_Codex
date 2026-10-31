@@ -43,6 +43,12 @@
       "src": "synthetic-published-wav",
       "duration": 0.1,
       "volume": 1
+    },
+    {
+      "type": "play",
+      "src": "synthetic-published-wav",
+      "duration": NaN,
+      "volume": 1
     }
   ],
   "page_errors": []

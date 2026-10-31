@@ -379,6 +379,10 @@ def test_offline_backup_preserves_sqlite_media_and_excludes_previous_backups(tmp
     assert (root/'media'/'fixture.bin').read_bytes() == b'synthetic'
     second = backup(root,'another')
     assert len(json.loads((second/'BACKUP.json').read_text())['files']) == 2
+    external = tmp_path/'private-backups'; external.mkdir()
+    assert backup(root,'external',external).parent == external
+    with pytest.raises(ValueError,match='outside'):
+        backup(root,'reject-internal',root)
 
 
 def test_new_uploads_remove_private_exif_and_apply_orientation(tmp_path):

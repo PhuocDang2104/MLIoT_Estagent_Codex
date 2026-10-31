@@ -1,0 +1,6 @@
+Opening page
+Page loaded
+Actual model ready
+Rotation, common pause, keyboard, drag PASS
+Responsive1440/390/320, EN/VI, reduced motion, source URLs PASS
+{"pass": true, "actualDemoDollhouse": true, "sourceMode": "Unmodified public GET cache, headed Chrome native WebGL", "modelSha256": "bb50dcd67bf902eaa54e2a6330c0e87bdfa0a2ae861ccb3917e6c13130939832", "rotationBoth": true, "pauseBoth": true, "keyboard": true, "drag": true, "ENVI": true, "reducedMotion": true, "independentAssetFailure": true, "layouts": [{"width": 1440, "model": {"x": 762.609375, "y": 170, "width": 619.1953125, "height": 660}}, {"width": 390, "model": {"x": 20, "y": 505.34375, "width": 335, "height": 245}}, {"width": 320, "model": {"x": 20, "y": 531.53125, "width": 265, "height": 245}}], "errors": []}

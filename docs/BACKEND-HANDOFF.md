@@ -1,5 +1,10 @@
 # Backend handoff — Estagent
 
+**Cập nhật sau tích hợp:** đọc `docs/INTEGRATION-HANDOFF.md` và `CONTRACTS.md §7` trước.
+Main đã có `server/tours`, Creator/Viewer, upload/draft/review/publish, manifest/schema và lệnh `bash scripts/dev.sh` chạy cùng origin.
+Các bảng “chưa có API tour/fixture” và backlog trong audit baseline bên dưới là lịch sử trước tích hợp, không còn là trạng thái main hiện tại.
+Core/audio assets/live OpenAI vẫn còn thiếu; teammate không tạo lại module/contract đã có. Tests AI hiện 20 pass, web 6 pass; strict còn core SKIP.
+
 Ngày rà: 2026-10-31. Baseline code đã push khi bắt đầu rà: `3887334` trên `origin/main`.
 **Sẵn sàng để teammate bắt đầu phát triển backend; chưa sẵn sàng demo tour end-to-end hoặc deploy production hoàn chỉnh.**
 Không cần truy cập máy Thái, repo House VR Tour hoặc herdr để chạy assistant và tests.

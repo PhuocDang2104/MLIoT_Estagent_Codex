@@ -10,7 +10,11 @@ import tarfile
 
 ROOT = Path(__file__).resolve().parents[1]
 FILES = [
-    'server/assistant', 'web/assistant.html', 'web/assistant.css',
+    'server/assistant', 'server/tours', 'web/index.html', 'web/experience.html',
+    'web/creator.html', 'web/viewer.html', 'web/assistant.html',
+    'web/styles.css', 'web/motion.css', 'web/tour.css', 'web/assistant.css',
+    'web/app.js', 'web/i18n.js', 'web/motion.js', 'web/creator.js',
+    'web/viewer.js', 'web/tour-common.js', 'web/panorama.js',
     'web/assistant.js', 'web/assets', 'deploy/Dockerfile',
     'deploy/Dockerfile.dockerignore', 'deploy/compose.yaml',
     'deploy/entrypoint.py', 'deploy/smoke.py', 'deploy/.env.example',

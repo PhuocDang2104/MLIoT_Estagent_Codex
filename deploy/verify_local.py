@@ -25,8 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     blob = subprocess.check_output([
-        'git', 'archive', sha, 'server/assistant', 'web/assistant.html',
-        'web/assistant.css', 'web/assistant.js', 'web/assets', 'tests/ai/test_assistant.py',
+        'git', 'archive', sha, 'server/assistant', 'server/tours', 'web', 'tests/ai',
     ], cwd=ROOT)
     print(f'Application snapshot: {sha}; deploy tooling: current uncommitted files', flush=True)
     with tempfile.TemporaryDirectory(prefix='estagent-native-qa-') as directory:

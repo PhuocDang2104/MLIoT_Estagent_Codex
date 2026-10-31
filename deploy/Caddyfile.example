@@ -3,7 +3,7 @@
 # The current production site is deploy/estagent.duckdns.Caddyfile (frontend only).
 # Do not replace the shared Caddyfile or restart other applications.
 estagent.duckdns.org {
-    @assistant path /api/assistant/*
+    @assistant path /api/assistant/* /api/tours/*
     handle @assistant {
         # Preserve the /api/assistant prefix and original Origin/Set-Cookie.
         reverse_proxy estagent-assistant-api:5180 {

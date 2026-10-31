@@ -12,7 +12,7 @@ Chi tiết hành vi dưới đây là hướng triển khai; route/schema cụ t
 - Phê duyệt rồi xuất bản/chia sẻ tour. Bản nháp không được trình bày như tour đã duyệt.
 - Assistant ở view này hỗ trợ thu thập/chỉnh thông tin và tạo tour; không nhầm với chatbot trả lời người xem.
 
-## 2. Xem tour — Viewer / Buyer
+## 2. Xem tour — Viewer / Rental seeker
 
 - Mở tour đã xuất bản, khám phá scene, chuyển khu/checkpoint và xem thông tin khu hiện tại.
 - Phát guided tour: nhạc nền + lời giới thiệu từng khu theo `docs/TOUR-AUDIO.md`.

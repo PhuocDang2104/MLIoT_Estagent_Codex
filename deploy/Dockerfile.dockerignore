@@ -3,10 +3,12 @@
 !server/assistant/
 !server/assistant/*.py
 !server/assistant/requirements.txt
+!server/tours/
+!server/tours/*.py
 !web/
-!web/assistant.html
-!web/assistant.css
-!web/assistant.js
+!web/*.html
+!web/*.css
+!web/*.js
 !web/assets/
 !web/assets/**
 !deploy/

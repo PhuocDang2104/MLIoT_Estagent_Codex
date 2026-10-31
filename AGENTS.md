@@ -67,8 +67,8 @@ NOTES: <bẫy gặp phải, ≤3 dòng>
 ```
 
 ## Đang ở đâu
-2026-10-31: Thái giao Tatejo vai trò integrator, maintain `main` và deploy production; được phép push/merge `main` và deploy trong phạm vi này. FE dùng Vercel (`meetmate/estagent`); BE theo luồng Git → máy local → VM VNPT, Supabase self-host trên VM. Runbook và tình trạng thật: `docs/DEPLOYMENT.md`.
-Checkout `main` có FE tĩnh EN/VI + motion và backend assistant FastAPI/LangGraph/SQLite; chưa có core reconstruction, API tour hay fixture contract. Quickstart và task backend: `docs/BACKEND-HANDOFF.md`; thông tin bootstrap bên dưới chỉ là lịch sử chuẩn bị.
+2026-10-31: Thái giao Tatejo vai trò integrator, maintain `main` và deploy production; được phép push/merge `main` và deploy trong phạm vi này. Đích hiện tại là VM + DuckDNS `estagent.duckdns.org`; Vercel đã gỡ theo chỉ đạo mới. Không đổi stack/DB của project khác. Runbook và trạng thái thật: `docs/DEPLOYMENT.md`.
+Checkout `main` đã tích hợp same-origin landing/Creator/Viewer, upload ảnh/chat, draft/review/publish snapshot, FastAPI/LangGraph/SQLite và schema/fixture tour. Chạy `bash scripts/dev.sh`; đọc `docs/INTEGRATION-HANDOFF.md`. Core reconstruction, nhạc/narration thật và OpenAI live vẫn chưa kiểm/hoàn thành. Thông tin bootstrap bên dưới là lịch sử chuẩn bị.
 2026-10-31: có bộ luật + script điều phối (`spawn/review/done/gate/doctor/pack-ref`, đã chạy thử với codex giả); chưa có code sản phẩm.
 Remote chính: `github.com/PhuocDang2104/MLIoT_Estagent_Codex` (nhánh `main`). Remote cũ giữ dưới tên `previous-origin` để đối chiếu; không push các nhánh backup chứa attribution cũ.
 Đã thêm quy định khai báo nguồn/build trong ngày thi ở `docs/DECLARATION.md`; mốc H0 và phân loại thực tế còn chờ xác minh.
@@ -79,7 +79,7 @@ Remote chính: `github.com/PhuocDang2104/MLIoT_Estagent_Codex` (nhánh `main`). 
 - [ ] H0: Dev 1 chạy kickoff theo `docs/ORCHESTRATION.md §3`
 
 ## Đang kẹt
-BE assistant đã có source và deploy tooling; chưa kiểm Docker/TLS/OpenAI live và chưa hoàn thiện API tour. Kiểm readiness tại `docs/BACKEND-HANDOFF.md`; runbook hạ tầng tại `docs/DEPLOYMENT.md`.
+API tour đã tích hợp và test local; production hiện vẫn là frontend snapshot cũ, chưa deploy backend tích hợp. Strict còn core SKIP; thiếu audio assets và live API verification. Runbook: `docs/DEPLOYMENT.md`; kết quả tích hợp: `docs/INTEGRATION-HANDOFF.md`.
 Chưa có đề chính thức của hackathon và chưa có tên 3 dev.
 
 ## Quyết định đã chốt

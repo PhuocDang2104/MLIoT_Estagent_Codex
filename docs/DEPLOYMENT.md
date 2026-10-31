@@ -1,5 +1,13 @@
 # Production — Estagent trên VM + DuckDNS
 
+## Main sau tích hợp — chưa deploy production
+
+Nhánh main đã có API tour/Creator/Viewer và schema/fixture, xem `docs/INTEGRATION-HANDOFF.md`.
+Docker/release allowlist đã cập nhật để chứa `server/tours` và toàn bộ asset runtime của app cùng origin;
+proxy example bao gồm `/api/tours/*`. Đây không phải thay đổi cấu hình đang chạy trên VM.
+Native QA được chạy lại trước push; build/container/TLS cho bản tích hợp vẫn cần nghiệm thu riêng.
+Các trạng thái frontend-only bên dưới mô tả production snapshot cũ, không mô tả source main mới.
+
 ## Trạng thái hiện tại — 2026-10-31
 
 Thái chỉ định FE và BE dùng VM, hostname **https://estagent.duckdns.org**. Project Vercel `meetmate/estagent` đã xóa theo yêu cầu; API project và URL deployment cũ trả 404. Không nối lại GitHub App hoặc deploy lại Vercel.

@@ -30,7 +30,7 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None):
     env = dict(os.environ if env is None else env)
     origin = env.get('ASSISTANT_ORIGIN', 'http://127.0.0.1:5180')
     required = tuple(x.strip() for x in env.get('ASSISTANT_REQUIRED_FIELDS','address,area,bedrooms').split(','))
-    key = env.get('OPENAI_API_KEY')
+    key = (env.get('OPENAI_API_KEY') or '').strip()
     configured = bool(extractor or key)
     path = Path(db_path or env.get('ASSISTANT_DB', ROOT / 'projects/assistant/work/checkpoints.sqlite'))
     lock = threading.RLock()  # One local worker; serialize checkpoint writes and duplicate requests.

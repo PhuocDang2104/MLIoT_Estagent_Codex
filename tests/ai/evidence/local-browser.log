@@ -1,0 +1,9 @@
+Scope: actual HTTP/LangGraph/SQLite; finite model fixture; no paid API calls.
+Base commit: 9a1e40f89e2afa1a5e0ec2671a21187ff4efe723
+local_browser_flow.js: {"pass":true,"realHTTP":true,"realLangGraph":true,"model":"finite fixture","reloadPreserved":["profile","history","deferred","confirmed","stage"],"modelFailure":502,"mobileWidths":[390,320],"pageErrors":0}
+
+local_browser_restart.js: {"pass":true,"backendProcessRestart":true,"sqliteRestored":true,"acceptedMessages":8}
+
+local_browser_no_key.js: {"pass":true,"missingKey":true,"turnStatus":503,"voiceStatus":503,"savedProfileReadable":true,"sendDisabled":true,"microphoneDisabled":true}
+
+PASS: all three phases; database removed with the temporary test directory.

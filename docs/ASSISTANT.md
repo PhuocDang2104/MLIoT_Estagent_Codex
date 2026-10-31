@@ -2,6 +2,8 @@
 
 Trạng thái 2026-10-31: đã triển khai riêng tại `/assistant.html`, kiểm bằng LangGraph thật + SQLite thật + model/network mô phỏng. **Chưa kiểm live OpenAI, chưa deploy backend, chưa nối workspace intake cũ.** Repo có phiên khác chỉnh sửa/commit đồng thời; phần này không thay logic intake cũ.
 
+**Phạm vi Thái đã chốt: MVP chưa cần auth.** Không triển khai đăng nhập/đăng ký hoặc email xác thực. Cookie bên dưới chỉ nhận lại phiên local, không phải tài khoản người dùng.
+
 ## Chạy local
 
 Python 3.13 là môi trường đã kiểm. Dependency được pin theo bản đang có trên máy, không cài thêm vào môi trường toàn cục.
@@ -15,6 +17,8 @@ python3 -m venv /tmp/estagent-assistant-venv
 ```
 
 Mở `http://127.0.0.1:5180/assistant.html`. Máy hiện tại đã có dependencies; có thể dùng trực tiếp `python3 -m uvicorn ...`. Không có key: trang hiển thị “Chưa kết nối OpenAI” và không tạo câu trả lời AI giả. Không cần key để xem thiết kế. Có thể khởi động không có `--env-file` để kiểm trạng thái này.
+
+Lưu ý: bỏ `--env-file` chưa đủ nếu shell đã export key. Muốn kiểm thiếu key, đặt `OPENAI_API_KEY=''` trước lệnh uvicorn. Key rỗng hoặc chỉ có khoảng trắng đều được coi là chưa cấu hình; text/voice trả HTTP 503, hồ sơ đã lưu vẫn đọc được. Key có giá trị chỉ chứng minh đã cấu hình, chưa chứng minh quyền model/quota. Chỉ kiểm OpenAI live khi đã chốt input và budget; vòng kiểm local dưới đây không dùng key thật.
 
 Biến môi trường:
 
@@ -59,13 +63,30 @@ Chỉ xin quyền micro khi người dùng bấm nói; tắt/end/pagehide giải
 
 HTTP body tối đa 64 KB, OpenAI timeout 30s, không retry SDK tự động; text cap 1.200 output tokens, voice cap 512 tokens. Chỉ request dữ liệu text người dùng và audio đã bật; không gửi ảnh trong workspace. Không bật tracing LangSmith, tool call hoặc provider khác.
 
-Đây là backend **local một worker**. Exact-origin/cookie không thay thế xác thực production. Trước deploy cần gắn auth, rate limit/budget theo user, chính sách lưu/xóa checkpoint và HTTPS. FE Vercel hiện chỉ build file tĩnh; muốn chạy chatbot trên đó cần proxy `/api/assistant/*` tới backend. Không tự thêm deployment/đổi route trong task này.
+Đây là backend **local một worker**, MVP không có auth theo chỉ đạo của Thái. Khi chuẩn bị deploy, lane deploy cần xử lý HTTPS, giới hạn request/chi phí và chính sách lưu/xóa checkpoint phù hợp luồng không đăng nhập; không tự thêm auth vào phạm vi MVP. FE Vercel hiện chỉ build file tĩnh; muốn chạy chatbot trên đó cần proxy `/api/assistant/*` tới backend. Không tự thêm deployment/đổi route trong task này.
 
 ## Apify do Thái cung cấp
 
 Đã nhận tài liệu `compass/crawler-google-places`. Vai trò đề xuất: enrichment tùy chọn về trường học/bệnh viện/siêu thị quanh vị trí người dùng, lưu nguồn và thời điểm lấy dữ liệu riêng với profile đã xác nhận. **Chưa tích hợp hoặc chạy Actor**; câu hỏi về mục đích sử dụng đang chờ trả lời. Không dùng dữ liệu doanh nghiệp để suy diện tích, số phòng, pháp lý hoặc giá của căn hộ. Khi triển khai: nêu giá và giới hạn trả phí trước paid run, dùng query/area có phạm vi, tắt review/contact/lead enrichment không cần thiết, xử lý job dài ngoài HTTP chat turn.
 
-## Kiểm chứng và nguồn
+## Kiểm local bằng browser + backend thật (vòng 1)
+
+```bash
+python3 -m pytest tests/ai/test_assistant.py -q
+python3 tests/ai/run_local_browser.py
+```
+
+Lệnh thứ hai cần `playwright-cli` và browser đã cài, cùng dependencies của assistant. Script tạo phiên browser riêng, port loopback ngẫu nhiên và database tạm, lần lượt chạy ba process backend. Không nạp `.env.local`, không truyền provider key/tracing vào process con. Kết thúc sẽ đóng browser/server và dọn database tạm; không tác động hồ sơ local đang dùng.
+
+- Browser gửi HTTP thật tới `create_app`, qua LangGraph thật và SQLite thật. Không `route.fulfill` API, không thay state bằng localStorage.
+- Chỉ extractor được thay bằng bảng fixture hữu hạn trong `tests/ai/local_fixture_server.py`. Câu ngoài bảng gây lỗi để kiểm UI giữ hồ sơ và cho thử lại. Đây không phải bằng chứng model hiểu tiếng Việt.
+- Kịch bản: điền nhiều thông tin → bỏ qua tùy chọn → xác nhận → sửa diện tích → reload giữ hồ sơ/lịch sử → khởi động lại backend giữ hồ sơ → chạy lại không có key, vẫn đọc hồ sơ và báo 503 cho text/voice.
+- Policy `address,area,bedrooms` được đặt rõ trong môi trường fixture theo cấu hình hiện có; kết quả không phê duyệt bộ trường bắt buộc cho sản phẩm.
+- Browser chặn resource ngoài localhost; không kiểm giọng nói live hoặc gọi dịch vụ ngoài. Screenshot có dữ liệu căn hộ mẫu, không có key/cookie.
+
+Kết quả/bằng chứng của lần chạy gần nhất nằm trong `tests/ai/evidence/ROUND1.md`.
+
+## Kiểm chứng trước vòng 1 và nguồn
 
 - `python3 -m pytest tests/ai/test_assistant.py -q`: 9 pass; LangGraph và SQLite thật, extractor và OpenAI voice network là fixture. Có một cảnh báo deprecation từ dependency LangGraph đã cài.
 - `node --check web/assistant.js`: pass.
@@ -73,7 +94,7 @@ HTTP body tối đa 64 KB, OpenAI timeout 30s, không retry SDK tự động; te
 - `bash scripts/gate.sh web --strict`: lint/test/build pass, **strict fail** do thiếu `fixtures/tour.schema.json` đã tồn tại trước task.
 - `bash scripts/gate.sh ai --strict`: compile/pytest pass trong môi trường uv nạp requirements backend; **strict fail** cùng fixture contract còn thiếu. Gate được cập nhật để không chạy AI tests trong môi trường thiếu dependencies.
 - Screenshots: `web/evidence/assistant-desktop.png`, `assistant-mobile.png`, `assistant-no-key.png`.
-- Chưa kiểm chất lượng hiểu tiếng Việt, quyền model/quota hoặc audio live; máy chưa có `OPENAI_API_KEY`, `.env` hoặc `.env.local` khi kiểm.
+- Các kết quả trên là lịch sử vòng đầu, dùng model/network fixture. Chưa kiểm chất lượng hiểu tiếng Việt, quyền model/quota hoặc audio live. Việc có key không cấp budget cho lần kiểm tiếp theo.
 
 Tham khảo chính thức: [LangGraph graph API](https://docs.langchain.com/oss/python/langgraph/graph-api), [persistence](https://docs.langchain.com/oss/python/langgraph/persistence), [OpenAI structured outputs](https://developers.openai.com/api/docs/guides/structured-outputs), [WebRTC](https://developers.openai.com/api/docs/guides/voice-webrtc?voice-api=realtime), [Realtime conversations](https://developers.openai.com/api/docs/guides/realtime-conversations).
 

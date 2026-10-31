@@ -2,6 +2,7 @@
 import json
 import uuid
 import httpx
+import pytest
 from fastapi.testclient import TestClient
 from langgraph.checkpoint.memory import MemorySaver
 from server.assistant.graph import build_graph, Extraction, LABELS
@@ -84,11 +85,18 @@ def test_api_persistence_isolation_idempotency_and_origin(tmp_path):
         client.cookies.set(COOKIE,cookie,path='/api/assistant/')
         assert client.get('/api/assistant/state').json()['profile']['area'] == 85
 
-def test_no_key_is_honest(tmp_path):
-    with TestClient(create_app(db_path=tmp_path/'missing.sqlite',env={})) as client:
+@pytest.mark.parametrize('key', [None, '', '   \t\n'])
+def test_no_key_is_honest(tmp_path, key):
+    env = {} if key is None else {'OPENAI_API_KEY': key}
+    with TestClient(create_app(db_path=tmp_path/'missing.sqlite',env=env)) as client:
         assert client.get('/api/assistant/state').json()['configured'] is False
         response = client.post('/api/assistant/turn',json={'text':'Xin chào','request_id':'no-key-request'},headers={'Origin':'http://127.0.0.1:5180'})
         assert response.status_code == 503
+        assert 'OpenAI' in response.json()['error']
+        voice = client.post('/api/assistant/voice', content='v=0\r\nm=audio 9 UDP/TLS/RTP/SAVPF 111\r\n', headers={'Origin':'http://127.0.0.1:5180','Content-Type':'application/sdp'})
+        assert voice.status_code == 503 and 'OpenAI' in voice.json()['error']
+        state = client.get('/api/assistant/state').json()
+        assert state['profile'] == {} and state['history'] == []
 
 def test_voice_transport_server_key_and_graph_owns_replies(tmp_path):
     async def upstream(request):

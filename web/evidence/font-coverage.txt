@@ -1,0 +1,5 @@
+Manrope SHA256: 3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6
+Vietnamese glyphs checked: 98
+Missing: []
+Weight axis: 200–800
+Source and licenses: web/assets/SOURCES.md

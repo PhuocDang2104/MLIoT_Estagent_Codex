@@ -1,0 +1,9 @@
+▶ web lint
+  ok
+▶ web test
+  ok
+▶ web build
+  ok
+▶ contract
+  SKIP (chưa có fixtures/tour.schema.json)
+GATE OK (web)

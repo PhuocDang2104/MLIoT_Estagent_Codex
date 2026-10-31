@@ -1,0 +1,86 @@
+async (page) => {
+  const root='http://127.0.0.1:4173/web/';
+  const errors=[];
+  page.on('pageerror',error=>errors.push(error.message));
+  page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});
+  const check=(condition,label)=>{if(!condition)throw new Error(label);};
+  await page.addInitScript(()=>{
+    window.motionEvidence=[];
+    const original=Element.prototype.animate;
+    Element.prototype.animate=function(frames,options){
+      const animation=original.call(this,frames,options);
+      window.motionEvidence.push({tag:this.tagName,classes:this.className,frames,duration:options.duration,delay:options.delay||0});
+      return animation;
+    };
+  });
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.setViewportSize({width:1440,height:1000});
+  await page.goto(root,{waitUntil:'domcontentloaded'});
+  check(await page.locator('html').getAttribute('data-motion')==='on','Motion enabled');
+  check(await page.evaluate(()=>motionEvidence.some(item=>item.tag==='H1'&&item.frames[0].opacity===0&&item.delay>0)),'Staggered hero entrance actually runs');
+  await page.locator('#hero-title').evaluate(async el=>{await Promise.allSettled(el.getAnimations().map(a=>a.finished));});
+  check(await page.locator('#hero-title').evaluate(el=>getComputedStyle(el).opacity)==='1','Headline settles visible');
+  check(await page.locator('.orbit').evaluate(el=>getComputedStyle(el).animationIterationCount)==='2','Decorative motion bounded');
+  await page.locator('.nav-cta').hover();
+  await page.screenshot({path:'web/evidence/motion-hero.png'});
+  await page.locator('.feature-list').scrollIntoViewIfNeeded();
+  await page.waitForFunction(()=>motionEvidence.some(item=>item.tag==='ARTICLE'&&item.frames[0].opacity===0));
+  check(await page.evaluate(()=>motionEvidence.some(item=>item.tag==='ARTICLE'&&item.delay===85)),'Scroll cards stagger');
+  const card=page.locator('.feature-list article').first();
+  await card.evaluate(async el=>{await Promise.allSettled(el.getAnimations().map(a=>a.finished));});
+  await page.screenshot({path:'web/evidence/motion-sections.png'});
+  await page.locator('.navigation').scrollIntoViewIfNeeded();
+  const modifiers=await page.evaluate(()=>{
+    const link=document.querySelector('.nav-cta');
+    return ['metaKey','ctrlKey','shiftKey','altKey'].map(modifier=>{
+      let intercepted;
+      document.addEventListener('click',event=>{intercepted=event.defaultPrevented;event.preventDefault();},{once:true});
+      link.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,button:0,[modifier]:true}));
+      return intercepted;
+    });
+  });
+  check(modifiers.every(value=>value===false),'Modified links remain native');
+  await page.locator('#nav-links a[href="#about"]').click();
+  check(!await page.locator('html').evaluate(el=>el.classList.contains('page-departing')),'Hash links do not fade out');
+  await page.locator('.navigation').scrollIntoViewIfNeeded();
+  const exiting=await page.locator('.nav-cta').evaluate(link=>{link.click();return document.documentElement.classList.contains('page-departing');});
+  check(exiting,'Exit curtain on navigation');
+  await page.waitForURL('**/experience.html');
+  await page.waitForLoadState('load');
+  check(!await page.locator('html').evaluate(el=>el.classList.contains('page-departing')),'Arrival page clear');
+  await page.getByRole('button',{name:'EN',exact:true}).click();
+  check(await page.evaluate(()=>motionEvidence.some(item=>item.tag==='BUTTON'&&item.frames[0].scale==='0.96')),'Button press animation');
+  // Keyboard navigation invokes the same transition, while focus stays visible.
+  await page.locator('.workspace-header .text-link').focus();
+  await page.keyboard.press('Enter');
+  await page.waitForURL('**/index.html');
+  await page.goBack({waitUntil:'domcontentloaded'});
+  check(page.url().endsWith('experience.html'),'Back returns to workspace');
+  check(!await page.locator('html').evaluate(el=>el.classList.contains('page-departing')),'Back clears departure state');
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.waitForFunction(()=>document.documentElement.dataset.motion==='off');
+  check(await page.evaluate(()=>document.getAnimations().filter(a=>a.playState==='running').length)===0,'Runtime reduced-motion cancels active effects');
+  await page.goto(root);
+  check(await page.evaluate(()=>motionEvidence.length)===0,'Reduced-motion initial load creates no animations');
+  check(await page.locator('.orbit').evaluate(el=>getComputedStyle(el).animationName)==='none','Reduced-motion stops decoration');
+  await page.setViewportSize({width:320,height:844});
+  await page.locator('.menu-toggle').click();
+  check(await page.locator('#nav-links').isVisible(),'Mobile navigation still works');
+  await page.keyboard.press('Escape');
+  check(await page.locator('.menu-toggle').evaluate(el=>el===document.activeElement),'Escape restores focus');
+  check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'No mobile overflow');
+  await page.screenshot({path:'web/evidence/motion-mobile-reduced.png'});
+  await page.locator('.nav-cta').click();await page.waitForURL('**/experience.html');
+  check(!await page.locator('html').evaluate(el=>el.classList.contains('page-departing')),'Reduced-motion navigation is immediate/native');
+  // Progressive enhancement: no script means no hidden content or broken links.
+  const context=await page.context().browser().newContext({javaScriptEnabled:false});
+  try{
+    const plain=await context.newPage();await plain.goto(root);
+    check(await plain.locator('#hero-title').isVisible(),'No-JS headline visible');
+    await plain.locator('.nav-cta').click();await plain.waitForURL('**/experience.html');
+    check(await plain.locator('#file-input').count()===1,'No-JS normal navigation');
+  }finally{await context.close();}
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  check(errors.length===0,'Browser errors: '+errors.join('; '));
+  return 'PASS: real staggered hero/scroll animations, finite decoration, button press, exit/entry navigation, keyboard Enter, Back restoration, native hash/modifier links, runtime and initial reduced-motion, mobile menu/focus/no overflow, no-JS navigation, no browser errors.';
+}

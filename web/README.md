@@ -17,8 +17,24 @@ Trang chủ lấy bố cục, nền bạc/đỏ, menu nổi, typography lớn v�
 - `npm --prefix web test`: kiểm extraction Anh/Việt, phủ định, dữ kiện chưa biết, zero-bedroom, giới hạn số và tính nhất quán. Browser evidence: `evidence/intake-check.log`, `bilingual-home-*.png`, `intake-*.png`.
 
 ## Nguồn
+
+### Đồng bộ EN/VI
+
+Landing đã đồng bộ nội dung EN/VI cho luồng ảnh + hội thoại + form; nhãn phụ, meta description, title, alt và aria-label cũng đổi ngôn ngữ. `i18n.js` nghe `storage`, `pageshow` và quay lại tab để không giữ locale cũ khi mở workspace hoặc khôi phục từ Back/BFCache. Chỉ thao tác chọn ngôn ngữ mới ghi preference; đồng bộ không ghi ngược giữa các tab. Storage là tùy chọn: mặc định English, bị chặn vẫn đổi ngôn ngữ được trong trang hiện tại.
+
+EN và VI dùng cùng Manrope variable self-hosted, có đủ 98 ký tự tiếng Việt đã kiểm cmap; không còn trộn Urbanist/Arial cho dấu tiếng Việt. Giấy phép OFL nằm cạnh font. Script locale và CSS được version URL để browser không dùng asset cũ sau lần cập nhật này. Bàn giao đầy đủ, file list và browser evidence: `evidence/HANDOFF-FRONTEND.md`.
+
+### Chuyển động giao diện
+
+`motion.js` + `motion.css` bổ sung hero xuất hiện lần lượt, reveal một lần khi cuộn, hover ảnh/card, phản hồi nhấn nút, mở menu/dialog và fade 160ms khi đi giữa landing/workspace. Trang đích có entrance riêng. Chuyển động trang dùng Web Animations API và CSS, không thêm dependency. Trang vẫn đọc/điều hướng bình thường nếu JS không chạy.
+
+`prefers-reduced-motion` được áp dụng cả lúc tải trang và khi thay đổi trong phiên: bỏ animation, chuyển trang ngay. Trang phục hồi qua Back/BFCache sẽ xóa trạng thái fade. Ctrl/Cmd/Shift/Alt-click, hash links, download, target khác và liên kết ngoài không bị chặn. Trang trí hero chỉ chạy 2 vòng (4.4s), cue cuộn 3 vòng (4.05s); không có vòng animation vô hạn hay vòng xử lý scroll liên tục. Không đo FPS trên thiết bị yếu thật.
+
+Nguồn: code viết mới bằng Codex, tham khảo workflow skill framer-motion-animator, triển khai native cho frontend tĩnh hiện có; không cài Framer Motion. H0 chưa xác nhận. Bằng chứng: `evidence/motion-check.log`, `evidence/motion-intake-regression.log` và `evidence/MOTION-RESULTS.md`.
+
+### Asset và code nền
 - Tham khảo: WP River Themes, Aigocy, thư mục `saveweb2zip-com-wpriverthemes-com` do người dùng cung cấp.
-- Copy asset: `assets/images/section/hero-1.jpg` → `web/assets/hero.jpg`; font Urbanist normal latin/latin-ext từ bản lưu Google Fonts → `web/assets/`. Giấy phép của bản mẫu chưa được xác minh.
+- Copy asset: `assets/images/section/hero-1.jpg` → `web/assets/hero.jpg`; quyền sử dụng hero của bản mẫu chưa được xác minh. Urbanist được giữ làm reference nhưng không còn dùng; giấy phép OFL đã bổ sung. Font active hiện tại là Manrope chính thức từ google/fonts; source và license tại `assets/SOURCES.md`.
 - HTML, CSS, JS, build viết mới với Codex ngày 2026-10-31. H0 chưa xác nhận; không khẳng định đây là phần build trong giờ thi.
 - Không tái sử dụng code từ `../codex_hack`, không thêm SDK/API/dependency.
 

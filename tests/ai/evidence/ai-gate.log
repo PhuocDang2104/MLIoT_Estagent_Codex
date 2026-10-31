@@ -1,0 +1,7 @@
+▶ ai compile
+  ok
+▶ ai pytest
+  ok
+▶ contract
+  SKIP (chưa có fixtures/tour.schema.json)
+GATE FAIL (strict: còn SKIP)

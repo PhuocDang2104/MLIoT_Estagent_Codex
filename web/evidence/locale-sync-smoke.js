@@ -1,0 +1,82 @@
+async (page) => {
+  const base='http://127.0.0.1:4173/web/';
+  const errors=[];
+  page.on('pageerror',error=>errors.push(error.message));
+  const check=(condition,label)=>{if(!condition)throw new Error(label);};
+  const textNodes=()=>{
+    const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);const nodes=[];
+    while(walker.nextNode()){
+      const node=walker.currentNode;
+      if(node.parentElement.closest('script,style,[aria-hidden=true]'))continue;
+      const value=node.textContent.trim();if(value)nodes.push(value);
+    }
+    return nodes;
+  };
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto(base);await page.evaluate(()=>localStorage.removeItem('estagent-language'));await page.reload();
+  check(await page.locator('html').getAttribute('lang')==='en','English default');
+  const english=await page.evaluate(textNodes);
+  for(let cycle=0;cycle<3;cycle++){
+    await page.locator('[data-lang=vi]').click();
+    const vietnamese=await page.evaluate(textNodes);
+    check(english.length===vietnamese.length,'Translation preserves text/DOM structure');
+    const unchanged=english.filter((value,index)=>/[a-zA-Z]/.test(value)&&value===vietnamese[index]&&!/^(Estagent\.?|EN|VI|3D|AI)$/.test(value));
+    check(unchanged.length===0,'Untranslated landing copy: '+unchanged.join(' | '));
+    check((await page.locator('#how').innerText()).includes('hội thoại hoặc dùng form tùy chọn'),'VI describes chat and optional form');
+    check((await page.locator('#how').innerText()).includes('Kiểm tra thông tin căn hộ'),'VI property brief matches EN');
+    check((await page.locator('meta[name=description]').getAttribute('content')).includes('thông tin căn hộ'),'VI page description');
+    check((await page.title()).includes('Hãy khám phá'),'VI title');
+    check(await page.locator('.language-switch').getAttribute('aria-label')==='Ngôn ngữ','VI accessibility label');
+    check((await page.locator('.hero-side').innerText()).includes('TRẢI NGHIỆM KHÔNG GIAN'),'Hero-side translated');
+    check((await page.locator('.vision-photo').getAttribute('alt')).includes('Phòng khách'),'VI alt text');
+    await page.evaluate(()=>document.fonts.ready);
+    check(await page.locator('#hero-title').evaluate(el=>getComputedStyle(el).fontFamily.startsWith('Manrope')),'Consistent Vietnamese font family');
+    check(await page.evaluate(()=>[...document.fonts].some(face=>face.family==='Manrope'&&face.status==='loaded')),'Self-hosted Manrope loaded');
+    check(await page.locator('[data-lang=vi]').getAttribute('aria-pressed')==='true','VI selected button');
+    await page.locator('[data-lang=en]').click();
+    check(JSON.stringify(await page.evaluate(textNodes))===JSON.stringify(english),'English restores exactly without mixed copy');
+    check((await page.locator('meta[name=description]').getAttribute('content')).includes('property details'),'English metadata restored');
+  }
+  const other=await page.context().newPage();
+  try{
+    await other.goto(base+'experience.html');
+    await other.locator('.metadata-details summary').click();
+    await other.locator('[name=address]').fill('12 Nguyễn Huệ, Quận 1');
+    await other.locator('[data-lang=vi]').click();
+    await page.waitForFunction(()=>document.documentElement.lang==='vi');
+    check(await page.locator('[data-lang=vi]').getAttribute('aria-pressed')==='true','Workspace tab updates landing selector');
+    await page.locator('[data-lang=en]').click();
+    await other.waitForFunction(()=>document.documentElement.lang==='en');
+    check(await other.locator('[name=address]').inputValue()==='12 Nguyễn Huệ, Quận 1','Cross-tab sync preserves typed data');
+    await page.evaluate(()=>localStorage.removeItem('estagent-language'));
+    await other.waitForFunction(()=>document.documentElement.lang==='en');
+  }finally{await other.close();}
+  // Explicit persisted pageshow covers BFCache even if the automation browser
+  // decides to reload instead of cache this particular history entry.
+  await page.evaluate(()=>{localStorage.setItem('estagent-language','vi');window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));});
+  check(await page.locator('html').getAttribute('lang')==='vi','BFCache pageshow refreshes preference');
+  await page.reload();check(await page.locator('html').getAttribute('lang')==='vi','Reload keeps VI');
+  await page.locator('.nav-cta').click();await page.waitForURL('**/experience.html');await page.waitForLoadState('load');
+  await page.locator('[data-lang=en]').click();await page.goBack({waitUntil:'load'});
+  check(await page.locator('html').getAttribute('lang')==='en','Real Back uses latest workspace language');
+  await page.setViewportSize({width:1440,height:1000});
+  for(const locale of ['en','vi']){
+    await page.locator(`[data-lang=${locale}]`).click();
+    for(const image of await page.locator('img').all()){await image.scrollIntoViewIfNeeded();await image.evaluate(el=>el.decode());}
+    await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+    await page.screenshot({path:`web/evidence/locale-sync-${locale}.png`,fullPage:true});
+    for(const width of [320,390,768,1440]){
+      await page.setViewportSize({width,height:1000});
+      check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`No overflow ${locale} ${width}`);
+    }
+  }
+  const blocked=await page.context().browser().newContext();
+  try{
+    await blocked.addInitScript(()=>{Storage.prototype.getItem=()=>{throw new Error('storage blocked');};Storage.prototype.setItem=()=>{throw new Error('storage blocked');};});
+    const tab=await blocked.newPage();await tab.goto(base);check(await tab.locator('html').getAttribute('lang')==='en','Storage unavailable defaults EN');
+    await tab.locator('[data-lang=vi]').click();await tab.evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true})));
+    check(await tab.locator('html').getAttribute('lang')==='vi','Storage unavailable retains current choice');
+  }finally{await blocked.close();}
+  check(errors.length===0,'Browser errors: '+errors.join('; '));
+  return 'PASS: all landing text translated except brand/language codes; EN/VI semantic parity; meta/title/alt/aria; three switch cycles; cross-tab sync both directions without data loss; persisted pageshow; real Back; reload; unavailable storage; EN/VI 320–1440px overflow; no page errors.';
+}

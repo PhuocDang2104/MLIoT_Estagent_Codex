@@ -8,7 +8,7 @@ async (page) => {
   for (const img of await page.locator('img').all()) { await img.scrollIntoViewIfNeeded(); await img.evaluate(el => el.decode()); }
   await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
   await page.screenshot({path:'web/evidence/bilingual-home-en.png',fullPage:true});
-  await page.locator('.nav-cta').click();await page.waitForLoadState('load');
+  await page.locator('.nav-cta').click();await page.waitForURL('**/experience.html');await page.waitForLoadState('load');
   check(page.url().endsWith('experience.html'),'CTA workspace');
   await page.locator('#chat-input').fill('2 bedrooms, 85 m², southeast-facing, with windows.');
   await page.locator('#chat-form button[type=submit]').click();

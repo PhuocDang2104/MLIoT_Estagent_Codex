@@ -1,11 +1,11 @@
 {
   "name": "estagent-web",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "python3 -m http.server 5173 --bind 127.0.0.1",
-    "lint": "node --check app.js && node --check i18n.js && node --check intake.js && node --check property.js && node --check build.mjs",
+    "lint": "node --check app.js && node --check i18n.js && node --check intake.js && node --check property.js && node --check build.mjs && node --check motion.js",
     "build": "node build.mjs",
     "test": "node --test tests/*.test.js"
   }

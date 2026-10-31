@@ -83,6 +83,7 @@ Chưa có đề chính thức của hackathon và chưa có tên 3 dev.
 ## Quyết định đã chốt
 | Ngày | Chốt gì | Vì sao |
 |---|---|---|
+| 2026-10-31 | MVP không cần auth; hoãn đăng nhập/đăng ký/email xác thực và Resend. Supabase chỉ dùng database/storage qua backend | Thái xác nhận trực tiếp; ưu tiên chat/voice và luồng tour |
 | 2026-10-31 | 3 lane theo ranh giới của codex_hack (web / core / ai+server), contract-first | Ranh giới đã chứng minh chạy được; mỗi lane làm trên fixture nên song song từ H1 |
 | 2026-10-31 | Codex = builder chạy song song trong worktree; Claude = lead lane, review chéo, tích hợp | Đề hackathon xoay quanh Codex; luôn có một con mắt khác nhà review |
 

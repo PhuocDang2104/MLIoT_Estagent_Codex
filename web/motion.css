@@ -1,0 +1,61 @@
+/* Motion is opt-in via JS; CSS-only and reduced-motion users see the full page. */
+:root { --motion-ease: cubic-bezier(.22, 1, .36, 1); }
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--paper, #ededed);
+  opacity: 0;
+  pointer-events: none;
+}
+html[data-motion="on"] body::after { transition: opacity 160ms ease-out; }
+html[data-motion="on"].page-departing body::after { opacity: 1; }
+
+@media (prefers-reduced-motion: no-preference) {
+  html[data-motion="on"] .orbit { animation: ornament-float 2.2s ease-in-out 2; }
+  html[data-motion="on"] .scroll-cue > span { display: inline-block; animation: scroll-nudge 1.35s ease-in-out 3; }
+  html[data-motion="on"] .navigation nav.open { animation: menu-arrive 220ms var(--motion-ease) both; }
+  html[data-motion="on"] dialog[open] { animation: dialog-arrive 250ms var(--motion-ease) both; }
+  html[data-motion="on"] dialog[open]::backdrop { animation: backdrop-arrive 180ms ease-out both; }
+
+  .button, .language-switch button, .chat-suggestions button, .menu-toggle, .dialog-close, .remove-photo {
+    transition: transform 200ms var(--motion-ease), scale 200ms var(--motion-ease), background-color 180ms ease, color 180ms ease, box-shadow 200ms ease;
+  }
+  :is(.button, button):active:not(:disabled) { scale: .97; }
+  .button > span[aria-hidden="true"] { display: inline-block; transition: translate 220ms var(--motion-ease); }
+  .button:is(:hover, :focus-visible) > span[aria-hidden="true"] { translate: 3px -2px; }
+  .text-link { transition: translate 200ms var(--motion-ease), color 180ms ease; }
+  .text-link:hover { translate: 3px 0; }
+  .vision-photo, .inspiration-grid img, .property-cover img { transition: transform 700ms var(--motion-ease); }
+  .inspiration-grid figure { overflow: hidden; border-radius: 22px 22px 0 0; }
+  .inspiration-grid img { display: block; }
+  .feature-list article, .steps article { transition: translate 300ms var(--motion-ease), border-color 200ms ease; }
+  .drop-zone { transition: background-color 180ms ease, border-color 180ms ease; }
+  .upload-icon { transition: translate 220ms var(--motion-ease); }
+  .drop-zone:is(:hover, :focus-within, .dragging) .upload-icon { translate: 0 -4px; }
+  .metadata-details[open] .metadata-fields { animation: menu-arrive 240ms var(--motion-ease); }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .vision-panel:hover .vision-photo, .property-cover:hover img { transform: scale(1.035); }
+  .inspiration-grid figure:hover img { transform: scale(1.025); }
+  .feature-list article:hover, .steps article:hover { translate: 0 -5px; border-color: var(--accent); }
+  .language-switch button:hover, .chat-suggestions button:hover, .dialog-close:hover { transform: translateY(-2px); }
+}
+
+@keyframes ornament-float {
+  0%, 100% { translate: 0 0; rotate: 0deg; }
+  50% { translate: 0 -8px; rotate: -2deg; }
+}
+@keyframes scroll-nudge { 0%, 100% { translate: 0 0; } 50% { translate: 0 5px; } }
+@keyframes menu-arrive { from { opacity: 0; translate: 0 -8px; } to { opacity: 1; translate: 0 0; } }
+@keyframes dialog-arrive { from { opacity: 0; translate: 0 12px; scale: .98; } to { opacity: 1; translate: 0 0; scale: 1; } }
+@keyframes backdrop-arrive { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  body::after { display: none; }
+  :is(.button, button):active, .button:hover, .text-link:hover { scale: none; translate: none; transform: none; }
+}

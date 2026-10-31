@@ -174,3 +174,6 @@ real screenshots remain outsideGit. License/public-export rights have NOT been
 independently verified; visible source/cache disclosure, no dataset/model download
 or export control is offered. No claim all source/model/assets were made today or
 inside unconfirmed competition hours. Integration/tooling assisted by Codex.
+
+### Neutral demo intro follow-up
+Two user-approved pre-generated OpenAI gpt-4o-mini-tts/coral WAVs (EN4.95s, VI6.15s) imported byte-for-byte from TTS lane private artifacts. Scripts/hashes/provenance in deploy/evidence/house-demo/intro-provenance.json. Audio is AI-generated, only a neutral tour greeting; no room-specific guide claim and no new Speech calls by release lane. Original WAV files remain outside Git/private MinIO.

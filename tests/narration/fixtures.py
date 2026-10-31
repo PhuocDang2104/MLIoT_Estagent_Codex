@@ -28,14 +28,13 @@ class SpeechSDK:
 
 def build(root,env=None,sdk=None,clock=None):
     env=ENV| (env or {});sdk=sdk or SpeechSDK();objects=Client();holder=[]
-    module=importlib.import_module('server.assistant.app');tours=importlib.import_module('server.tours.api')
-    original=tours.install_audio
-    def hook(router,db,owner,draft,check_revision,validate_doc,published,data_root,**kwargs):
-        verify=original(router,db,owner,draft,check_revision,validate_doc,published,data_root,**kwargs)
-        service=install_narration(router,db,owner,draft,check_revision,validate_doc,data_root,env,
-            object_storage=kwargs.get('object_storage'),provider=OpenAISpeech(sdk,env.get('OPENAI_MODEL_TTS','gpt-4o-mini-tts')) if env.get('FIXTURE_PROVIDER','1')=='1' else None,clock=clock)
-        holder.append(service);return verify
-    with patch.object(module,'create_object_storage',lambda _:MinioStorage(objects,'fixture')),patch.object(tours,'install_audio',hook):
+    module=importlib.import_module('server.assistant.app');narration=importlib.import_module('server.narration.api')
+    original=narration.install_narration
+    def hook(*args,**kwargs):
+        service=original(*args,**kwargs,
+            provider=OpenAISpeech(sdk,env.get('OPENAI_MODEL_TTS','gpt-4o-mini-tts')) if env.get('FIXTURE_PROVIDER','1')=='1' else None,clock=clock)
+        holder.append(service);return service
+    with patch.object(module,'create_object_storage',lambda _:MinioStorage(objects,'fixture')),patch.object(narration,'install_narration',hook):
         app=module.create_app(db_path=root/'assistant.sqlite',env=env)
     holder[0].storage=app.state.storage_limits
     return app,holder[0],sdk,objects

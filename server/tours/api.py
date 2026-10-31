@@ -361,4 +361,9 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
         return result
 
     verify_audio_publish = install_audio(router,db,owner,draft,check_revision,validate_doc,published,data_root,object_storage=object_storage)
+    from server.narration.api import install_narration
+    app.state.narration = install_narration(
+        router, db, owner, draft, check_revision, validate_doc, data_root, env,
+        object_storage=object_storage, storage_guard=lambda: app.state.storage_limits,
+    )
     app.include_router(router)

@@ -9,6 +9,7 @@ RUN pip install --no-cache-dir -r server/assistant/requirements.txt \
 COPY server/assistant/ /app/server/assistant/
 COPY server/creator/ /app/server/creator/
 COPY server/tours/ /app/server/tours/
+COPY server/narration/ /app/server/narration/
 COPY server/demos/ /app/server/demos/
 COPY server/limits.py /app/server/limits.py
 COPY server/storage.py /app/server/storage.py

@@ -9,7 +9,7 @@ from server.object_storage import ObjectResponse
 DEMO_ID = 'zind-house-000'
 BUNDLE_SHA = '734f7053604b67c24701acff3a044e2d33241272149e9596b0eefdca5fc592e3'
 TYPES = {'image/jpeg', 'image/png', 'image/svg+xml', 'model/gltf-binary',
-         'application/javascript', 'text/css', 'application/json'}
+         'application/javascript', 'text/css', 'application/json', 'audio/wav'}
 
 
 def read_catalog(path):
@@ -20,7 +20,7 @@ def read_catalog(path):
         for name, asset in doc['assets'].items():
             if (not re.fullmatch(r'(?:runtime|house)/[A-Za-z0-9_./-]+', name)
                     or any(p in {'', '.', '..'} for p in name.split('/'))
-                    or not name.endswith(('.js', '.css', '.json', '.jpg', '.png', '.svg', '.glb'))
+                    or not name.endswith(('.js', '.css', '.json', '.jpg', '.png', '.svg', '.glb', '.wav'))
                     or not re.fullmatch('[a-f0-9]{64}', asset['sha256'])
                     or asset['key'] != f'demos/{DEMO_ID}/{asset["sha256"]}/{name}'
                     or asset['content_type'] not in TYPES or not isinstance(asset['bytes'], int)
@@ -30,6 +30,16 @@ def read_catalog(path):
             raise ValueError()
         if doc['thumbnail'] not in doc['assets']:
             raise ValueError()
+        locales=set()
+        for item in doc.get('intro', []):
+            if (item['locale'] not in {'en','vi'} or item['locale'] in locales
+                    or item['asset'] != f"house/intro/{item['locale']}.wav"
+                    or item['asset'] not in doc['assets']
+                    or item['sha256'] != doc['assets'][item['asset']]['sha256']
+                    or item['source'] != 'openai_generated'
+                    or item['scope'] != 'neutral_tour_intro_not_room_specific'):
+                raise ValueError()
+            locales.add(item['locale'])
         return doc
     except (OSError, ValueError, TypeError, KeyError):
         raise ValueError('DEMO_CATALOG_PATH: missing or invalid allowlisted demo catalog') from None
@@ -48,7 +58,14 @@ def install_demos(app, env, web):
         return [{'id': DEMO_ID, 'kind': 'cached_demo', 'title': 'NHÀ DEMO — Nhà mẫu 000',
                  'href': f'/demos/{DEMO_ID}', 'thumbnail_url': f'/api/demos/{DEMO_ID}/assets/{catalog["thumbnail"]}',
                  'rooms': 15, 'captures': 32, 'markers': 16, 'source_mode': 'user_provided_cached',
-                 'rights_status': 'not_independently_verified', 'audio_available': False}]
+                 'rights_status': 'not_independently_verified', 'audio_available': bool(catalog.get('intro'))}]
+
+    @app.get('/api/demos/{demo_id}/intro')
+    def demo_intro(demo_id: str):
+        if demo_id != DEMO_ID or not catalog:
+            raise HTTPException(404)
+        return [{k:v for k,v in item.items() if k != 'asset'} |
+                {'url':f'/api/demos/{DEMO_ID}/assets/{item["asset"]}'} for item in catalog.get('intro', [])]
 
     @app.get('/demos/{demo_id}')
     def demo_page(demo_id: str):

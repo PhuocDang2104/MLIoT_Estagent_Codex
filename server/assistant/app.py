@@ -60,9 +60,16 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
         try:
             yield
         finally:
-            app.state.creator.close()
-            if client: client.close()
-            connection.close()
+            try:
+                app.state.narration.close()
+            finally:
+                try:
+                    app.state.creator.close()
+                finally:
+                    try:
+                        if client: client.close()
+                    finally:
+                        connection.close()
 
     app = FastAPI(lifespan=lifespan,docs_url=None,redoc_url=None,openapi_url=None)
     app.state.object_storage = object_storage
@@ -195,7 +202,7 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
 
     @app.get('/{filename}')
     def static_file(filename:str):
-        allowed = {'assistant.html','assistant.css','assistant.js','index.html','experience.html','styles.css','app.js','i18n.js','intake.js','property.js','motion.css','motion.js','creator.html','viewer.html','tour.css','tour-common.js','creator.js','viewer.js','panorama.js','studio.html','studio.css','studio.js','studio-panorama.js','studio-tour.html','studio-tour.js'}
+        allowed = {'narration-panel.js','narration-panel.css','assistant.html','assistant.css','assistant.js','index.html','experience.html','styles.css','app.js','i18n.js','intake.js','property.js','motion.css','motion.js','creator.html','viewer.html','tour.css','tour-common.js','creator.js','viewer.js','panorama.js','studio.html','studio.css','studio.js','studio-panorama.js','studio-tour.html','studio-tour.js'}
         if filename not in allowed or not (WEB/filename).is_file(): raise HTTPException(404)
         return FileResponse(WEB/filename)
 

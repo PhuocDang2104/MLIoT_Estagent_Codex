@@ -68,7 +68,7 @@ NOTES: <bẫy gặp phải, ≤3 dòng>
 2026-10-31: Thái giao Tatejo vai trò integrator, maintain `main` và deploy production; được phép push/merge `main` và deploy trong phạm vi này. FE dùng Vercel (`meetmate/estagent`); BE theo luồng Git → máy local → VM VNPT, Supabase self-host trên VM. Runbook và tình trạng thật: `docs/DEPLOYMENT.md`.
 Checkout `main` hiện có FE tĩnh (`web/`), chưa có BE/core hay fixture contract; thông tin bootstrap bên dưới là lịch sử chuẩn bị.
 2026-10-31: có bộ luật + script điều phối (`spawn/review/done/gate/doctor/pack-ref`, đã chạy thử với codex giả); chưa có code sản phẩm.
-Remote: `github.com/hoaianthai345/SeaOpenAI_MLIoT_Estagent` (**PUBLIC**, nhánh `main`). Tên repo gợi ý đề ML + IoT + agent bất động sản, chưa xác nhận.
+Remote chính: `github.com/PhuocDang2104/MLIoT_Estagent_Codex` (nhánh `main`). Remote cũ giữ dưới tên `previous-origin` để đối chiếu; không push các nhánh backup chứa attribution cũ.
 Đã thêm quy định khai báo nguồn/build trong ngày thi ở `docs/DECLARATION.md`; mốc H0 và phân loại thực tế còn chờ xác minh.
 
 ## Next action

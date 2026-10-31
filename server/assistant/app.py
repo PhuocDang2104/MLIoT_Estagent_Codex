@@ -15,7 +15,6 @@ from fastapi.staticfiles import StaticFiles
 from openai import OpenAI, APIError
 from pydantic import BaseModel, Field, ConfigDict
 from langgraph.checkpoint.sqlite import SqliteSaver
-from starlette.concurrency import run_in_threadpool
 from .graph import build_graph, make_extractor, LABELS, QUESTIONS
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -98,7 +97,11 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None):
             with lock:
                 before = app.state.graph.get_state(config).values
                 if before.get('last_request_id') == data.request_id: return public(before)
-                values = app.state.graph.invoke({'text':text,'request_id':data.request_id},config)
+                values = app.state.graph.invoke({
+                    'text':text,'request_id':data.request_id,
+                    'awaiting':before.get('awaiting',required[0]),
+                    'stage':before.get('stage','required'),
+                },config)
             return public(values)
         except APIError as error:
             status = 429 if getattr(error,'status_code',None) == 429 else 502

@@ -36,7 +36,13 @@ gate_py() {  # $1 = core|ai, $2.. = thư mục code
   local dirs=(); for d in "$@"; do [ -d "$d" ] && dirs+=("$d"); done
   if [ ${#dirs[@]} -eq 0 ]; then skip "$l" "chưa có code"; return; fi
   run "$l compile" python3 -m compileall -q "${dirs[@]}"
-  if [ -d "tests/$l" ]; then run "$l pytest" py -m pytest -q "tests/$l"; else skip "$l tests" "chưa có tests/$l"; fi
+  if [ -d "tests/$l" ]; then
+    if [ "$l" = ai ] && [ -f server/assistant/requirements.txt ] && command -v uv >/dev/null; then
+      run "$l pytest" uv run --quiet --python 3.13 --with pytest --with jsonschema --with-requirements server/assistant/requirements.txt python -m pytest -q "tests/$l"
+    else
+      run "$l pytest" py -m pytest -q "tests/$l"
+    fi
+  else skip "$l tests" "chưa có tests/$l"; fi
 }
 
 case "$lane" in

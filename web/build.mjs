@@ -4,4 +4,7 @@ for (const file of ['index.html', 'experience.html', 'styles.css', 'app.js', 'i1
   await copyFile(file, `dist/${file}`);
 }
 await cp('assets', 'dist/assets', { recursive: true });
+for (const file of ['assistant.html', 'assistant.css', 'assistant.js']) {
+  await copyFile(file, `dist/${file}`);
+}
 console.log('Built static site in web/dist');

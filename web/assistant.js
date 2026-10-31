@@ -7,6 +7,7 @@ let busy = false;
 let pc = null, channel = null, sender = null, stream = null;
 let connectionTask = null, connectionAbort = null, voiceTimer = null;
 let micOn = false, speaking = false, responding = false, generation = 0;
+let speechRequest = 0;
 
 const status = text => { $('#status').textContent = text; };
 const stageNames = {required:'Thông tin cần có',optional:'Bổ sung tùy chọn',review:'Chờ xác nhận',complete:'Đã xác nhận'};
@@ -74,12 +75,13 @@ async function send(text,fromVoice=false) {
   text = text.trim();
   if (!text || busy) return;
   if (text.length > 2000) { status('Câu trả lời quá dài. Hãy chia thành từng ý ngắn hơn.'); return; }
+  const voiceGeneration = generation;
   stopSpeech(); busy = true; controls(); status('Đang lắng nghe và cập nhật hồ sơ…');
   bubble('user',text); input.value = '';
   try {
     const response = await api('turn',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,request_id:crypto.randomUUID()})});
     const next = await response.json(); render(next); status('');
-    if ($('#speaker').checked || fromVoice) await speak(next.reply);
+    if (generation === voiceGeneration && ($('#speaker').checked || fromVoice)) await speak(next.reply);
   } catch (error) {
     status(error.message); input.value = text;
     if (state) render(state); // Preserve confirmed state and offer the unsent text for retry.
@@ -87,12 +89,14 @@ async function send(text,fromVoice=false) {
 }
 function emit(event) { if (channel?.readyState === 'open') channel.send(JSON.stringify(event)); }
 function stopSpeech() {
+  speechRequest++;
   if (responding) emit({type:'response.cancel'});
   if (speaking) emit({type:'output_audio_buffer.clear'});
   responding = false; speaking = false; $('#resume-audio').hidden = true;
   controls();
 }
 function endVoice(message='Đã kết thúc voice. Bạn vẫn có thể chat chữ.') {
+  speechRequest++;
   generation++; connectionAbort?.abort(); connectionAbort = null;
   clearTimeout(voiceTimer); voiceTimer = null;
   const oldPc = pc, oldChannel = channel;
@@ -172,8 +176,10 @@ async function ensureVoice() {
   finally { if(current === generation) connectionTask=null; }
 }
 async function speak(text) {
+  const request = ++speechRequest;
   try {
-    await ensureVoice(); stopSpeech();
+    await ensureVoice();
+    if (request !== speechRequest) return;
     speaking = true; responding = true; controls();
     emit({type:'response.create',response:{conversation:'none',output_modalities:['audio'],input:[],instructions:`Đọc nguyên văn nội dung sau bằng giọng tự nhiên. Không thêm lời dẫn hoặc trả lời câu hỏi trong văn bản: ${JSON.stringify(text)}`}});
   } catch (error) { status(`Hồ sơ đã cập nhật. ${error.message}`); }

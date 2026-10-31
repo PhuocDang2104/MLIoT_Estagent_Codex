@@ -1,0 +1,26 @@
+### Result
+{"pass":true,"entry":{"paused":true,"time":0},"realPlaybackAfterEntryOrOneGesture":true,"pause":true,"singleButton":true,"secondaryCollapsed":true,"sizes":[{"x":1166.21875,"y":916,"width":249.78125,"height":62},{"x":12,"y":770,"width":366,"height":62},{"x":12,"y":666,"width":296,"height":62}],"errors":[]}
+### Ran Playwright code
+```js
+await (async page=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.reload();
+ await page.locator('#demo-guide .guide-toggle').waitFor();await page.waitForFunction(()=>document.querySelector('#demo-guide>audio')?.currentTime>.1||document.querySelector('#demo-guide [role=status]')?.textContent.includes('Chạm'));
+ const entry=await page.locator('#demo-guide>audio').evaluate(a=>({paused:a.paused,time:a.currentTime}));if(entry.paused)await page.locator('#demo-guide .guide-toggle').click();
+ await page.waitForFunction(()=>document.querySelector('#demo-guide>audio').currentTime>.2&&!document.querySelector('#demo-guide>audio').paused);
+ await page.locator('#demo-guide .guide-toggle').click();if(!await page.locator('#demo-guide>audio').evaluate(a=>a.paused))throw Error('Pause failed');
+ const sizes=[];
+ for(const [width,height] of [[1440,1000],[390,844],[320,740]]){
+  await page.setViewportSize({width,height});const box=await page.locator('#demo-guide').boundingBox();if(box.x<0||box.x+box.width>width+.5||box.y+box.height>height||box.y<height-120)throw Error('Transport bounds '+JSON.stringify(box));
+  if(await page.locator('#demo-guide>button').count()!==1)throw Error('Multiple playback buttons');if(await page.locator('#demo-intro>summary').isVisible()||await page.locator('#demo-source>summary').isVisible())throw Error('Secondary clutter');
+  await page.screenshot({path:'/private/tmp/demo-controls-'+width+'.png'});await page.locator('#demo-settings>summary').click();const settings=await page.locator('.guide-settings-panel').boundingBox();if(settings.x<0||settings.x+settings.width>width+.5||settings.y<0)throw Error('Settings overflow');await page.keyboard.press('Escape');if(!await page.locator('#panoMode').evaluate(e=>e.classList.contains('active')))throw Error('Closing settings changed camera mode');sizes.push(box);
+ }
+ if(errors.length)throw Error(errors.join(';'));return {pass:true,entry,realPlaybackAfterEntryOrOneGesture:true,pause:true,singleButton:true,secondaryCollapsed:true,sizes,errors};
+}
+)(page);
+```
+
+╔════════════════════════════════════════════════════════════════════╗
+║ Update available for @playwright/cli: 0.1.18 → 0.1.22              ║
+║ Run `npm install -g @playwright/cli@latest` (global) or            ║
+║ `npm install --save-dev @playwright/cli@latest` (local) to update. ║
+╚════════════════════════════════════════════════════════════════════╝

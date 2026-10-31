@@ -1,0 +1,29 @@
+### Result
+{"pass":true,"autoplayWithoutInteraction":true,"policy":"Separate Chrome launched with autoplay explicitly permitted; default policy covered separately","state":{"time":0.287327,"paused":false},"initialAction":"Tạm dừng","panoramaBeforeAudio":true,"pause":true,"fullscreenPauseVisible":true,"errors":[]}
+### Ran Playwright code
+```js
+await (async page=>{
+ const browser=await page.context().browser().browserType().launch({channel:'chrome',headless:true,args:['--autoplay-policy=no-user-gesture-required']});
+ try{
+  const context=await browser.newContext({viewport:{width:1440,height:1000}}),preview=await context.newPage(),errors=[];
+  preview.on('pageerror',e=>errors.push(e.message));
+  for(const name of ['house.js','house.css'])await preview.route('**/demos/static/'+name,route=>route.fulfill({path:'/Users/anhoaithai/Documents/AHT/1. PROJECTS/CodexHackathon/.worktrees/demo-controls/web/demos/'+name}));
+  await preview.goto('https://estagent.duckdns.org/demos/zind-house-000');
+  await preview.waitForFunction(()=>document.querySelector('#demo-guide>audio')?.currentTime>.2&&!document.querySelector('#demo-guide>audio').paused);
+  const state=await preview.locator('#demo-guide>audio').evaluate(a=>({time:a.currentTime,paused:a.paused}));
+  if(await preview.locator('.guide-toggle').innerText()!=='Tạm dừng')throw Error('Wrong initial action');
+  if(!await preview.locator('#panoMode').evaluate(e=>e.classList.contains('active')))throw Error('Narration without panorama');
+  await preview.screenshot({path:'/private/tmp/demo-controls-autoplay.png'});
+  await preview.locator('#fullscreen').click();await preview.waitForFunction(()=>!!document.fullscreenElement);if(!await preview.locator('.guide-toggle').isVisible())throw Error('Pause hidden in fullscreen');
+  await preview.locator('.guide-toggle').click();if(!await preview.locator('#demo-guide>audio').evaluate(a=>a.paused))throw Error('Pause');
+  if(errors.length)throw Error(errors.join(';'));return {pass:true,autoplayWithoutInteraction:true,policy:'Separate Chrome launched with autoplay explicitly permitted; default policy covered separately',state,initialAction:'Tạm dừng',panoramaBeforeAudio:true,pause:true,fullscreenPauseVisible:true,errors};
+ }finally{await browser.close();}
+}
+)(page);
+```
+
+╔════════════════════════════════════════════════════════════════════╗
+║ Update available for @playwright/cli: 0.1.18 → 0.1.22              ║
+║ Run `npm install -g @playwright/cli@latest` (global) or            ║
+║ `npm install --save-dev @playwright/cli@latest` (local) to update. ║
+╚════════════════════════════════════════════════════════════════════╝

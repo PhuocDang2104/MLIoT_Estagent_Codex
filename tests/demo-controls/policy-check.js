@@ -1,0 +1,19 @@
+async sourcePage=>{
+ const page=await sourcePage.context().newPage();
+ try{
+ for(const name of ['house.js','house.css'])await page.route('**/demos/static/'+name,route=>route.fulfill({path:'__ROOT__/web/demos/'+name}));
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.addInitScript(()=>{const original=HTMLMediaElement.prototype.play;let denied=false;HTMLMediaElement.prototype.play=function(){if(this.closest('#demo-guide')&&!denied){denied=true;return Promise.reject(new DOMException('Fixture autoplay policy denial','NotAllowedError'));}return original.call(this);};});
+ await page.goto('https://estagent.duckdns.org/demos/zind-house-000');await page.waitForFunction(()=>document.querySelector('#demo-guide [role=status]')?.textContent==='Chạm để bật âm thanh');
+ if(await page.locator('#demo-guide .guide-toggle').innerText()!=='Bắt đầu tour')throw Error('Policy fallback label');
+ await page.locator('#demo-guide .guide-toggle').click();await page.waitForFunction(()=>document.querySelector('#demo-guide>audio').currentTime>.1&&!document.querySelector('#demo-guide>audio').paused);
+ const captureBefore=await page.locator('#captures button.active').getAttribute('data-id');
+ await page.locator('#demo-guide>audio').evaluate(a=>a.currentTime=Math.max(0,a.duration-.1));
+ await page.waitForFunction(id=>document.querySelector('#captures button.active')?.dataset.id!==id&&document.querySelector('#demo-guide>audio').currentTime>.1&&!document.querySelector('#demo-guide>audio').paused,captureBefore);
+ await page.evaluate(()=>document.dispatchEvent(new Event('chat-start')));
+ if(!await page.locator('#demo-guide>audio').evaluate(a=>a.paused))throw Error('Chat did not stop narration');
+ await page.waitForTimeout(350);if(!await page.locator('#demo-guide>audio').evaluate(a=>a.paused))throw Error('Unexpected auto resume after chat');
+ if(errors.length)throw Error(errors.join(';'));
+ return {pass:true,policyDenial:'explicit local fault injection of NotAllowedError, no provider call',singleButtonRecovery:true,actualRecordedAudioPlayback:true,endedMovesToNextCapture:true,chatStopsNoResume:true,errors};
+ }finally{await page.close();}
+}

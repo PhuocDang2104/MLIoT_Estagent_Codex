@@ -128,3 +128,69 @@ if(document.querySelector('#hero-building')){
  labelBuilding();document.addEventListener('languagechange',labelBuilding);
  import('/assets/models/building-preview.js').then(module=>module.mountBuildingPreview()).catch(error=>{console.error('Building preview module:',error);document.querySelector('#building-state').textContent=t('3D preview unavailable.','Không tải được mô hình 3D.');});
 }
+
+// Landing diagrams are an optional reading layer; existing hero controls stay independent.
+(() => {
+  const board = document.querySelector('[data-flow-board]');
+  if (!board) return;
+  const tablist = board.querySelector('[role="tablist"]');
+  const tabs = [...tablist.querySelectorAll('[role="tab"]')];
+  function selectFlow(tab, focus = false) {
+    tabs.forEach(item => {
+      const selected = item === tab;
+      item.setAttribute('aria-selected', String(selected));
+      item.tabIndex = selected ? 0 : -1;
+      document.getElementById(item.getAttribute('aria-controls')).hidden = !selected;
+    });
+    if (focus) tab.focus();
+  }
+  tablist.hidden = false;
+  selectFlow(tabs[0]);
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => selectFlow(tab));
+    tab.addEventListener('keydown', event => {
+      const positions = { ArrowRight: (index + 1) % tabs.length,
+        ArrowLeft: (index + tabs.length - 1) % tabs.length, Home: 0, End: tabs.length - 1 };
+      if (Object.hasOwn(positions, event.key)) {
+        event.preventDefault();
+        event.stopPropagation();
+        selectFlow(tabs[positions[event.key]], true);
+      }
+    });
+  });
+
+  const diagram = document.querySelector('#landing-diagram');
+  const image = document.querySelector('#landing-diagram-image');
+  const title = document.querySelector('#landing-diagram-title');
+  const original = document.querySelector('#landing-diagram-original');
+  let trigger;
+  function labelDiagram() {
+    if (!trigger) return;
+    const label = window.estagentI18n?.t(trigger.dataset.diagramTitle, trigger.dataset.diagramVi) || trigger.dataset.diagramTitle;
+    title.textContent = label;
+    image.alt = label;
+  }
+  document.querySelectorAll('[data-diagram-preview]').forEach(link => {
+    link.addEventListener('click', event => {
+      if (!diagram?.showModal || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      trigger = link;
+      labelDiagram();
+      image.src = link.getAttribute('href');
+      original.href = link.href;
+      diagram.showModal();
+      document.body.classList.add('landing-diagram-open');
+    });
+  });
+  diagram.addEventListener('click', event => {
+    if (event.target !== diagram) return;
+    const box = diagram.getBoundingClientRect();
+    if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) diagram.close();
+  });
+  diagram.addEventListener('close', () => {
+    document.body.classList.remove('landing-diagram-open');
+    image.removeAttribute('src');
+    trigger?.focus({ preventScroll: true });
+  });
+  document.addEventListener('languagechange', labelDiagram);
+})();

@@ -1,5 +1,13 @@
 # Apartment photo assets
 
+## Landing architecture diagrams
+
+`architecture/tour-generation.png` and `architecture/spatial-assistant.png` are
+byte-identical copies of the two user-provided architecture images in `docs/`.
+They are loaded only when a visitor opens the optional architecture dialog.
+The visible note identifies planned integrations. The small flow illustrations
+and outline icons are authored HTML/CSS/SVG, not generated raster artwork.
+
 ## Estagent favicon
 
 `favicon.svg`: original geometric E monogram with the existing charcoal/cream/red brand palette, authored with Codex on 2026-10-31. No external image, font or paid service used. H0 unverified.

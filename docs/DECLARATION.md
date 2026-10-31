@@ -1,5 +1,16 @@
 # Khai báo nguồn có sẵn và phần build trong thời gian thi
 
+## Landing architecture extension — 2026-10-31
+
+User requested preserving the current landing and extending it with diagram-led,
+concise editorial sections inspired by Markdown. Codex assisted scoped HTML/CSS,
+outline SVG icons, accessible flow tabs and an optional architecture dialog.
+The original hero, Seoul media/control logic, three-step content and footer are
+retained. Diagram PNGs are unchanged copies of the user's existing docs images;
+the site palette/font/controls are reused. No new dependency, model request or
+deployment change. Browser QA may read public demo GET/HEAD assets with local-only
+source overrides; no production writes. H0 unconfirmed; no in-contest claim.
+
 ## Product writeup and README — 2026-10-31
 
 Thai supplied `Langgraph Rag Spatial Context Assistant.png` and

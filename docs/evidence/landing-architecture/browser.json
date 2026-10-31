@@ -1,0 +1,60 @@
+{
+  "status": "PASS",
+  "base": "4cec440",
+  "source_overrides": "local file routes only; no server mutation; WebGL disabled for isolated landing UI QA",
+  "preserved": {
+    "hero": "800d117dbdc3dd9f485ca308f6889f52a62e52912b10f5f15c92406c93f6d6b5",
+    "how": "279ae0b427a3608f6358d29999385188cb57a75a9ce9578b8a76912c61c005a4",
+    "footer": "67d14e21db6d526d9a1b7f269d5e2fc98baae7a3f292cd5d76a443006c40ebe2"
+  },
+  "original_app_prefix": true,
+  "original_css_prefix": true,
+  "image_sha256": {
+    "tour-generation": "f214b11117936bf08b023d6065d132cefdd057f33b40d77152a1ca8a5b8ad1f9",
+    "spatial-assistant": "801b7ccc44544ca6f41ca3a0718e8ca0df113f142d45fc1141ad089b9eae18ac"
+  },
+  "layouts": [
+    {
+      "width": 1440,
+      "tabs": "PASS",
+      "diagrams": "PASS",
+      "keyboard": "PASS",
+      "no_overflow": true
+    },
+    {
+      "width": 1024,
+      "tabs": "PASS",
+      "diagrams": "PASS",
+      "keyboard": "PASS",
+      "no_overflow": true
+    },
+    {
+      "width": 768,
+      "tabs": "PASS",
+      "diagrams": "PASS",
+      "keyboard": "PASS",
+      "no_overflow": true
+    },
+    {
+      "width": 390,
+      "tabs": "PASS",
+      "diagrams": "PASS",
+      "keyboard": "PASS",
+      "no_overflow": true
+    },
+    {
+      "width": 320,
+      "tabs": "PASS",
+      "diagrams": "PASS",
+      "keyboard": "PASS",
+      "no_overflow": true
+    }
+  ],
+  "hero_preservation": "exact HTML, CSS prefix and JS prefix checks; real WebGL interaction not revalidated by this isolated UI check",
+  "reduced_motion": true,
+  "mobile_menu": true,
+  "no_js_fallback": true,
+  "page_errors": [],
+  "production_writes": [],
+  "provider_calls": 0
+}

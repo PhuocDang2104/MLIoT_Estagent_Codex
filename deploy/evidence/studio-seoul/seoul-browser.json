@@ -1,0 +1,16 @@
+{
+  "base": "https://estagent.duckdns.org",
+  "status": "PASS",
+  "load_seconds": 9.24,
+  "markers": 5,
+  "panoramas": 8,
+  "page_errors": [],
+  "failed_responses": [],
+  "checks": [
+    "model decode and orbit",
+    "checkpoint transition",
+    "eight panorama captures",
+    "floorplan",
+    "390px mobile"
+  ]
+}

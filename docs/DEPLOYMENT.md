@@ -315,3 +315,11 @@ Declaration: controls are frontend changes over existing cached renderer; sharp 
 Source975d91a130b1fc6adeae5e6fd6e678ad4841abcc; image sha256:c82a5512ac655cf7e15a3d4722867dc3aaea3c5831f0e18feb820c052c8fe0bd healthy. Evidence deploy/evidence/landing-model/{release,production-browser,preservation}.json. Artifact checksum3f3d7ea007f91b02aeb98fa1b61f4ba222c0effe6b4c81998cd56245e68828fb. Clean-main build, shared cutover lock, expected priorf173106 image verified; priorimage/env/catalog retained, no DB restoration.
 
 Actual public GLB SHA47eedfc08f6f4e251c1e95f2c9c475bbe53b0aa4492a6bd5081d38a80d56c8c1 matches user-provided3D_Building procedural illustration. GLBunchanged; preview omits presentationground. Not reconstructed from sample photos. Public rotation/drag/keyboard/commonPause/reducedmotion/ENVI/mobile1440/390/320 PASS; separate injected404 cases verify independentimage/modelfallback. Controls code unchanged, canonicalmanifest and32guidev2 bindings preserved. No providers/dependencies/serverchanges, keys remain empty. Corestrict still baselineSKIP.
+# Latest: Studio + Seoul — 2026-10-31
+
+Deployed source `80f477b36aa9886516fe8f5225af9ca54e132c0d`, healthy. AI/Blender
+Studio is the default `/business/create`; photo tours remain `/business/photos`.
+Seoul furnished sample is `/demos/seoul-apartment`. Astra High / Terra / Sol / TTS
+connections verified; key remains backend-only with request caps. Existing tours
+and ZInD data preserved. See [release evidence and rollback](STUDIO-SEOUL-RELEASE.md).
+

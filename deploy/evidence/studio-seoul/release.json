@@ -1,0 +1,25 @@
+{
+  "source": "80f477b36aa9886516fe8f5225af9ca54e132c0d",
+  "image_id": "sha256:1123f15664ee4979ae6778a293a8616ac2a4c6af0ddcf96e94ad7745c6ccd45a",
+  "health": "healthy",
+  "archive_sha256": "9e10836a68d96fd33be4728045636dd24f140959f4220d77b61cfa89ffa0cd80",
+  "backup": "/opt/estagent/backups/studio-rollout/20261031T084652612107Z-before-studio-80f477b",
+  "backup_files_verified": 24,
+  "published_rows_preserved": {
+    "tours/tours.sqlite": "dfaab4d1f14ebd8681c18cae118d87d47e46e61a7188b19c2728d9595f0a1b7b",
+    "studio/creator.sqlite": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "previous_source": "975d91a130b1fc6adeae5e6fd6e678ad4841abcc",
+  "runtime_env": "/opt/estagent/runtime/studio-80f477b.env",
+  "previous_env": "/opt/estagent/runtime/model-975d91a1.env",
+  "models": {
+    "modeling": "gpt-6-astra",
+    "modeling_reasoning": "high",
+    "vision": "gpt-6.1-terra",
+    "text": "gpt-6.1-sol",
+    "speech": "gpt-4o-mini-tts"
+  },
+  "studio_call_cap": 40,
+  "seoul_assets": 12,
+  "data_restored": false
+}

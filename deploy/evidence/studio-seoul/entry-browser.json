@@ -1,0 +1,22 @@
+{
+  "checks": [
+    {
+      "route": "/",
+      "status": "PASS"
+    },
+    {
+      "route": "/business/create",
+      "status": "PASS"
+    },
+    {
+      "route": "/business/photos",
+      "status": "PASS"
+    },
+    {
+      "route": "/viewer.html",
+      "status": "PASS"
+    }
+  ],
+  "page_errors": [],
+  "failed_responses": []
+}

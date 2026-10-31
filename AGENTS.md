@@ -14,6 +14,7 @@ updated: 2026-10-31
 > Agent nào mở repo này cũng đọc theo thứ tự: **file này → `docs/CONTRACTS.md` → task card của mình**.
 > Không đọc task card/lane khác trừ khi card yêu cầu. Lead đọc thêm `docs/ORCHESTRATION.md`.
 > Codex worker đọc thêm `docs/CODEX-OPENAI.md`; task dùng OpenAI API phải điền mục **OpenAI** trong card.
+> Teammate backend bắt đầu từ `docs/BACKEND-HANDOFF.md` và `server/AGENTS.md`. Không cần Tatejo/herdr hoặc đường dẫn riêng của máy Thái để chạy repo.
 
 ## 1. Mục tiêu
 Trong 12 tiếng, 3 dev ship một sản phẩm **demo được end-to-end** trên `main`, có link deploy và demo 3 phút.
@@ -66,7 +67,7 @@ NOTES: <bẫy gặp phải, ≤3 dòng>
 
 ## Đang ở đâu
 2026-10-31: Thái giao Tatejo vai trò integrator, maintain `main` và deploy production; được phép push/merge `main` và deploy trong phạm vi này. FE dùng Vercel (`meetmate/estagent`); BE theo luồng Git → máy local → VM VNPT, Supabase self-host trên VM. Runbook và tình trạng thật: `docs/DEPLOYMENT.md`.
-Checkout `main` hiện có FE tĩnh (`web/`), chưa có BE/core hay fixture contract; thông tin bootstrap bên dưới là lịch sử chuẩn bị.
+Checkout `main` có FE tĩnh EN/VI + motion và backend assistant FastAPI/LangGraph/SQLite; chưa có core reconstruction, API tour hay fixture contract. Quickstart và task backend: `docs/BACKEND-HANDOFF.md`; thông tin bootstrap bên dưới chỉ là lịch sử chuẩn bị.
 2026-10-31: có bộ luật + script điều phối (`spawn/review/done/gate/doctor/pack-ref`, đã chạy thử với codex giả); chưa có code sản phẩm.
 Remote chính: `github.com/PhuocDang2104/MLIoT_Estagent_Codex` (nhánh `main`). Remote cũ giữ dưới tên `previous-origin` để đối chiếu; không push các nhánh backup chứa attribution cũ.
 Đã thêm quy định khai báo nguồn/build trong ngày thi ở `docs/DECLARATION.md`; mốc H0 và phân loại thực tế còn chờ xác minh.
@@ -77,7 +78,7 @@ Remote chính: `github.com/PhuocDang2104/MLIoT_Estagent_Codex` (nhánh `main`). 
 - [ ] H0: Dev 1 chạy kickoff theo `docs/ORCHESTRATION.md §3`
 
 ## Đang kẹt
-Deploy BE: chưa có source BE trên remote (chỉ có nhánh `main`); cần repo/nhánh hoặc code từ lane AI. FE đã live, xem `docs/DEPLOYMENT.md`.
+BE assistant đã có source và deploy tooling; chưa kiểm Docker/TLS/OpenAI live và chưa hoàn thiện API tour. Kiểm readiness tại `docs/BACKEND-HANDOFF.md`; runbook hạ tầng tại `docs/DEPLOYMENT.md`.
 Chưa có đề chính thức của hackathon và chưa có tên 3 dev.
 
 ## Quyết định đã chốt

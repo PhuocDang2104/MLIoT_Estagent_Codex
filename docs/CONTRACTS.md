@@ -4,6 +4,30 @@
 > Chủ file: Dev 1. Sau freeze chỉ được thêm field (additive), bump `version`, sửa `fixtures/` trong cùng commit.
 > Lane nào cũng code dựa trên fixture trong `fixtures/`, không chờ lane khác.
 
+## Trạng thái bàn giao 2026-10-31 — đọc trước khi triển khai
+
+**Các mục 1–6 bên dưới là DRAFT tour contract từ bản tham khảo, chưa phải API đã triển khai hoặc contract freeze được xác nhận.**
+H0 chưa chốt; `fixtures/tour.schema.json` chưa có. Không coi enum minh họa có dấu `|` là JSON Schema hợp lệ.
+Hai view Creator/Viewer và audio tour đã được Thái yêu cầu ở `USER-VIEWS.md` và `TOUR-AUDIO.md`;
+draft bên dưới chưa bao phủ draft/publish snapshot, nhạc nền và audio theo room/locale.
+Backend gửi `CONTRACT_CHANGE` cho integrator để chốt schema + fixture trước khi viết API tour.
+
+### API đang có thật: assistant intake
+
+Source authority: `server/assistant/app.py`, `graph.py`; chi tiết chạy ở `docs/BACKEND-HANDOFF.md`.
+
+| Endpoint | Input | Output / hành vi |
+|---|---|---|
+| `GET /api/assistant/state` | Cookie phiên nếu có | Tạo cookie khi thiếu, đọc state; không gọi model |
+| `POST /api/assistant/turn` | JSON `text` (1–2000 ký tự), `request_id` (8–80 ký tự, chữ/số/gạch nối) | State sau LangGraph; cần cookie từ GET và Origin đúng cấu hình |
+| `POST /api/assistant/voice` | `application/sdp`, SDP có audio | SDP từ upstream hoặc lỗi; key chỉ ở backend |
+
+State gồm `profile`, `deferred`, `history`, `awaiting`, `stage`, `confirmed`, `reply`, `required`, `labels`, `configured`.
+`configured` chỉ cho biết key/extractor có cấu hình, không xác minh key/model/quota.
+`confirmed` là xác nhận hồ sơ intake, **không** là phê duyệt/publish tour.
+Lỗi dùng `error` cho lỗi app trả chủ động; lỗi validation/HTTPException có `detail` theo FastAPI. Chưa có error envelope thống nhất.
+Các API projects/demo/publish bên dưới **chưa có**; assistant chưa có property ID/tour ID hoặc dữ liệu spatial context.
+
 ## 1. Thư mục một project (output chung của core + ai, web chỉ đọc)
 
 ```text

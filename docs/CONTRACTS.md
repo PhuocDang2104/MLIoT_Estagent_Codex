@@ -192,6 +192,10 @@ No manifest schema or existing-record migration is required. See `CHAT-FLOW-HAND
 | `POST /api/tours/drafts/{id}/publish` | `{revision}` requires matching saved+reviewed revision and readable images. Returns immutable snapshot with new ID and public asset URLs. Same draft+revision idempotent; later draft edits do not affect it |
 | `GET /api/tours/published` | Published snapshots only; shareable within this local server; no private drafts |
 | `GET /api/tours/published/{id}` | Immutable manifest, no cookie required |
+| `GET /api/tours/session` | Adds `viewer_configured` and `voice_configured`; `configured` remains legacy Creator capability |
+| `GET /api/tours/published/{id}/messages` | Latest 50 chat turns for this cookie and immutable public snapshot only |
+| `POST /api/tours/published/{id}/transcribe` | Raw mono PCM16 WAV, ≤20s, 16kHz; exact Origin/session; request ID and `X-Audio-Locale: en|vi`; returns `{text}` |
+| `POST /api/tours/published/{id}/speech` | Speaks only an existing answer in this session/snapshot, private `audio/wav`, no arbitrary text-to-speech endpoint |
 | `GET /api/tours/published/{id}/assets/{asset}` | Only assets referenced by that snapshot, no cookie required |
 | `POST /api/tours/drafts/{id}/chat` | `{text,request_id,revision,locale,scene_id?}`; text-only grounded assistant; can rename/describe/reorder/start only existing scene IDs. Revision checked after model response too. Returns `{reply,manifest,source}`; saved history, sequential request idempotency; no exactly-once promise for concurrent provider calls |
 | `GET /api/tours/drafts/{id}/messages` | Own text+attachment IDs and successful chat responses, never image base64 |
@@ -382,3 +386,6 @@ the four exact export filenames are validated with hashes, MIME and chapter boun
 Asset GET/HEAD supports byte ranges and `?download=1` attachment headers for
 these files. No generation endpoint, published schema or ZInD exception is added.
 The landing preview and sample CTA now reference the same furnished Seoul model.
+
+
+Visitor chat uses `TOUR_CHAT_ENABLED=0` by default and dedicated backend-only `OPENAI_TOUR_API_KEY`; it never enables Creator chat or Realtime. Public snapshots are immutable JSON in `TOUR_PUBLIC_SNAPSHOTS_DIR_HOST`, mounted read-only. Text/STT/TTS attempt counters are separate rolling 24-hour limits and are not a USD cap. `viewer_configured`/`voice_configured` are additive session capabilities. Viewer chat is read-only, scoped by the tour cookie and snapshot; existing exact-Origin and idempotency rules apply.

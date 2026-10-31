@@ -7,6 +7,13 @@ services:
     restart: unless-stopped
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_TOUR_API_KEY: ${OPENAI_TOUR_API_KEY:-}
+      TOUR_CHAT_ENABLED: ${TOUR_CHAT_ENABLED:-0}
+      TOUR_PUBLIC_SNAPSHOTS_DIR: /tour-public-snapshots
+      TOUR_CHAT_TEXT_ATTEMPTS: ${TOUR_CHAT_TEXT_ATTEMPTS:-}
+      TOUR_CHAT_STT_ATTEMPTS: ${TOUR_CHAT_STT_ATTEMPTS:-}
+      TOUR_CHAT_TTS_ATTEMPTS: ${TOUR_CHAT_TTS_ATTEMPTS:-}
+      OPENAI_MODEL_STT: ${OPENAI_MODEL_STT:-gpt-4o-mini-transcribe}
       ESTAGENT_KEYLESS_PREVIEW: ${ESTAGENT_KEYLESS_PREVIEW:-0}
       OPENAI_MODEL_VISION: ${OPENAI_MODEL_VISION:-gpt-6.1-terra}
       OPENAI_MODEL_MODELING: ${OPENAI_MODEL_MODELING:-gpt-6-astra}
@@ -67,6 +74,7 @@ services:
       - checkpoints:/data
       - ${DEMO_CATALOG_DIR:-/opt/estagent/runtime/demo-cache}:/demo-catalog:ro
       - ${SEOUL_CATALOG_DIR:-/opt/estagent/runtime/seoul-cache}:/seoul-catalog:ro
+      - ${TOUR_PUBLIC_SNAPSHOTS_DIR_HOST:-/opt/estagent/runtime/tour-public-snapshots}:/tour-public-snapshots:ro
     networks:
       storage: {}
       edge:

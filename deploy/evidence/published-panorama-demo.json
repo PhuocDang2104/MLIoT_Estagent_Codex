@@ -1,0 +1,16 @@
+{
+  "title": "DEMO — Không gian Hackathon · 4 điểm panorama",
+  "url": "https://estagent.duckdns.org/viewer.html?tour=f9c9100bf6effa0f141594dd972bed6d",
+  "published_id": "f9c9100bf6effa0f141594dd972bed6d",
+  "authorization": "User explicitly requested publishing local demo data to production",
+  "source": "Four user-supplied local event panorama JPEGs; normalized derivatives published through the tour API, no source images/ZIP/base64 committed",
+  "scene_names": ["Sảnh thang máy", "Khu sân khấu", "Khu làm việc", "Góc bên cửa sổ"],
+  "opening_scene": "Khu sân khấu",
+  "projection": "cylindrical",
+  "coverage_degrees": 240,
+  "coverage_source": "user_provisional",
+  "claims": "Editorial demo order, not room adjacency or 3D reconstruction; event photos, not a rental listing",
+  "audio": "unavailable",
+  "ai_calls": 0,
+  "browser_verification": {"library_demo_count": 1, "scenes_loaded": 4, "panorama_visible": true, "mobile_width": 390, "js_errors": 0, "pass": true}
+}

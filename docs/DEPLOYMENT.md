@@ -2,6 +2,11 @@
 
 ## Current release — integrated keyless preview
 
+Demo data đã publish theo yêu cầu Thái: [Không gian Hackathon — 4 điểm panorama](https://estagent.duckdns.org/viewer.html?tour=f9c9100bf6effa0f141594dd972bed6d), có trong thư viện Xem tour.
+Đây là ảnh sự kiện user cung cấp, không phải rental listing hoặc nội dung AI sinh; ảnh/ZIP gốc vẫn không đưa vào Git.
+Metadata/bằng chứng: `deploy/evidence/published-panorama-demo.json`. Browser đã mở đủ 4 điểm, panorama/mobile390 PASS, không JS errors hay paid calls.
+Helper `deploy/publish_panorama_demo.py` chỉ dùng khi được phép publish đúng bộ ảnh; không sửa/xóa tour có sẵn và không tạo trùng title.
+
 Production https://estagent.duckdns.org hiện chạy source **346a0ba40051f3e5b739a318e86549a26730d439**,
 image ID và checksum tại `deploy/evidence/integrated-vm-release.json`. FE và API được phục vụ cùng origin
 từ container `estagent-assistant-assistant-1`, UID/GID 10001, rootfs read-only, RAM 1 GB, một worker.

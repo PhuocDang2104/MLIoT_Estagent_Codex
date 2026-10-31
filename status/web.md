@@ -1,10 +1,10 @@
-# status — lane web (chỉ lead lane web ghi)
+# status — web/deploy
 
-- Xong 2026-10-31: FE production https://estagent-weld.vercel.app; Vercel `meetmate/estagent`. Lint/build + browser production PASS; bằng chứng `web/evidence/production-check.log`.
-- Chuyển origin sang `PhuocDang2104/MLIoT_Estagent_Codex`: Git remote đúng; Vercel đang thiếu quyền GitHub App (HTTP 400). Repo cũ đã ngắt, auto-deploy tạm dừng; cần chủ repo cấp quyền Vercel. CLI deploy vẫn dùng được.
-- Deploy vòng 1 nhận từ Tatejo (`w6B:p1`): chuẩn bị tại `deploy/`, không commit/push/stash/spawn/deploy production; source kiểm `9a1e40f89e2afa1a5e0ec2671a21187ff4efe723`.
-- Đã làm: Dockerfile/Compose namespace riêng, env placeholder + fail-fast config, health/smoke không gọi model, release guard yêu cầu main sạch, rollback và HTTPS/FE proxy proposal trong `docs/DEPLOYMENT.md`. BE assistant đã có trên main; dùng SQLite một worker, chưa có adapter Supabase. MVP không thêm auth/Resend.
-- Evidence: native HTTP + SQLite PASS (no-key và fake-key), 9 tests assistant PASS; Compose config PASS, missing-key/dirty-release guard PASS. Log `deploy/evidence/local-check.log`, `deploy/evidence/preflight.log`.
-- Kẹt: Docker daemon local chưa chạy nên chưa build/container/volume/rollback; chờ SHA tích hợp sạch, endpoint/DNS/TLS và owner root/edge tích hợp proxy. Model/key/budget/policy cần owner chốt trước live. Vercel link vẫn null; không connect lại mù. Không đổi stack/DB/secret/volume hiện có; không dựng Supabase.
-- Declaration: deploy tooling mới bằng Codex, giữ requirements/asset có sẵn; không copy Minute/House VR Tour, không gọi API trả phí. H0 chưa xác nhận. Chi tiết và NEED ngoài Paths ở runbook.
-
+- LIVE 2026-10-31: https://estagent.duckdns.org trên VM; FE v0.2.0 từ snapshot `da2105de1ada4ae865cd5d293553c28c219a4476`, git archive → local lint/test/build → checksum → container static riêng. Không copy source working tree dirty.
+- Vercel `meetmate/estagent` đã xóa theo yêu cầu Thái; project API và URL cũ 404. Không nối lại GitHub App.
+- Evidence: `deploy/evidence/vm-frontend-build.log` (lint/6 tests/build PASS), `vm-browser-smoke.log` (EN/VI/intake/upload/mobile PASS), `vm-http-check.log` (HTTPS/status/hash PASS), `vm-release.json` (SHA/checksum). Container FE healthy.
+- Runtime: namespace/network Estagent riêng, không DB/secret/volume của project khác. Edge đã backup private/validate và chỉ thêm site Estagent, không restart stack khác. Runbook hiện tại `docs/DEPLOYMENT.md`.
+- BE assistant CHƯA deploy; `/api/assistant/*` trả 503 JSON rõ ràng. Backend prep native HTTP/SQLite + 9 tests đã PASS tại `9a1e40f`; container BE/live key/model/quota/voice chưa kiểm.
+- Hai view Creator/Viewer, publish và audio vẫn là backlog Product Integration; không claim e2e. MVP không thêm auth/Resend. Không dựng Supabase hay đổi checkpoint schema.
+- NEED: integrator nghiệm thu/review/commit thay đổi deploy mới, cập nhật root còn nhắc Vercel; chốt contract/routes hai view/audio, BE config/budget và container acceptance trước release tiếp. Lane này không commit/push/stash/spawn.
+- Declaration: deploy tooling mới bằng Codex; FE source/asset từ snapshot đã có, không copy Minute/House VR Tour, không paid API; H0 chưa chốt. Quyền hero reference còn ở audit frontend, không claim license mới.

@@ -1,0 +1,19 @@
+{
+    admin off
+    auto_https off
+    persist_config off
+}
+
+:8080 {
+    root * /srv
+    encode gzip zstd
+    header Cache-Control "no-cache"
+    @api path /api/*
+    handle @api {
+        header Content-Type "application/json; charset=utf-8"
+        respond `{"error":"Backend is not deployed yet."}` 503
+    }
+    handle {
+        file_server
+    }
+}

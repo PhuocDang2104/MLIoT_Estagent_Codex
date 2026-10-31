@@ -15,6 +15,7 @@ updated: 2026-10-31
 > Không đọc task card/lane khác trừ khi card yêu cầu. Lead đọc thêm `docs/ORCHESTRATION.md`.
 > Codex worker đọc thêm `docs/CODEX-OPENAI.md`; task dùng OpenAI API phải điền mục **OpenAI** trong card.
 > Teammate backend bắt đầu từ `docs/BACKEND-HANDOFF.md` và `server/AGENTS.md`. Không cần Tatejo/herdr hoặc đường dẫn riêng của máy Thái để chạy repo.
+> Phân vai thêm theo yêu cầu của Thái: Claude review chỉ đọc, Cursor/Grok build nhỏ/review và agy review nội dung; phạm vi/trạng thái tại `docs/PROVIDER-LANES.md`. Không cấp quyền commit/metadata cho reviewer.
 
 ## 1. Mục tiêu
 Trong 12 tiếng, 3 dev ship một sản phẩm **demo được end-to-end** trên `main`, có link deploy và demo 3 phút.

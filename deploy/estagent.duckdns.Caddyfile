@@ -1,0 +1,5 @@
+# Additive site block for the existing TLS edge. Preserve all existing sites.
+# The edge container must join estagent-web-edge; no published frontend ports.
+estagent.duckdns.org {
+    reverse_proxy estagent-web:8080
+}

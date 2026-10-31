@@ -1,0 +1,9 @@
+PASS /: HTTP 200
+PASS /experience.html: HTTP 200
+PASS /assistant.html: HTTP 200
+PASS /api/assistant/state: HTTP 503
+PASS /.env: HTTP 404
+PASS /AGENTS.md: HTTP 404
+PASS representative HTML/JS/CSS/font CSS hashes match immutable release manifest
+PASS HTTP byte Range on image asset (not an audio playback test)
+PASS HTTPS using normal certificate verification; no insecure TLS bypass

@@ -13,3 +13,4 @@ saveweb2zip-*
 .playwright-cli/
 .vercel
 .worktrees/
+/Codex-Hackathon.pdf

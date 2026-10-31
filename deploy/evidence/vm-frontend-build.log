@@ -1,0 +1,29 @@
+
+> estagent-web@0.2.0 lint
+> node --check app.js && node --check i18n.js && node --check intake.js && node --check property.js && node --check build.mjs && node --check motion.js
+
+
+
+> estagent-web@0.2.0 test
+> node --test tests/*.test.js
+
+✔ extract English details without inventing missing fields (1.742334ms)
+✔ Vietnamese, explicit address, and no windows (1.167041ms)
+✔ questions and uncertainty do not become facts (0.112458ms)
+✔ conflicting repeated fields require manual review (0.286792ms)
+✔ studio can have zero bedrooms and unknown is omitted (0.166375ms)
+✔ invalid counts and conflicting totals rejected (0.102916ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 57.235291
+
+
+> estagent-web@0.2.0 build
+> node build.mjs
+
+Built static site in web/dist

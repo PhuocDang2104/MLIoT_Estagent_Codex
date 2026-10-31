@@ -1,0 +1,8 @@
+{
+  "commit": "da2105de1ada4ae865cd5d293553c28c219a4476",
+  "source": "git archive; no working tree files",
+  "public_files": 24,
+  "archive_sha256": "601af07bb263c992665bbabb47c088bd039ce62e22e672f703177fc4c9532a2b",
+  "hostname": "estagent.duckdns.org",
+  "scope": "static frontend; backend API not deployed"
+}

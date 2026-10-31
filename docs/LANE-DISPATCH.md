@@ -11,7 +11,7 @@ Thái xác nhận hai view Tạo tour và Xem tour; ngữ cảnh, ranh giới v�
 | Frontend `w6D:p1` | `web/` trừ `web/assistant.*`; không ghi build/package sau khi bàn giao | Hoàn thành EN/VI đang được Thái giao + motion; kiểm browser, reduced motion, regression; kê source ảnh/font và đề xuất thay nếu license chưa rõ | Gửi bổ sung sau task đang chạy |
 | Chatbot `w6E:p1` | `server/assistant/`, `tests/ai/`, `web/assistant.*`, `docs/ASSISTANT.md`, `docs/INTEGRATIONS.md`, `.env.example` | Nối luồng assistant local, xác minh backend lưu/khôi phục hồ sơ và browser; tách mock/live; giữ key ngoài log, không thêm auth | Giao vòng 1 |
 | Deploy `w6F:p1` | `deploy/`, `docs/DEPLOYMENT.md`, `status/web.md` | Chuẩn bị backend release độc lập và endpoint/proxy proposal; xác minh dependency/health local khi có thể; báo đúng blocker GitHub App; không tự dựng Supabase/đổi stack hoặc deploy bản dirty | Giao vòng 1 |
-| Core `w6G:p1` | Vòng này chỉ đọc; sau đó chỉ ghi `docs/CORE-FEASIBILITY.md` | Kiểm kê panorama/scene/GPU/PanSplat có sẵn; kế hoạch probe tối thiểu + fallback; không tải model/job tính phí/copy source tham khảo | Xếp vòng 2 sau khi một lane vòng 1 bàn giao |
+| Product Integration `w6G:p1` | `.worktrees/product-sync`, nhánh `integration/product-sync`; scope liên lane theo `docs/PRODUCT-INTEGRATION.md` | Nối sản phẩm same-origin, Creator→draft/preview→publish→Viewer, UI/API/audio thống nhất, browser/tests + handback | Thay task core xếp hàng; đã giao triển khai |
 | Điều phối `w6B:p1` | File plan/contract/fixture, root scripts nếu cần | Hợp nhất đề xuất MVP/contract; review độc lập trước commit tích hợp; không sửa vùng đang có owner | Đang điều phối |
 
 ## Luật bàn giao

@@ -1,8 +1,0 @@
-{
-  "rewrites": [
-    {
-      "source": "/api/assistant/:path*",
-      "destination": "https://REPLACE_WITH_APPROVED_API_HOST/api/assistant/:path*"
-    }
-  ]
-}

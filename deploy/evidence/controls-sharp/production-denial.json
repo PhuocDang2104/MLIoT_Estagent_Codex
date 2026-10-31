@@ -1,0 +1,10 @@
+{
+  "pass": true,
+  "policyDenial": "explicit local fault injection of NotAllowedError, no provider call",
+  "singleButtonRecovery": true,
+  "actualRecordedAudioPlayback": true,
+  "endedMovesToNextCapture": true,
+  "chatStopsNoResume": true,
+  "errors": [],
+  "ended_note": "Seek near end in denial-only check; full natural duration independently verified in production-controls.json."
+}

@@ -1,0 +1,31 @@
+### Result
+{"pass":true,"realGLB":true,"rotationBoth":true,"pauseBoth":true,"keyboard":true,"drag":true,"ENVI":true,"reducedMotion":true,"independentAssetFailure":true,"layouts":[{"width":1440,"copy":{"x":100.796875,"y":307.640625,"width":594.421875,"height":444.703125},"model":{"x":777.625,"y":170,"width":619.1875,"height":660}},{"width":390,"copy":{"x":20,"y":114.875,"width":350,"height":367.25},"model":{"x":20,"y":494.125,"width":350,"height":245}},{"width":320,"copy":{"x":20,"y":103.671875,"width":280,"height":389.640625},"model":{"x":20,"y":505.3125,"width":280,"height":245}}],"errors":[]}
+### Ran Playwright code
+```js
+await (async page=>{
+ const root='/Users/anhoaithai/Documents/AHT/1. PROJECTS/CodexHackathon/.worktrees/landing-model',errors=[];
+ const routes=async p=>{await p.route('https://estagent.duckdns.org/',r=>r.fulfill({path:root+'/web/index.html',contentType:'text/html'}));for(const file of ['app.js','styles.css','assets/models/building-preview.js','assets/models/sunrise-office.glb','assets/panoramas/lythwood-lounge-8k.jpg'])await p.route('**/'+file,r=>r.fulfill({path:root+'/web/'+file}));};
+ await routes(page);page.on('pageerror',e=>errors.push(e.message));await page.emulateMedia({reducedMotion:'no-preference'});await page.setViewportSize({width:1440,height:1000});await page.reload();
+ await page.waitForSelector('#hero-building[data-ready=true]');await page.waitForFunction(()=>!document.querySelector('#hero-panorama').hidden);
+ const hash=id=>page.locator(id).evaluate(c=>c.toDataURL());
+ const changed=async id=>{const previous=await hash(id);await page.waitForFunction(({id,previous})=>document.querySelector(id).toDataURL()!==previous,{id,previous});};
+ await changed('#hero-building');await changed('#hero-panorama');await page.locator('#hero-rotation').click();
+ const still=async()=>{const a=await hash('#hero-building'),b=await hash('#hero-panorama');await page.evaluate(()=>new Promise(resolve=>{let n=0;function step(){if(++n===6)resolve();else requestAnimationFrame(step);}requestAnimationFrame(step);}));if(a!==await hash('#hero-building')||b!==await hash('#hero-panorama'))throw Error('Pause did not stop both renderers');};
+ await still();const start=await hash('#hero-building');await page.locator('#hero-building').focus();await page.keyboard.press('ArrowRight');if(start===await hash('#hero-building'))throw Error('Keyboard did not rotate');
+ const beforeDrag=await hash('#hero-building'),box=await page.locator('#hero-building').boundingBox();await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width/2+75,box.y+box.height/2,{steps:8});await page.mouse.up();if(beforeDrag===await hash('#hero-building'))throw Error('Drag did not rotate');
+ await page.locator('[data-lang=vi]').click();if(!await page.locator('.hero-building figcaption').innerText().then(t=>t.includes('minh hoạ')))throw Error('VI caption');await page.locator('[data-lang=en]').click();
+ const layouts=[];for(const width of [1440,390,320]){await page.setViewportSize({width,height:width===1440?1000:844});const copy=await page.locator('.pitch-copy').boundingBox(),model=await page.locator('.hero-building').boundingBox();if(width===1440?model.x<copy.x+copy.width:model.y<copy.y+copy.height)throw Error('Model overlaps copy');if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Horizontal overflow');await page.screenshot({path:'/private/tmp/landing-model-'+width+'.png'});layouts.push({width,copy,model});}
+ await page.locator('#hero-rotation').click();await changed('#hero-building');await page.emulateMedia({reducedMotion:'reduce'});await page.waitForFunction(()=>document.querySelector('#hero-rotation').disabled);await still();
+ const failure=await page.context().newPage();try{await routes(failure);await failure.route('**/assets/panoramas/lythwood-lounge-8k.jpg',r=>r.fulfill({status:404,body:'fixture: image unavailable'}));await failure.goto('https://estagent.duckdns.org/');await failure.waitForSelector('#hero-building[data-ready=true]');await failure.locator('#hero-rotation').click();if(await failure.locator('#hero-rotation').getAttribute('aria-pressed')!=='true')throw Error('Model has no pause without panorama');await failure.unroute('**/assets/panoramas/lythwood-lounge-8k.jpg');await failure.route('**/assets/models/sunrise-office.glb',r=>r.fulfill({status:404,body:'fixture: model unavailable'}));await failure.reload();await failure.waitForFunction(()=>document.querySelector('#building-state').textContent.includes('unavailable'));await failure.waitForFunction(()=>!document.querySelector('#hero-panorama').hidden);}finally{await failure.close();}
+ if(errors.length)throw Error(errors.join(';'));
+ return {pass:true,realGLB:true,rotationBoth:true,pauseBoth:true,keyboard:true,drag:true,ENVI:true,reducedMotion:true,independentAssetFailure:true,layouts,errors};
+}
+)(page);
+```
+
+╔════════════════════════════════════════════════════════════════════╗
+║ Update available for @playwright/cli: 0.1.18 → 0.1.22              ║
+║ Run `npm install -g @playwright/cli@latest` (global) or            ║
+║ `npm install --save-dev @playwright/cli@latest` (local) to update. ║
+╚════════════════════════════════════════════════════════════════════╝
+

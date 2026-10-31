@@ -1,0 +1,49 @@
+{
+  "pass": true,
+  "defaultChromeAutoplayBlocked": false,
+  "oneClickStart": "not_needed_autoplay_allowed",
+  "pauseResumeCurrentTime": {
+    "t": 1.146542,
+    "paused": true,
+    "duration": 21.3
+  },
+  "naturalEndedAtRate1": true,
+  "first": "pano_15",
+  "next": "pano_29",
+  "fullscreenControlVisible": true,
+  "sizes": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "box": {
+        "x": 1166.21875,
+        "y": 916,
+        "width": 249.78125,
+        "height": 62
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "box": {
+        "x": 12,
+        "y": 770,
+        "width": 366,
+        "height": 62
+      }
+    },
+    {
+      "width": 320,
+      "height": 740,
+      "box": {
+        "x": 12,
+        "y": 666,
+        "width": 296,
+        "height": 62
+      }
+    }
+  ],
+  "guidesV2": 32,
+  "errors": [],
+  "denial_evidence": "production-denial.json"
+}

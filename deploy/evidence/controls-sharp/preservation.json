@@ -1,0 +1,8 @@
+{
+  "canonical_manifest_unchanged": true,
+  "canonical_asset_hashes": 8,
+  "deployed_files_match": true,
+  "guide_v2_bindings": 32,
+  "actual_wav_hashes": 22,
+  "panorama_bytes": 5027965
+}

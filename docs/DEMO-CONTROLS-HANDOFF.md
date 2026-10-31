@@ -1,0 +1,15 @@
+# Demo controls — direct user correction
+
+Request: Thái wants the guided tour to start on entry, a single pause control at the bottom and a simpler glass treatment. Received after the P0 landing handback. Isolated branch `feature/demo-controls`, base `857216a`; shared release checkout untouched.
+
+Files: `web/demos/house.js`, `web/demos/house.css`, scoped QA in `tests/demo-controls/`, this handoff and task card. No renderer bundle/geometry, API, provider, new recording or asset changes.
+
+Behavior: attempt playback of existing guide after renderer is ready. Browser NotAllowedError becomes one `Bắt đầu tour` button; a user click retries actual playback. During playback the same button says `Tạm dừng`, then `Tiếp tục` or replay on completion. No fake playing state. Main transport is a compact bottom glass bar with current stop/status and `…`. Language, source/provenance, transcript, optional intro and rotation are collapsed inside settings. Native audio controls removed only from the main guide UI; media element and progression retained. Chat/manual exploration/tab-hidden pauses stay in place; no auto-resume after those interruptions.
+
+Source/declaration: adapt existing demo shell and pre-recorded public guide; source still available in settings. No paid calls, no new dependencies, no user data uploads. Browser reads production GET endpoints with local JS/CSS override. Screenshots containing the actual house must remain `/private/tmp/demo-controls-*.png`, outside Git.
+
+NEED: Deploy review/cherry-pick final SHA and integrate per existing authority. No contract change. Browser playback policy prevents guaranteeing unprompted audible playback on every device; blocked entry requires the single start gesture.
+
+Implementation note: audited the served renderer initialization read-only. It fills room buttons before awaiting the model, then switches to house mode. Waiting only for room buttons allowed that final async switch to overwrite panorama during narration. The shell now observes the completed initial house-mode state before entering panorama; then waits for the target capture and panorama mode before playing. No renderer bundle patch or invented readiness API. Guide audio uses the direct child element, separate from the optional intro moved into settings. Escape closes settings in capture phase so it does not propagate to renderer navigation.
+
+Evidence: `gate.log` strict web lint/test/build/contract PASS plus explicit `node --check web/demos/house.js`. `browser-check.log`:1440/390/320 bottom bounds, one playback button, secondary controls collapsed, real WAV play/pause; `policy-check.log`: explicit NotAllowedError fault injection recovered via one click, real audio-ended advances capture, chat pause/no-auto-resume; `autoplay-check.log`: separate Chrome with autoplay permitted starts actual media without interaction, correct panorama before narration and Pause on entry. Default Chrome in QA blocked initial sound and correctly offered one Start button; do not claim universal autoplay. Screenshots `/private/tmp/demo-controls-{1440,390,320}.png` and `demo-controls-autoplay.png` stay outside Git.

@@ -26,3 +26,18 @@
 .pitch-landing .hero-rotation{position:absolute;right:max(24px,env(safe-area-inset-right));bottom:max(24px,env(safe-area-inset-bottom));padding:12px 18px;min-height:44px;border:1px solid #ffffff60;border-radius:24px;background:#14262855;backdrop-filter:blur(14px);color:white;font-size:12px;z-index:2}.pitch-landing .hero-rotation:disabled{opacity:.75;cursor:default}.pitch-landing .pitch-home-empty{position:absolute;right:5%;bottom:90px;font-size:15px;max-width:250px}
 @media(max-width:850px){.pitch-landing .navigation nav.open{background:#1a2b2aee}.pitch-landing .pitch-hero{padding:120px 24px 80px}.pitch-landing .pitch-home:after{background:linear-gradient(90deg,#061311a6,#06131130),linear-gradient(0deg,#06131190,transparent 75%)}.pitch-landing .pitch-copy{max-width:600px}}
 @media(max-width:480px){.pitch-landing .pitch-hero{padding:105px 20px 80px}.pitch-landing .pitch-copy h1{font-size:34px;line-height:1.12;margin:14px 0 20px}.pitch-landing .pitch-kicker{font-size:9px}.pitch-landing .pitch-lede{font-size:15px;line-height:1.6}.pitch-landing .hero-actions{margin:20px 0 12px;gap:9px}.pitch-landing .pitch-note{font-size:11px}.pitch-landing .hero-rotation{right:20px;bottom:18px}.pitch-landing .pitch-home-empty{display:none}}
+
+.pitch-landing .hero-credit{position:absolute;bottom:24px;left:7vw;font-size:11px;color:#fff;text-shadow:0 1px 5px #000;text-decoration:underline;text-underline-offset:3px}.pitch-landing .hero-credit:focus-visible{outline:2px solid white;outline-offset:5px}
+@media(max-width:600px){.pitch-landing .hero-credit{left:18px;bottom:24px;font-size:9px;max-width:140px}}
+
+/* Building illustration floats into a dark fade, without a card boundary. */
+.pitch-landing.has-building .pitch-home:after{background:linear-gradient(90deg,#05100fbb 0%,#08101070 34%,#080d12f5 60%,#080d12 80%),linear-gradient(0deg,#06100f99,transparent 50%)}
+.pitch-landing.has-building .pitch-copy{width:48%;max-width:640px}
+.hero-building{position:absolute;right:3vw;top:50%;transform:translateY(-50%);width:43vw;height:min(66vh,680px);margin:0;isolation:isolate}
+.hero-building:before{content:'';position:absolute;inset:10% -10%;background:radial-gradient(ellipse,#4e63781c,transparent 68%);z-index:-1;pointer-events:none}
+#hero-building{display:block;width:100%;height:calc(100% - 28px);touch-action:pan-y;cursor:grab;border-radius:12px}
+#hero-building:active{cursor:grabbing}#hero-building:focus-visible{outline:2px solid #ffffffa0;outline-offset:4px}#hero-building[hidden]{display:none}
+.hero-building figcaption{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:11px;color:#d5dee2;letter-spacing:.02em;pointer-events:none}
+#building-state{position:absolute;inset:45% 0 auto;text-align:center;font-size:13px;color:#d5dee2}
+@media(max-width:850px){.pitch-landing.has-building .pitch-hero{height:auto;min-height:100dvh;display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:16px;padding:110px 24px 84px}.pitch-landing.has-building .pitch-copy{width:100%;max-width:600px}.hero-building{position:relative;right:auto;top:auto;transform:none;width:100%;height:300px;flex-shrink:0}.pitch-landing.has-building .pitch-home:after{background:linear-gradient(180deg,#07120c88,#071016bb 40%,#080d12fa 75%)}.hero-building figcaption{bottom:0}}
+@media(max-width:480px){.pitch-landing.has-building .pitch-hero{padding:94px 20px 84px;gap:12px}.pitch-landing.has-building .pitch-copy h1{font-size:32px}.pitch-landing.has-building .pitch-lede{font-size:14px;line-height:1.6}.pitch-landing.has-building .hero-actions{margin:20px 0 12px}.hero-building{height:245px}.hero-building figcaption{font-size:10px}}

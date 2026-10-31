@@ -1,0 +1,7 @@
+Real local HTTP/SQLite/image decoder/WebGL. Synthetic images. No OpenAI calls.
+browser_flow.js: {"pass":true,"flow":"landing→creator upload→draft edit/reorder→reload→preview→review→publish→viewer","viewportWidths":[1440,390,320],"webglZoom":true,"assistant":"actual HTTP 503 missing key; no model call","audio":"controls/fallback disclosure only; no recorded narration/music","errors":[],"failures":[]}
+
+browser_restart.js: {"pass":true,"restart":"same SQLite + assets; real process restart","creatorChat":"finite provider fixture, real HTTP and persistent edit/reorder","viewer":"immutable snapshot + finite read-only Q&A fixture; fresh browser opens public snapshot","liveOpenAI":false}
+
+browser_counts.js: {"pass":true,"manifestSceneCounts":[1,4,5],"eachSceneNavigable":true,"images":"synthetic runtime canvas, actual image decoder and HTTP; no user/demo assets"}
+

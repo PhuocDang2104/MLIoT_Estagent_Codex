@@ -136,6 +136,16 @@ Runtime schema: `server/tours/models.py`; checked-in JSON Schema + synthetic fix
 Existing `/api/assistant/*` request/response/cookie contracts remain unchanged. `/` now serves landing;
 `experience.html` redirects to Creator. `/creator.html`, `/viewer.html`, assets and APIs share one origin.
 
+Chat context extension: both tour chat endpoints accept optional `scene_id` (null or an existing
+scene ID in that saved draft/published snapshot). Unknown IDs fail 422 before provider invocation.
+Omission remains whole-tour context. Model input includes the validated current scene and at most
+six successful conversation pairs, each message truncated to 1000 characters. Creator history is
+private to its owned draft; Viewer history is isolated by session and immutable snapshot and never
+reads the Creator's private conversation. Viewer remains read-only. Successful sequential replay of
+the same request/body returns its stored answer; changed text/scene with the same ID returns 409.
+Stored history is retained; the excerpt cap does not implement data deletion or exactly-once billing.
+No manifest schema or existing-record migration is required. See `CHAT-FLOW-HANDOFF.md`.
+
 - `schema_version=checkpoint-tour-v1`, `id`, `revision>=1`, `status=draft|published`, `title`,
   `locale=en|vi`, ordered `scenes[1..20]`, `start_scene_id`, `audio`, `credits`.
 - Scene: server IDs `id`, `asset_id`; `name`, `description`; `projection=photo|cylindrical`,

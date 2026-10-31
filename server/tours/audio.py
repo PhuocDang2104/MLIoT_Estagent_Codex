@@ -11,6 +11,7 @@ from urllib.parse import unquote
 from fastapi import HTTPException, Request
 from fastapi.responses import FileResponse
 from pydantic import ValidationError
+from server.storage import upload_reservation
 from .models import AudioProvenance, AudioUpdate
 
 MAX_AUDIO_BYTES = 20 * 1024 * 1024
@@ -109,8 +110,15 @@ def install_audio(router,db,owner,draft,check_revision,validate_doc,published,da
             id=secrets.token_hex(16)
             track={'asset_id':id,'url':f'/api/tours/audio-assets/{id}',**measurements,**provenance.model_dump()}
             directory=data_root/'audio';directory.mkdir(exist_ok=True,mode=0o700)
-            with (directory/f'{id}.wav').open('xb') as output:output.write(normalized)
-            conn.execute('INSERT INTO audio_assets VALUES(?,?,?,?)',(id,who,digest,json.dumps(track)))
+            target=directory/f'{id}.wav'
+            with upload_reservation(request,len(normalized)):
+                try:
+                    with target.open('xb') as output:output.write(normalized)
+                    conn.execute('INSERT INTO audio_assets VALUES(?,?,?,?)',(id,who,digest,json.dumps(track)))
+                    conn.commit()
+                except BaseException:
+                    conn.rollback();target.unlink(missing_ok=True)
+                    raise
         return track
 
     @router.get('/audio-assets/{id}')

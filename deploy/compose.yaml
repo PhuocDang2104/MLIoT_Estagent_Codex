@@ -11,6 +11,8 @@ services:
       OPENAI_MODEL_VISION: ${OPENAI_MODEL_VISION:-gpt-6.1-sol}
       OPENAI_MODEL_TTS: ${OPENAI_MODEL_TTS:-gpt-4o-mini-tts}
       STUDIO_DATA_DIR: /data/studio
+      STUDIO_GEOMETRY_URL: ${STUDIO_GEOMETRY_URL:-}
+      STUDIO_GEOMETRY_TOKEN: ${STUDIO_GEOMETRY_TOKEN:-}
       OPENAI_MODEL_TEXT: ${OPENAI_MODEL_TEXT:?Set OPENAI_MODEL_TEXT}
       OPENAI_MODEL_REALTIME: ${OPENAI_MODEL_REALTIME:?Set OPENAI_MODEL_REALTIME}
       OPENAI_MODEL_TRANSCRIBE: ${OPENAI_MODEL_TRANSCRIBE:?Set OPENAI_MODEL_TRANSCRIBE}
@@ -45,7 +47,7 @@ services:
     mem_limit: 1g
     cpus: 1.0
     pids_limit: 128
-    stop_grace_period: 45s
+    stop_grace_period: 120s
     logging:
       driver: json-file
       options:

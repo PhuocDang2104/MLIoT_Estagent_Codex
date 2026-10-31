@@ -17,6 +17,29 @@
 body {
   margin: 0;
 }
+#edit-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+#edit-form textarea {
+  width: 100%;
+  min-width: 0;
+  resize: vertical;
+}
+#edit-form button {
+  justify-self: start;
+}
+#edit-proposal {
+  border-top: 1px solid var(--line);
+  margin-top: 20px;
+  padding-top: 12px;
+  overflow-wrap: anywhere;
+}
+#edit-proposal ul {
+  padding-left: 20px;
+  line-height: 1.7;
+}
 button,
 input,
 textarea,

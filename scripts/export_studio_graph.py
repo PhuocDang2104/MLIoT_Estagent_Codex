@@ -21,6 +21,7 @@ FOLDER = ROOT / 'docs/Business Workflow Langgraph'
 STEM = 'Estagent_Business_LangGraph'
 LABELS = {
     '__start__': 'START',
+    'edit': 'edit<br/>Áp dụng đề xuất đã xác nhận · fork generation',
     'understand': 'understand<br/>OpenAI · trích xuất hồ sơ',
     'scene': 'scene<br/>OpenAI Vision · từng ảnh',
     'spatial': 'spatial<br/>Tạo room / checkpoint nháp',
@@ -46,6 +47,7 @@ ROUTES = {
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--downloads-dir', type=Path, help='explicit user-requested output directory')
+    parser.add_argument('--evidence-dir', type=Path, default=ROOT/'tests/ai/evidence/studio-refinement')
     args = parser.parse_args()
     compiled = build_graph(None, MemorySaver(), lambda *a: None, lambda *a: None,
                            lambda *a: None, lambda *a: None)
@@ -114,6 +116,9 @@ def main():
         '    SNAPSHOT["Snapshot bất biến"]:::terminal',
         '    VIEWER["Viewer · ảnh / 360° + audio<br/>GLB download · OpenAI Q&A chỉ đọc"]:::boundary',
         '    READY -.-> PUBLISH -.-> SNAPSHOT -.-> VIEWER',
+        '    CHAT["Chat chỉnh sửa · OpenAI EditPlan<br/>Owner + revision + idempotency"]:::boundary',
+        '    CONFIRM["Business xác nhận đề xuất<br/>Tạo generation mới · giữ bản published"]:::review',
+        '    READY -.-> CHAT -.-> CONFIRM -.-> edit',
         '    classDef node fill:#fafafa,stroke:#d4d6da,color:#292c2e,stroke-width:1px;',
         '    classDef review fill:#fff0eb,stroke:#ed321e,color:#8c3428,stroke-width:1.5px;',
         '    classDef worker fill:#eeeef0,stroke:#81848a,color:#292c2e,stroke-width:1.5px;',
@@ -133,7 +138,7 @@ def main():
     if count != 1:
         raise ValueError('Markdown must have exactly one runtime graph marker pair')
     markdown.write_text(text, encoding='utf8')
-    evidence = ROOT / 'tests/ai/evidence/studio-refinement'
+    evidence = args.evidence_dir
     evidence.mkdir(parents=True, exist_ok=True)
     (evidence / 'graph-export.json').write_text(json.dumps({
         'node_ids': list(graph.nodes), 'edges': [dict(source=e.source, target=e.target,

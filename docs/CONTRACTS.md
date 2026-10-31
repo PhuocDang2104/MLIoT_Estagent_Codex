@@ -1,5 +1,17 @@
 # CONTRACTS — giao diện giữa 3 lane
 
+## Studio runtime additive — 2026-10-31
+
+Authority: Thai explicitly approved runtime framework and main integration;
+reconstruction/MP4 deferred. Existing tour/assistant/published schemas unchanged.
+Generation adds `revision,parent_id`; Review optionally accepts revision (new UI
+sends it). `GET /api/studio/health` checks dispatcher/store, no paid call.
+`POST /api/studio/generations/{id}/edits` accepts request_id/revision/text;
+GET lists owner-scoped proposals. `POST .../edits/{edit_id}/apply` accepts
+request_id/revision, returns new generation id. Owner/revision/ID/evidence checks,
+explicit confirmation, durable dedup/outbox and immutable published snapshots
+are enforced by backend. Geometry HTTP v1: [STUDIO-RUNTIME.md](STUDIO-RUNTIME.md).
+
 ## Additive: AI Generation Studio
 
 Đọc `CREATOR-STUDIO.md` cho luồng LangGraph dài tại `/business/create`.

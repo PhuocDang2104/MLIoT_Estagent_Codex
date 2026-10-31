@@ -41,6 +41,9 @@ def run(args):
     check(isinstance(state.get('profile'), dict) and isinstance(state.get('configured'), bool),
           'state does not match the existing assistant contract')
     check(headers.get('Cache-Control') == 'no-store', 'state must not be cached')
+    studio_status, _, studio_body = request('/api/studio/health')
+    check(studio_status == 200 and json.loads(studio_body).get('ready') is True,
+          'Studio dispatcher or metadata store is unavailable')
     if not args.allow_unconfigured:
         check(state['configured'], 'backend unconfigured; no OpenAI key is loaded')
     if args.health_only:

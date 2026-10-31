@@ -9,6 +9,7 @@ import threading
 import uuid
 import wave
 from datetime import datetime, timezone
+from contextlib import contextmanager
 from fastapi import HTTPException
 
 
@@ -52,8 +53,10 @@ def wav_duration(data):
 
 class Store:
     def __init__(self, root):
-        root.mkdir(parents=True, exist_ok=True)
+        root.mkdir(parents=True, exist_ok=True, mode=0o700)
+        root.chmod(0o700)
         self.db = sqlite3.connect(root / 'creator.sqlite', check_same_thread=False)
+        (root / 'creator.sqlite').chmod(0o600)
         self.db.row_factory = sqlite3.Row
         self.lock = threading.RLock()
         self.in_action = False
@@ -67,8 +70,19 @@ class Store:
             CREATE TABLE IF NOT EXISTS actions(owner TEXT, request TEXT, payload TEXT, result TEXT, PRIMARY KEY(owner,request));
             CREATE TABLE IF NOT EXISTS published(id TEXT PRIMARY KEY, project TEXT, generation TEXT UNIQUE, data TEXT);
             CREATE TABLE IF NOT EXISTS viewer_requests(owner TEXT, tour TEXT, request TEXT, payload TEXT, status TEXT, result TEXT, PRIMARY KEY(owner,tour,request));
+            CREATE TABLE IF NOT EXISTS jobs(generation TEXT PRIMARY KEY, payload TEXT NOT NULL, status TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS edits(id TEXT PRIMARY KEY, generation TEXT NOT NULL, owner TEXT NOT NULL, revision INTEGER NOT NULL, data TEXT, status TEXT NOT NULL);
         ''')
-        self.db.execute("UPDATE generations SET status='failed',error='Tiến trình đã dừng. Kiểm tra rồi chọn thử lại.' WHERE status IN ('queued','running')")
+        columns = {r['name'] for r in self.db.execute('PRAGMA table_info(generations)')}
+        for name, definition in [('revision', 'INTEGER NOT NULL DEFAULT 1'), ('parent', 'TEXT')]:
+            if name not in columns:
+                self.db.execute(f'ALTER TABLE generations ADD COLUMN {name} {definition}')
+        if 'available_at' not in {r['name'] for r in self.db.execute('PRAGMA table_info(jobs)')}:
+            self.db.execute('ALTER TABLE jobs ADD COLUMN available_at REAL NOT NULL DEFAULT 0')
+        self.interrupted = [r['id'] for r in self.db.execute("SELECT id FROM generations WHERE status='running' OR (status='queued' AND id NOT IN (SELECT generation FROM jobs WHERE status='queued'))")]
+        self.db.execute("UPDATE jobs SET status='failed' WHERE status='running'")
+        self.db.execute("UPDATE generations SET status='failed',error='Tiến trình đã dừng. Kiểm tra rồi chọn thử lại.' WHERE status='running' OR (status='queued' AND id NOT IN (SELECT generation FROM jobs WHERE status='queued'))")
+        self.db.execute("UPDATE edits SET status='failed' WHERE status='running'")
         self.db.execute("UPDATE viewer_requests SET status='failed' WHERE status='running'")
         self.db.commit()
 
@@ -78,6 +92,19 @@ class Store:
                 return self.db.execute(sql, args)
             with self.db:
                 return self.db.execute(sql, args)
+
+    @contextmanager
+    def transaction(self):
+        with self.lock:
+            if self.in_action:
+                yield
+                return
+            with self.db:
+                self.in_action = True
+                try:
+                    yield
+                finally:
+                    self.in_action = False
 
     def rows(self, sql, args=()):
         with self.lock:
@@ -117,13 +144,23 @@ class Store:
 
     def write_model(self, project, result):
         data = result['glb']
-        if (len(data) < 20 or data[:4] != b'glTF' or
+        if (len(data) < 20 or len(data) > 20*1024*1024 or data[:4] != b'glTF' or
                 struct.unpack('<II', data[4:12]) != (2, len(data))):
             raise ValueError('Worker must return a valid GLB 2 container')
         length, kind = struct.unpack('<II', data[12:20])
         if kind != 0x4e4f534a or length + 20 > len(data):
             raise ValueError('GLB JSON chunk missing')
         manifest = json.loads(data[20:20+length])
+        def check_uris(value):
+            if isinstance(value, dict):
+                if 'uri' in value and not str(value['uri']).startswith('data:'):
+                    raise ValueError('Geometry must be self-contained; external URIs are forbidden')
+                for child in value.values():
+                    check_uris(child)
+            elif isinstance(value, list):
+                for child in value:
+                    check_uris(child)
+        check_uris(manifest)
         if not manifest.get('meshes') or not manifest.get('scenes'):
             raise ValueError('GLB has no renderable scene')
         anchors = result['anchors']

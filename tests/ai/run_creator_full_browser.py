@@ -1,6 +1,7 @@
 """Full UI workflow using the explicitly configured synthetic geometry worker."""
 import json
 import os
+from urllib.parse import urlsplit, parse_qs
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 from tests.ai.creator_fixtures import png, wav
@@ -68,11 +69,32 @@ def main():
         viewer.set_viewport_size({'width':320,'height':844})
         assert viewer.evaluate('document.documentElement.scrollWidth<=innerWidth')
         viewer.screenshot(path=str(EVIDENCE/'published-viewer-320.png'),full_page=True)
+        public_id = parse_qs(urlsplit(share).query)['id'][0]
+        original = viewer.request.get('http://127.0.0.1:5187/api/studio-tours/'+public_id).json()
+        page.locator('#edit-text').fill('Sửa lời giới thiệu khu đầu ngắn gọn hơn.')
+        page.locator('#propose-edit').click()
+        page.locator('#apply-edit').wait_for(timeout=15000)
+        page.screenshot(path=str(EVIDENCE/'edit-proposal-desktop.png'),full_page=True)
+        page.reload()
+        page.locator('#apply-edit').wait_for(timeout=15000)
+        page.locator('#apply-edit').click()
+        page.get_by_role('button',name='Duyệt & tạo giọng ↗',exact=True).wait_for(timeout=15000)
+        assert page.locator('#script-editor textarea').first.input_value() == 'Lời mới đã được Business yêu cầu.'
+        assert page.locator('#publish').is_hidden()
+        assert page.locator('#history-count').inner_text() == '2'
+        page.set_viewport_size({'width':320,'height':844})
+        assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+        page.screenshot(path=str(EVIDENCE/'edit-fork-review-320.png'),full_page=True)
+        page.get_by_role('button',name='Duyệt & tạo giọng ↗',exact=True).click()
+        page.locator('#publish').wait_for(state='visible',timeout=15000)
+        assert viewer.request.get('http://127.0.0.1:5187/api/studio-tours/'+public_id).json() == original
         browser.close()
     assert not errors,errors
     result={'status':'PASS','fixture':'synthetic provider, triangle GLB, silence WAV; not live OpenAI/Blender',
         'checks':['floorplan/music upload','final script edit','approve before TTS','publish snapshot',
-                  'share page','360 preview','browser media play/ended','music ducking','rapid checkpoint switch/pause','read-only Viewer Q&A','320 no overflow'],
+                  'share page','360 preview','browser media play/ended','music ducking','rapid checkpoint switch/pause','read-only Viewer Q&A','320 no overflow',
+                  'OpenAI fixture edit proposal','pending proposal survives reload','explicit confirmation forks graph',
+                  'new script final review before TTS/publish','published parent unchanged'],
         'media_events':events,'page_errors':errors}
     # Strip runtime IDs from evidence; all input/media are synthetic.
     for event in result['media_events']:

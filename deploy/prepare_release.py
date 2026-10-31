@@ -17,7 +17,7 @@ FILES = [
     'web/viewer.js', 'web/tour-common.js', 'web/panorama.js',
     'web/assistant.js', 'web/studio.html', 'web/studio.css', 'web/studio.js', 'web/studio-panorama.js', 'web/studio-tour.html', 'web/studio-tour.js', 'web/assets', 'deploy/Dockerfile',
     'deploy/Dockerfile.dockerignore', 'deploy/compose.yaml',
-    'deploy/entrypoint.py', 'deploy/smoke.py', 'deploy/.env.example',
+    'deploy/entrypoint.py', 'deploy/smoke.py', 'deploy/backup_data.py', 'deploy/.env.example',
 ]
 
 

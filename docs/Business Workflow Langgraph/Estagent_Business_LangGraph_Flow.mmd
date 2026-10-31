@@ -8,6 +8,7 @@ flowchart TB
     INPUT -.-> API -.-> QUEUED
     subgraph LG["LANGGRAPH STATEGRAPH · RUNTIME HIỆN TẠI"]
         __start__["START"]:::terminal
+        edit["edit<br/>Áp dụng đề xuất đã xác nhận · fork generation"]:::node
         understand["understand<br/>OpenAI · trích xuất hồ sơ"]:::node
         scene["scene<br/>OpenAI Vision · từng ảnh"]:::node
         spatial["spatial<br/>Tạo room / checkpoint nháp"]:::node
@@ -21,7 +22,6 @@ flowchart TB
         voice["voice<br/>OpenAI TTS · từng đoạn"]:::node
         assemble["assemble<br/>Kiểm tra và đóng gói"]:::node
         __end__["END"]:::terminal
-        __start__ --> understand
         assemble --> __end__
         build_model --> mapping
         mapping --> semantic
@@ -30,6 +30,12 @@ flowchart TB
         semantic --> navigation
         spatial --> spatial_review
         understand --> scene
+        __start__ --> edit
+        __start__ --> understand
+        edit --> narration
+        edit --> navigation
+        edit --> semantic
+        edit --> spatial_review
         scene -->|"Còn ảnh"| scene
         scene -->|"Đủ ảnh"| spatial
         spatial_review -->|"Từ chối"| __end__
@@ -54,6 +60,9 @@ flowchart TB
     SNAPSHOT["Snapshot bất biến"]:::terminal
     VIEWER["Viewer · ảnh / 360° + audio<br/>GLB download · OpenAI Q&A chỉ đọc"]:::boundary
     READY -.-> PUBLISH -.-> SNAPSHOT -.-> VIEWER
+    CHAT["Chat chỉnh sửa · OpenAI EditPlan<br/>Owner + revision + idempotency"]:::boundary
+    CONFIRM["Business xác nhận đề xuất<br/>Tạo generation mới · giữ bản published"]:::review
+    READY -.-> CHAT -.-> CONFIRM -.-> edit
     classDef node fill:#fafafa,stroke:#d4d6da,color:#292c2e,stroke-width:1px;
     classDef review fill:#fff0eb,stroke:#ed321e,color:#8c3428,stroke-width:1.5px;
     classDef worker fill:#eeeef0,stroke:#81848a,color:#292c2e,stroke-width:1.5px;

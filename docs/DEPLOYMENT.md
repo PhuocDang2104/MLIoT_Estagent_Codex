@@ -1,5 +1,13 @@
 # Production — Estagent trên VM + DuckDNS
 
+## Studio runtime framework mới — source, chưa rollout
+
+SQLite outbox, OS runtime lock, checkpoint recovery, chat proposal → xác nhận →
+fork LangGraph và HTTP geometry adapter tùy chọn: [STUDIO-RUNTIME.md](STUDIO-RUNTIME.md).
+Lệnh SSH, clean release, offline backup, Compose health/rollback:
+[STUDIO-DEPLOY.md](STUDIO-DEPLOY.md). Push main không tự nghiệm thu live
+OpenAI/Blender hoặc rollout VM; trạng thái production ghi bên dưới vẫn giữ nguyên.
+
 ## Source bổ sung: AI Generation Studio
 
 Giữ luồng VM/DuckDNS và các guard keyless preview hiện có. Source có thêm

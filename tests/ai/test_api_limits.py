@@ -47,6 +47,8 @@ def stub(tmp_path, clock=None, endpoint=None, **overrides):
                   '/api/studio/projects/{id}/generations',
                   '/api/studio/generations/{id}/review',
                   '/api/studio/generations/{id}/retry',
+                  '/api/studio/generations/{id}/edits',
+                  '/api/studio/generations/{id}/edits/{edit_id}/apply',
                   '/api/studio-tours/{id}/questions']:
         app.add_api_route(route, handler, methods=['POST'])
     app.add_api_route('/api/assistant/state', default, methods=['GET'])
@@ -210,6 +212,8 @@ def test_upload_has_separate_burst_and_concurrency_bounds(tmp_path):
     '/api/studio/projects/project/generations',
     '/api/studio/generations/generation/review',
     '/api/studio/generations/generation/retry',
+    '/api/studio/generations/generation/edits',
+    '/api/studio/generations/generation/edits/proposal/apply',
     '/api/studio-tours/tour/questions',
 ])
 def test_studio_work_shares_existing_ai_attempt_allowance(tmp_path, route):
@@ -243,6 +247,8 @@ def test_app_factory_requires_limits_for_configured_key(tmp_path):
     '/api/studio/projects/project/generations',
     '/api/studio/generations/generation/review',
     '/api/studio/generations/generation/retry',
+    '/api/studio/generations/generation/edits',
+    '/api/studio/generations/generation/edits/proposal/apply',
     '/api/studio-tours/tour/questions',
     '/api/tours/audio-assets',
     '/api/studio/projects/project/assets',
@@ -317,7 +323,15 @@ def test_dedicated_storage_and_window_config_cannot_be_reset_silently(tmp_path):
         install_limits(app, env)
 
 
-def test_ledger_contains_only_aggregate_metadata(tmp_path):
+def test_ledger_contains_only_aggregate_metadata(tmp_path, monkeypatch):
+    import os
+    from pathlib import Path
+    permissions = []
+    original_chmod = Path.chmod
+    def chmod(path, mode, **kwargs):
+        permissions.append((path, mode))
+        return original_chmod(path, mode, **kwargs)
+    monkeypatch.setattr(Path, 'chmod', chmod)
     app, _ = stub(tmp_path)
     with TestClient(app) as client:
         response = client.post('/api/tours/drafts/private-tour-id/chat?private-query=yes',
@@ -328,7 +342,10 @@ def test_ledger_contains_only_aggregate_metadata(tmp_path):
     with sqlite3.connect(tmp_path / 'limits.sqlite') as db:
         dump = '\n'.join(db.iterdump())
     assert 'private-' not in dump and '/api/' not in dump
-    assert (tmp_path / 'limits.sqlite').stat().st_mode & 0o777 == 0o600
+    assert (tmp_path / 'limits.sqlite', 0o600) in permissions
+    # NTFS does not expose POSIX owner/group mode bits via stat/chmod.
+    if os.name != 'nt':
+        assert (tmp_path / 'limits.sqlite').stat().st_mode & 0o777 == 0o600
 
 
 def test_existing_assistant_success_error_and_missing_key_semantics(tmp_path):

@@ -362,3 +362,5 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
 
     verify_audio_publish = install_audio(router,db,owner,draft,check_revision,validate_doc,published,data_root,object_storage=object_storage)
     app.include_router(router)
+    from server.exports.api import install as install_exports
+    install_exports(app, env, data_root, db, owner, object_storage, Path(__file__).resolve().parents[2]/'web')

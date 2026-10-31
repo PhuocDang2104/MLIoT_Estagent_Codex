@@ -91,7 +91,7 @@ $('#publish').onclick=async()=>{if(busy||dirty||!$('#reviewed').checked)return;s
   const published=await api(`/drafts/${manifest.id}/publish`,{method:'POST',body:{revision:manifest.revision}});
   const path=`/viewer.html?tour=${published.id}`;
   const copy=node('button',t('Copy link','Sao chép link'),'quiet');copy.type='button';copy.onclick=async()=>{try{await navigator.clipboard.writeText(new URL(path,location.origin).href);notice(t('Link copied.','Đã sao chép link.'));}catch{notice(t('Copy the address after opening the tour.','Mở tour rồi sao chép địa chỉ trên thanh trình duyệt.'));}};
-  $('#published-link').replaceChildren(link(t('Open published tour ↗','Mở tour đã xuất bản ↗'),path),copy);notice(t('Published a separate snapshot. Audio availability is shown for each scene.','Đã xuất bản snapshot riêng. Tình trạng audio được hiển thị theo từng điểm.'));
+  $('#published-link').replaceChildren(link(t('Open published tour ↗','Mở tour đã xuất bản ↗'),path),copy,link(t('Export video','Xuất video'),`/export.html?tour=${published.id}`));notice(t('Published a separate snapshot. Audio availability is shown for each scene.','Đã xuất bản snapshot riêng. Tình trạng audio được hiển thị theo từng điểm.'));
 }catch(e){notice(e.message,true);}finally{setBusy(false);}};
 document.addEventListener('languagechange',()=>{notice('');render();});
 window.addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue='';}});

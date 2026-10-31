@@ -1,0 +1,40 @@
+{
+  "pass": true,
+  "source": [
+    8192,
+    4096
+  ],
+  "rotationChangesPixels": true,
+  "reducedMotion": true,
+  "sampleLinkUnchanged": true,
+  "results": [
+    {
+      "width": 1440,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "width": 390,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "width": 320,
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 844
+      }
+    }
+  ],
+  "errors": []
+}

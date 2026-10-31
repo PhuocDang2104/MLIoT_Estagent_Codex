@@ -1,5 +1,6 @@
 """Explicitly staged local UI check. `create` makes ONE paid generation.
 
+`published` makes one paid viewer Q&A request. `preview` makes no model calls.
 Subsequent review/publish actions are performed separately after inspecting its
 source-grounded plan and script; this script never auto-approves a model.
 """
@@ -67,8 +68,9 @@ def main():
             run=json.loads((WORK/'run.json').read_text())
             page.goto(BASE+'/viewer.html');page.locator(f'a[href="/studio-tour.html?id={run["public_id"]}"]').wait_for()
             page.screenshot(path=str(WORK/'library.png'),full_page=True)
-            page.add_init_script('''window.__audioEvents=[];window.__audios=[];const OriginalAudio=window.Audio;window.Audio=class extends OriginalAudio{constructor(...a){super(...a);window.__audios.push(this);for(const type of ['play','ended','pause'])this.addEventListener(type,()=>window.__audioEvents.push({type,duration:this.duration,volume:this.volume}));}};''')
+            page.add_init_script('''window.__audioEvents=[];window.__audios=[];const OriginalAudio=window.Audio;window.Audio=class extends OriginalAudio{constructor(...a){super(...a);window.__audios.push(this);for(const type of ['play','ended','pause'])this.addEventListener(type,()=>window.__audioEvents.push({type,duration:Number.isFinite(this.duration)?this.duration:null,volume:this.volume}));}};''')
             page.goto(BASE+f'/studio-tour.html?id={run["public_id"]}')
+            page.locator('#title').filter(has_text='ZInD').wait_for()
             page.locator('#show-model').click();page.locator('.house-stage[data-loaded=true]').wait_for(timeout=30000)
             assert 1<=page.locator('.house-marker').count()<=2
             page.screenshot(path=str(WORK/'dollhouse.png'),full_page=True)
@@ -80,16 +82,23 @@ def main():
             page.locator('.house-marker').first.click();page.locator('#room').wait_for(state='visible')
             page.locator('#room').select_option('cp02');page.locator('#room').select_option('cp03')
             page.locator('#play').click();page.wait_for_function('window.__audioEvents.filter(e=>e.type==="play").length>=2')
+            page.wait_for_function('window.__audioEvents.some(e=>e.type==="ended")',timeout=60000)
             page.wait_for_timeout(1500);page.locator('#pause').click()
             assert page.evaluate('window.__audios.every(a=>a.paused)')
             assert 'CC BY 4.0' in page.locator('#music-credit').inner_text()
             page.screenshot(path=str(WORK/'panorama.png'),full_page=True)
+            page.locator('#question').fill('What features can I see in the kitchen?')
+            with page.expect_response(lambda r:r.url.endswith('/questions') and r.request.method=='POST',timeout=90000) as answer:
+                page.locator('#ask').click()
+            assert answer.value.status==200,answer.value.text()
+            qa=answer.value.json()
+            assert qa['text'] and qa['navigate_to'] is None
             page.set_viewport_size({'width':320,'height':844})
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
             page.screenshot(path=str(WORK/'mobile.png'),full_page=True)
             evidence={'status':'PASS','kind':'real OpenAI/Blender/ZInD/recorded speech/licensed music',
-                'checks':['entry','library','GLB','orbit/zoom','central markers','panorama checkpoint switch','music + narration play/pause','music credit','320px layout'],
-                'audio':page.evaluate('window.__audioEvents'),'page_errors':errors}
+                'checks':['entry','library','GLB','orbit/zoom','central markers','panorama checkpoint switch','music + narration play/ended/pause','music credit','live Q&A','320px layout'],
+                'answer':qa, 'audio':page.evaluate('window.__audioEvents'),'page_errors':errors}
             (WORK/'browser-result.json').write_text(json.dumps(evidence,indent=2))
             print(json.dumps(evidence))
         assert not errors,errors

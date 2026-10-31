@@ -589,7 +589,7 @@ function renderGeneration() {
       .filter(
         (event) =>
           event.node_id !== "workflow" ||
-          ["failed", "rejected"].includes(event.status),
+          (["failed", "rejected"].includes(event.status) && event.status === g.status),
       )
       .map((event) => {
         const status =
@@ -838,8 +838,10 @@ function renderReview() {
     editor.hidden = false;
     editor.append(
       node("h2", "Lời giới thiệu"),
-      node("p", g.script.introduction, { class: "muted" }),
     );
+    const introduction = node("label", "Mở đầu tour");
+    introduction.append(node("textarea", g.script.introduction, {"data-introduction":"",rows:"3",maxlength:"1800",required:""}));
+    editor.append(introduction);
     for (const segment of g.script.segments) {
       const label = node(
         "label",
@@ -904,13 +906,14 @@ function renderReview() {
         },
       );
     } else {
+      payload.introduction = editor.querySelector('[data-introduction]').value.trim();
       payload.scripts = g.script.segments.map((segment) => ({
         ...segment,
         text: editor
           .querySelector(`[data-segment=${segment.checkpoint_id}]`)
           .value.trim(),
       }));
-      if (payload.scripts.some((s) => !s.text))
+      if (!payload.introduction || payload.scripts.some((s) => !s.text))
         return notify("Lời giới thiệu không được để trống.", true);
     }
     action(approve, `/generations/${g.id}/review`, payload);

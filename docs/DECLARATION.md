@@ -158,3 +158,10 @@ Streaming refinement requested by the user: Responses SSE with public reasoning
 summaries and a partial plan preview in Studio. Raw reasoning/encrypted content
 is excluded. Synthetic stream browser fixtures are explicitly labelled; they
 prove event/render/reconnect behavior rather than model quality.
+
+The subsequent real three-capture evaluation completed with OpenAI planning,
+public summary streaming, local Blender, recorded TTS, licensed music and viewer
+Q&A. New fixes finalize provider-only streaming WAV headers and let the creator
+edit the introduction before TTS. Aggregate evidence and limitations are in
+`tests/ai/evidence/local-live/RESULTS.md`; source photographs, private sessions and
+generated geometry remain excluded from Git. This does not change the H0 caveat.

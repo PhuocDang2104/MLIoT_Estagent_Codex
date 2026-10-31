@@ -189,6 +189,8 @@ def build_graph(provider, saver, emit, read_asset, write_audio, write_model, wor
             'message': 'Kiểm tra nội dung và mô hình trước khi tạo giọng đọc.'}))
         validate_review(review, s['rooms'])
         script = dict(s['script'])
+        if review.introduction is not None:
+            script['introduction'] = review.introduction
         if review.scripts:
             allowed = {'description', *(r['asset_id'] for r in s['rooms'])}
             if any(not set(x.sources) <= allowed for x in review.scripts):

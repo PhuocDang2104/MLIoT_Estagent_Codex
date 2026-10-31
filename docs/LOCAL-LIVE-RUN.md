@@ -66,7 +66,8 @@ http://127.0.0.1:5180/viewer.html for both published tour formats.
 subset from the existing original dataset + handoff. This is explicitly not a
 whole-house reconstruction. `scripts/check_live_studio.py create` makes a paid
 generation and refuses a second run when its run manifest exists. It does not
-approve reviews. The `preview` and `published` stages make no model calls.
+approve reviews. The `preview` stage makes no model calls. The `published` stage
+makes one paid viewer Q&A request in addition to its browser/audio checks.
 
 Music: Dream Culture by Kevin MacLeod, CC BY 4.0; 75-second excerpt with fades.
 Credit and source are in `web/assets/music/CREDITS.md`. Publication freezes the
@@ -90,3 +91,7 @@ streams the plan summary plus room/checkpoint/fixture counts as they arrive.
 Official references:
 https://developers.openai.com/api/docs/guides/reasoning#reasoning-summaries and
 https://developers.openai.com/api/reference/resources/responses/streaming-events.
+
+The live check also exposed provider streaming-WAV sentinel headers. Provider audio now receives a finalized PCM WAV length before strict storage validation; malformed/truncated ordinary WAV uploads remain rejected. Final review can edit the tour introduction as well as room segments.
+
+Completed live evaluation: [results and limitations](../tests/ai/evidence/local-live/RESULTS.md).

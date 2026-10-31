@@ -207,3 +207,5 @@ Private Studio SSE also accepts `event_type=model_progress` with a cumulative
 reasoning_summary (public API summary only), plan_preview and output_characters.
 It is replayable for the owner and never added to published v1 tour packages.
 Raw reasoning events and encrypted model content are not forwarded.
+
+Final Studio Review accepts optional `introduction` (1-1800 characters), alongside room scripts. The approved text is persisted before any TTS; published narration schema remains unchanged.

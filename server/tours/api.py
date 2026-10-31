@@ -2,6 +2,7 @@
 import hashlib
 import io
 import json
+import logging
 import re
 import secrets
 import sqlite3
@@ -25,7 +26,7 @@ CHAT_HISTORY_TURNS = 6
 CHAT_HISTORY_TEXT = 1000
 Image.MAX_IMAGE_PIXELS = 32_000_000
 
-def install(app, env, root, *, interpreter=None):
+def install(app, env, root, *, interpreter=None, object_storage=None):
     origin = env.get('ASSISTANT_ORIGIN','http://127.0.0.1:5180')
     if 'TOUR_DATA_DIR' in env and not str(env['TOUR_DATA_DIR']).strip():
         raise ValueError('TOUR_DATA_DIR must be a non-empty storage path when configured.')
@@ -50,6 +51,8 @@ def install(app, env, root, *, interpreter=None):
                     doc TEXT NOT NULL, UNIQUE(draft,revision));
                 CREATE TABLE IF NOT EXISTS turns(draft TEXT, request_id TEXT, input TEXT, response TEXT,
                     PRIMARY KEY(draft,request_id));
+                CREATE TABLE IF NOT EXISTS media_storage(kind TEXT, id TEXT, backend TEXT NOT NULL,
+                    PRIMARY KEY(kind,id));
                 ''')
                 with conn: yield conn
             finally: conn.close()
@@ -94,10 +97,18 @@ def install(app, env, root, *, interpreter=None):
             scene['thumbnail_url']=scene['image_url']+'?thumbnail=1'
         return doc
 
-    def file(id,thumb=False):
+    def file(id,thumb=False,verify_only=False):
         if not re.fullmatch(r'[a-f0-9]{32}',id): raise HTTPException(404)
+        with db() as conn:
+            remote=conn.execute("SELECT 1 FROM media_storage WHERE kind='image' AND id=? AND backend='minio'",(id,)).fetchone()
+        if remote:
+            if object_storage is None:raise HTTPException(503,'Object storage unavailable')
+            key=f'tours/{"thumbnails" if thumb else "images"}/{id}.jpg'
+            if verify_only:object_storage.stat(key);return None
+            return object_storage.response(key)
         path=data_root/'assets'/f'{id}{"-thumb" if thumb else ""}.jpg'
         if not path.is_file(): raise HTTPException(404,'Image unavailable / Ảnh không còn sẵn sàng.')
+        if verify_only:return None
         return FileResponse(path,media_type='image/jpeg')
 
     @router.get('/session')
@@ -132,20 +143,33 @@ def install(app, env, root, *, interpreter=None):
                 count=conn.execute('SELECT count(*) FROM assets WHERE owner=?',(who,)).fetchone()[0]
                 if count>=100: raise HTTPException(413,'Local session image limit reached (100).')
                 id=secrets.token_hex(16); width,height=image.size
-                assets=data_root/'assets'; assets.mkdir(exist_ok=True,mode=0o700)
+                assets=data_root/'assets'
                 image.thumbnail((8192,8192))
                 texture=io.BytesIO();image.save(texture,'JPEG',quality=90)
                 image.thumbnail((480,300));thumb=io.BytesIO();image.save(thumb,'JPEG',quality=80)
                 outputs={assets/f'{id}.jpg':texture.getvalue(),assets/f'{id}-thumb.jpg':thumb.getvalue()}
-                with upload_reservation(request,sum(len(value) for value in outputs.values())):
+                attempted=[]
+                with upload_reservation(request,4096 if object_storage else sum(len(value) for value in outputs.values())):
                     try:
-                        for target,content in outputs.items():
-                            with target.open('xb') as output:output.write(content)
+                        if object_storage:
+                            for namespace,content in [('images',texture.getvalue()),('thumbnails',thumb.getvalue())]:
+                                key=f'tours/{namespace}/{id}.jpg';attempted.append(key)
+                                object_storage.put_bytes(key,content,'image/jpeg')
+                            conn.execute("INSERT INTO media_storage VALUES('image',?,'minio')",(id,))
+                        else:
+                            assets.mkdir(exist_ok=True,mode=0o700)
+                            for target,content in outputs.items():
+                                with target.open('xb') as output:output.write(content)
                         conn.execute('INSERT INTO assets VALUES(?,?,?,?,?)',(id,who,digest,width,height))
                         conn.commit()
                     except BaseException:
                         conn.rollback()
-                        for target in outputs:target.unlink(missing_ok=True)
+                        if object_storage:
+                            for key in attempted:
+                                try:object_storage.remove(key)
+                                except Exception:logging.getLogger(__name__).warning('Orphan media cleanup failed; operator reconciliation required')
+                        else:
+                            for target in outputs:target.unlink(missing_ok=True)
                         raise
         return {'id':id,'width':width,'height':height,'image_url':f'/api/tours/assets/{id}','thumbnail_url':f'/api/tours/assets/{id}?thumbnail=1','projection':'unknown'}
 
@@ -202,7 +226,9 @@ def install(app, env, root, *, interpreter=None):
             if row['reviewed']!=data.revision: raise HTTPException(409,'Review this revision before publishing / Cần duyệt đúng bản xem thử trước khi xuất bản.')
             existing=conn.execute('SELECT doc FROM published WHERE draft=? AND revision=?',(id,data.revision)).fetchone()
             if existing:return json.loads(existing['doc'])
-            for s in doc['scenes']: file(s['asset_id'])
+            for s in doc['scenes']:
+                file(s['asset_id'],verify_only=True)
+                file(s['asset_id'],thumb=True,verify_only=True)
             verify_audio_publish(conn,doc,owner(request))
             snapshot=secrets.token_hex(16)
             doc.update(id=snapshot,status='published')
@@ -334,5 +360,5 @@ def install(app, env, root, *, interpreter=None):
             conn.execute('INSERT INTO turns VALUES(?,?,?,?)',(scope,data.request_id,data.model_dump_json(),json.dumps(result)))
         return result
 
-    verify_audio_publish = install_audio(router,db,owner,draft,check_revision,validate_doc,published,data_root)
+    verify_audio_publish = install_audio(router,db,owner,draft,check_revision,validate_doc,published,data_root,object_storage=object_storage)
     app.include_router(router)

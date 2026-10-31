@@ -18,6 +18,7 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 from .graph import build_graph, make_extractor, LABELS, QUESTIONS
 from server.limits import install_limits
 from server.storage import install_storage
+from server.object_storage import create_object_storage
 from server.creator.api import router as creator_router
 from server.creator.service import Creator
 from server.creator.provider import OpenAIProvider
@@ -39,6 +40,7 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
     key = (env.get('OPENAI_API_KEY') or '').strip()
     configured = bool(extractor or key)
     path = Path(db_path or env.get('ASSISTANT_DB', ROOT / 'projects/assistant/work/checkpoints.sqlite'))
+    object_storage = create_object_storage(env)
     lock = threading.RLock()  # One local worker; serialize checkpoint writes and duplicate requests.
 
     @asynccontextmanager
@@ -52,7 +54,8 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
         graph = build_graph(extractor or (make_extractor(client,env.get('OPENAI_MODEL_TEXT','gpt-6.1-sol')) if client else unavailable),saver,required)
         app.state.graph = graph
         app.state.creator = Creator(Path(env.get('STUDIO_DATA_DIR', path.parent / 'studio')),
-            creator_provider or (OpenAIProvider(client, env) if client else None), creator_worker)
+            creator_provider or (OpenAIProvider(client, env) if client else None), creator_worker,
+            object_storage=object_storage, storage_limits=app.state.storage_limits)
         try:
             yield
         finally:
@@ -61,6 +64,7 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
             connection.close()
 
     app = FastAPI(lifespan=lifespan,docs_url=None,redoc_url=None,openapi_url=None)
+    app.state.object_storage = object_storage
     app.include_router(creator_router(origin))
 
     @app.middleware('http')
@@ -150,7 +154,7 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
             return JSONResponse({'error':'Kết nối giọng nói bị gián đoạn. Bạn vẫn có thể chat chữ.'},status_code=502)
 
     from server.tours.api import install
-    install(app, env, path.parent / 'tours', interpreter=tour_interpreter)
+    install(app, env, path.parent / 'tours', interpreter=tour_interpreter, object_storage=object_storage)
 
     @app.get('/')
     def home(): return FileResponse(WEB/'index.html')
@@ -181,11 +185,11 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
         return app.state.creator.answer(token, load_published(tour_id), data)
 
     @app.get('/api/studio-tours/{tour_id}/assets/{asset_id}')
-    def public_asset(tour_id: str, asset_id: str):
+    def public_asset(tour_id: str, asset_id: str, request: Request):
         package = load_published(tour_id)
         asset = next((a for a in package['assets'] if a['id'] == asset_id), None)
         if not asset: raise HTTPException(404)
-        return Response(app.state.creator.store.content(asset), media_type=asset['mime'])
+        return app.state.creator.store.response(asset, range_header=request.headers.get('range'))
 
     @app.get('/{filename}')
     def static_file(filename:str):

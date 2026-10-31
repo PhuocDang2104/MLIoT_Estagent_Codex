@@ -2,6 +2,7 @@
 import hashlib
 import io
 import json
+import logging
 import re
 import secrets
 import struct
@@ -76,7 +77,7 @@ def audio_urls(doc,prefix):
     return doc
 
 
-def install_audio(router,db,owner,draft,check_revision,validate_doc,published,data_root):
+def install_audio(router,db,owner,draft,check_revision,validate_doc,published,data_root,*,object_storage=None):
     def prepare(conn):
         conn.execute('CREATE TABLE IF NOT EXISTS audio_assets(id TEXT PRIMARY KEY,owner TEXT NOT NULL,digest TEXT NOT NULL,metadata TEXT NOT NULL,UNIQUE(owner,digest))')
 
@@ -86,10 +87,18 @@ def install_audio(router,db,owner,draft,check_revision,validate_doc,published,da
         if not row:raise HTTPException(404,'Audio not found in this session / Không tìm thấy audio trong phiên này.')
         return json.loads(row['metadata'])
 
-    def audio_file(id):
+    def audio_file(id,range_header=None,verify_only=False):
         if not re.fullmatch(r'[a-f0-9]{32}',id):raise HTTPException(404)
+        with db() as conn:
+            remote=conn.execute("SELECT 1 FROM media_storage WHERE kind='audio' AND id=? AND backend='minio'",(id,)).fetchone()
+        if remote:
+            if object_storage is None:raise HTTPException(503,'Object storage unavailable')
+            key=f'tours/audio/{id}.wav'
+            if verify_only:object_storage.stat(key);return None
+            return object_storage.response(key,range_header=range_header)
         path=data_root/'audio'/f'{id}.wav'
         if not path.is_file():raise HTTPException(404,'Audio file unavailable / Không còn file audio.')
+        if verify_only:return None
         return FileResponse(path,media_type='audio/wav')
 
     @router.post('/audio-assets')
@@ -109,22 +118,33 @@ def install_audio(router,db,owner,draft,check_revision,validate_doc,published,da
                 raise HTTPException(413,'Session audio limit reached (100) / Phiên đã có 100 file audio.')
             id=secrets.token_hex(16)
             track={'asset_id':id,'url':f'/api/tours/audio-assets/{id}',**measurements,**provenance.model_dump()}
-            directory=data_root/'audio';directory.mkdir(exist_ok=True,mode=0o700)
+            directory=data_root/'audio'
             target=directory/f'{id}.wav'
-            with upload_reservation(request,len(normalized)):
+            attempted=False
+            with upload_reservation(request,4096 if object_storage else len(normalized)):
                 try:
-                    with target.open('xb') as output:output.write(normalized)
+                    if object_storage:
+                        attempted=True
+                        object_storage.put_bytes(f'tours/audio/{id}.wav',normalized,'audio/wav')
+                        conn.execute("INSERT INTO media_storage VALUES('audio',?,'minio')",(id,))
+                    else:
+                        directory.mkdir(exist_ok=True,mode=0o700)
+                        with target.open('xb') as output:output.write(normalized)
                     conn.execute('INSERT INTO audio_assets VALUES(?,?,?,?)',(id,who,digest,json.dumps(track)))
                     conn.commit()
                 except BaseException:
-                    conn.rollback();target.unlink(missing_ok=True)
+                    conn.rollback()
+                    if object_storage and attempted:
+                        try:object_storage.remove(f'tours/audio/{id}.wav')
+                        except Exception:logging.getLogger(__name__).warning('Orphan media cleanup failed; operator reconciliation required')
+                    elif not object_storage:target.unlink(missing_ok=True)
                     raise
         return track
 
     @router.get('/audio-assets/{id}')
     def private_audio(id:str,request:Request):
         with db() as conn:get_track(conn,id,owner(request))
-        return audio_file(id)
+        return audio_file(id,range_header=request.headers.get('range'))
 
     @router.put('/drafts/{id}/audio')
     def attach_audio(id:str,data:AudioUpdate,request:Request):
@@ -138,21 +158,21 @@ def install_audio(router,db,owner,draft,check_revision,validate_doc,published,da
             music=get_track(conn,data.music_asset_id,who) if data.music_asset_id else None
             narrations=[{'scene_id':n.scene_id,'locale':n.locale,'transcript':n.transcript,'track':get_track(conn,n.asset_id,who)} for n in data.narration]
             doc['audio']={'music':music,'narration':narrations or None,'status':'unavailable','source':'none'}
-            for track in audio_tracks(doc):audio_file(track['asset_id'])
+            for track in audio_tracks(doc):audio_file(track['asset_id'],verify_only=True)
             doc['revision']+=1
             doc=validate_doc(summarize_audio(doc))
             conn.execute('UPDATE drafts SET doc=?,reviewed=NULL WHERE id=?',(json.dumps(doc),id))
         return doc
 
     @router.get('/published/{id}/audio/{asset_id}')
-    def public_audio(id:str,asset_id:str):
+    def public_audio(id:str,asset_id:str,request:Request):
         doc=published(id)
         if not any(track['asset_id']==asset_id for track in audio_tracks(doc)):raise HTTPException(404)
-        return audio_file(asset_id)
+        return audio_file(asset_id,range_header=request.headers.get('range'))
 
     def verify_publish(conn,doc,who):
         for track in audio_tracks(doc):
             stored=get_track(conn,track['asset_id'],who)
             if track!=stored:raise HTTPException(409,'Audio metadata changed; reattach before publishing / Hãy gắn lại audio trước khi xuất bản.')
-            audio_file(track['asset_id'])
+            audio_file(track['asset_id'],verify_only=True)
     return verify_publish

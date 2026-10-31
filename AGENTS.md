@@ -80,7 +80,7 @@ Remote chính: `github.com/PhuocDang2104/MLIoT_Estagent_Codex` (nhánh `main`). 
 - [ ] H0: Dev 1 chạy kickoff theo `docs/ORCHESTRATION.md §3`
 
 ## Đang kẹt
-API tour đã tích hợp và test local; production hiện vẫn là frontend snapshot cũ, chưa deploy backend tích hợp. Strict còn core SKIP; thiếu audio assets và live API verification. Runbook: `docs/DEPLOYMENT.md`; kết quả tích hợp: `docs/INTEGRATION-HANDOFF.md`.
+API tour đã tích hợp và deploy same-origin lên `estagent.duckdns.org`, source `346a0ba`, chế độ keyless preview; production browser/HTTP PASS. Strict còn core SKIP; thiếu audio assets và OpenAI live. Manifest/rollback: `docs/DEPLOYMENT.md`; local integration: `docs/INTEGRATION-HANDOFF.md`.
 Chưa có đề chính thức của hackathon và chưa có tên 3 dev.
 
 ## Quyết định đã chốt

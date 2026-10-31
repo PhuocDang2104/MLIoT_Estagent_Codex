@@ -1,0 +1,29 @@
+{
+  "hostname": "https://estagent.duckdns.org",
+  "source_commit": "346a0ba40051f3e5b739a318e86549a26730d439",
+  "source_archive_sha256": "bbbc37193b953e7f50568fd1c591d736a8542797b24ad2f6e2d66d160a3ded72",
+  "image_id": "sha256:338fb72750a5974603daa3d44e29f9fa42ae436125c5da3007227d72d519ef67",
+  "mode": "explicit keyless preview; no paid model requests",
+  "container_health": "healthy",
+  "runtime_user": "10001:10001",
+  "read_only_rootfs": true,
+  "memory_limit_bytes": 1073741824,
+  "scope": "same-origin integrated landing, Creator, draft/preview/review/publish APIs, Viewer, persistent SQLite and normalized image assets",
+  "verified": [
+    "source archive checksum verified on VM before build",
+    "backend health and HTTP smoke before edge switch",
+    "Caddy config validates; only Estagent upstream changed; reload without shared-stack restart",
+    "HTTPS assistant state/cookie, wrong-origin 403, invalid-input 422, body cap 413, keyless 503",
+    "Creator and Viewer pages HTTP 200; tours session configured=false",
+    "real browser synthetic upload, draft save, reload persistence and private preview",
+    "VI, 390px and 320px no overflow; no JS pageerror",
+    "old frontend container retained healthy for rollback"
+  ],
+  "not_verified": [
+    "OpenAI text/voice live",
+    "real recorded narration or music",
+    "core reconstruction",
+    "production value test with actual rental data",
+    "production publish mutation: smoke draft intentionally not published"
+  ]
+}

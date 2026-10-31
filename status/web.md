@@ -1,5 +1,9 @@
 # status — web/deploy
 
+- CURRENT integrated preview: https://estagent.duckdns.org, source `346a0ba`, image/manifest `deploy/evidence/integrated-vm-release.json`. Backend+pages same-origin, healthy/non-root/read-only/1GB, dedicated volume.
+- Verified production HTTP/TLS/Origin/keyless503 and browser upload→draft/save→reload→private preview, VI/mobile320/390 PASS. No paid calls; synthetic QA not published.
+- Keyless preview intentionally has no OpenAI text/voice; no real narration/music or core. Old frontend kept healthy for guarded site-only rollback. Prior entries below describe deployment history.
+
 - LIVE 2026-10-31: https://estagent.duckdns.org trên VM; FE v0.2.0 từ snapshot `da2105de1ada4ae865cd5d293553c28c219a4476`, git archive → local lint/test/build → checksum → container static riêng. Không copy source working tree dirty.
 - Vercel `meetmate/estagent` đã xóa theo yêu cầu Thái; project API và URL cũ 404. Không nối lại GitHub App.
 - Evidence: `deploy/evidence/vm-frontend-build.log` (lint/6 tests/build PASS), `vm-browser-smoke.log` (EN/VI/intake/upload/mobile PASS), `vm-http-check.log` (HTTPS/status/hash PASS), `vm-release.json` (SHA/checksum). Container FE healthy.

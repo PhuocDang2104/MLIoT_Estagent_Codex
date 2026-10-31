@@ -1,5 +1,31 @@
 # Production — Estagent trên VM + DuckDNS
 
+## Current release — integrated keyless preview
+
+Production https://estagent.duckdns.org hiện chạy source **346a0ba40051f3e5b739a318e86549a26730d439**,
+image ID và checksum tại `deploy/evidence/integrated-vm-release.json`. FE và API được phục vụ cùng origin
+từ container `estagent-assistant-assistant-1`, UID/GID 10001, rootfs read-only, RAM 1 GB, một worker.
+`ESTAGENT_KEYLESS_PREVIEW=1`, key rỗng: visual draft/upload/review/publish/Viewer hoạt động; chat/voice trả 503 rõ.
+Đây là preview không auth theo scope MVP, chưa claim API live/audio/core hoặc public-production abuse hardening.
+
+- Artifact lấy từ clean checkout của SHA đã push, checksum kiểm trước khi giải nén; build Docker trên VM vì daemon local không chạy.
+- SQLite/images trên volume riêng `estagent-assistant-checkpoints`; diagnostic port `127.0.0.1:18180`.
+- Runtime env riêng tại `/opt/estagent/runtime/preview-346a0ba.env`, mode 0600; không có key/token thực.
+- Edge nối `estagent-assistant-edge`, chỉ đổi upstream site Estagent; Caddy validate và reload PASS.
+- Smoke HTTP/TLS + real browser upload/draft/save/reload/private-preview/VI/mobile PASS. Không publish QA vào thư viện public và không paid request.
+- Script browser tái kiểm: `deploy/production-preview-smoke.js` (tạo draft synthetic riêng tư, không publish).
+
+### Rollback release này
+
+Container frontend snapshot `da2105d` vẫn healthy, không xoá image/release/volume cũ.
+Helper và backup đã có trên VM tại release source, backup `/opt/estagent/edge-backups/estagent-346a0ba.before`.
+Chạy helper `rollback --config <Caddyfile-edge-hiện-có> --backup <backup-trên>` trên VM,
+validate rồi reload Caddy. Hash guard từ chối restore nếu cấu hình đã được owner khác sửa sau rollout;
+khi đó đối soát và sửa riêng site Estagent, không ghi đè toàn bộ config. Không xoá volume dữ liệu tour.
+Quay về frontend-only sẽ mất API visual tour trên website cho tới khi nối lại BE; dữ liệu trong volume vẫn giữ.
+
+Các mục frontend-only và "chưa deploy" phía dưới là **lịch sử trước rollout**, không phải current state.
+
 ## Main sau tích hợp — chưa deploy production
 
 Rollout tích hợp hỗ trợ `ESTAGENT_KEYLESS_PREVIEW=1`: wrapper cho phép key rỗng và từ chối key không rỗng,

@@ -1,5 +1,6 @@
 # Additive site block for the existing TLS edge. Preserve all existing sites.
-# The edge container must join estagent-web-edge; no published frontend ports.
+# Current integrated keyless preview. Old frontend remains a rollback target.
+# The edge container joins estagent-assistant-edge; backend diagnostic port is loopback only.
 estagent.duckdns.org {
-    reverse_proxy estagent-web:8080
+    reverse_proxy estagent-assistant-api:5180
 }

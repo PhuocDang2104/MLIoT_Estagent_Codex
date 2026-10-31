@@ -6,11 +6,16 @@ from urllib.parse import urlsplit
 
 
 def validate():
+    preview = os.environ.get('ESTAGENT_KEYLESS_PREVIEW', '0') == '1'
+    if preview and os.environ.get('OPENAI_API_KEY', '').strip():
+        raise ValueError('ESTAGENT_KEYLESS_PREVIEW requires an empty OPENAI_API_KEY')
     names = (
-        'OPENAI_API_KEY', 'OPENAI_MODEL_TEXT', 'OPENAI_MODEL_REALTIME',
+        'OPENAI_MODEL_TEXT', 'OPENAI_MODEL_REALTIME',
         'OPENAI_MODEL_TRANSCRIBE', 'ASSISTANT_ORIGIN',
         'ASSISTANT_REQUIRED_FIELDS', 'ASSISTANT_DB',
     )
+    if not preview:
+        names = ('OPENAI_API_KEY',) + names
     for name in names:
         value = os.environ.get(name, '')
         if not value.strip() or value != value.strip() or any(

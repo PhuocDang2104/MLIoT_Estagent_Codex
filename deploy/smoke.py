@@ -1,6 +1,7 @@
 """HTTP health/smoke without valid model requests, profile writes, or paid calls."""
 import argparse
 import json
+import os
 from http.cookies import SimpleCookie
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
@@ -83,7 +84,9 @@ if __name__ == '__main__':
     parser.add_argument('--origin')
     parser.add_argument('--health-only', action='store_true')
     parser.add_argument('--check-static', action='store_true')
-    parser.add_argument('--allow-unconfigured', action='store_true', help='local diagnostics only')
+    parser.add_argument('--allow-unconfigured', action='store_true',
+                        default=os.environ.get('ESTAGENT_KEYLESS_PREVIEW', '0') == '1',
+                        help='local diagnostics or explicitly configured keyless preview')
     try:
         run(parser.parse_args())
     except (ValueError, URLError, TimeoutError, OSError) as error:

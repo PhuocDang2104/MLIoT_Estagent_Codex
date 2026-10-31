@@ -2,6 +2,13 @@
 
 ## Main sau tích hợp — chưa deploy production
 
+Rollout tích hợp hỗ trợ `ESTAGENT_KEYLESS_PREVIEW=1`: wrapper cho phép key rỗng và từ chối key không rỗng,
+health kiểm app/SQLite thay vì yêu cầu configured=true. Mặc định `0` vẫn bắt buộc key.
+Preview chạy Creator/publish/Viewer thật nhưng AI trả 503; không dùng key giả để qua health.
+Khi Docker local không chạy, artifact source từ commit sạch được kiểm/hash ở local rồi chuyển sang VM,
+build image commit-specific trong thư mục release riêng; không clone/pull hoặc build working tree dirty trên VM.
+Edge switch chỉ sửa upstream của site Estagent qua `switch_estagent_edge.py`, có backup/hash guard để rollback.
+
 Nhánh main đã có API tour/Creator/Viewer và schema/fixture, xem `docs/INTEGRATION-HANDOFF.md`.
 Docker/release allowlist đã cập nhật để chứa `server/tours` và toàn bộ asset runtime của app cùng origin;
 proxy example bao gồm `/api/tours/*`. Đây không phải thay đổi cấu hình đang chạy trên VM.

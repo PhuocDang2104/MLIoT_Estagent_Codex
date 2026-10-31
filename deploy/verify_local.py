@@ -57,6 +57,11 @@ def main():
 
         command('deploy/entrypoint.py', '--check-config', expected=2)
         print('PASS config: missing key rejected without starting runtime', flush=True)
+        preview = {**env, 'OPENAI_API_KEY': '', 'ESTAGENT_KEYLESS_PREVIEW': '1'}
+        command('deploy/entrypoint.py', '--check-config', environment=preview)
+        command('deploy/entrypoint.py', '--check-config', expected=2,
+                environment={**preview, 'OPENAI_API_KEY': 'fixture-secret'})
+        print('PASS keyless preview: explicit opt-in accepted; nonempty key rejected', flush=True)
         configured = {**env, 'OPENAI_API_KEY': 'local-fixture-not-a-real-key'}
         print(command('deploy/entrypoint.py', '--check-config', environment=configured), flush=True)
         for name, value in [('OPENAI_API_KEY', '   '), ('ASSISTANT_ORIGIN', 'http://invalid.example'),

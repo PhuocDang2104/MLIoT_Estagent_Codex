@@ -1,0 +1,559 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "Anchor": {
+      "additionalProperties": false,
+      "properties": {
+        "position": {
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Position",
+          "type": "array"
+        },
+        "room_id": {
+          "title": "Room Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "position",
+        "room_id"
+      ],
+      "title": "Anchor",
+      "type": "object"
+    },
+    "Asset": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "panorama",
+            "model",
+            "music",
+            "narration"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "mime": {
+          "title": "Mime",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "mime",
+        "name"
+      ],
+      "title": "Asset",
+      "type": "object"
+    },
+    "Audio": {
+      "additionalProperties": false,
+      "properties": {
+        "checkpoint_id": {
+          "title": "Checkpoint Id",
+          "type": "string"
+        },
+        "asset_id": {
+          "title": "Asset Id",
+          "type": "string"
+        },
+        "duration": {
+          "exclusiveMinimum": 0,
+          "maximum": 600,
+          "title": "Duration",
+          "type": "number"
+        }
+      },
+      "required": [
+        "checkpoint_id",
+        "asset_id",
+        "duration"
+      ],
+      "title": "Audio",
+      "type": "object"
+    },
+    "Fact": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "provenance": {
+          "enum": [
+            "verified",
+            "observed",
+            "inferred",
+            "unknown"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
+        "source": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "provenance",
+        "source"
+      ],
+      "title": "Fact",
+      "type": "object"
+    },
+    "Geometry": {
+      "additionalProperties": false,
+      "properties": {
+        "asset_id": {
+          "title": "Asset Id",
+          "type": "string"
+        },
+        "anchors": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Anchor"
+          },
+          "title": "Anchors",
+          "type": "object"
+        }
+      },
+      "required": [
+        "asset_id",
+        "anchors"
+      ],
+      "title": "Geometry",
+      "type": "object"
+    },
+    "Hotspot": {
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "pattern": "^cp[0-9]{2}$",
+          "title": "Source",
+          "type": "string"
+        },
+        "target": {
+          "pattern": "^cp[0-9]{2}$",
+          "title": "Target",
+          "type": "string"
+        },
+        "yaw": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Yaw",
+          "type": "number"
+        },
+        "pitch": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Pitch",
+          "type": "number"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "target_yaw": {
+          "title": "Target Yaw",
+          "type": "number"
+        }
+      },
+      "required": [
+        "source",
+        "target",
+        "yaw",
+        "pitch",
+        "label",
+        "target_yaw"
+      ],
+      "title": "Hotspot",
+      "type": "object"
+    },
+    "Link": {
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "pattern": "^cp[0-9]{2}$",
+          "title": "Source",
+          "type": "string"
+        },
+        "target": {
+          "pattern": "^cp[0-9]{2}$",
+          "title": "Target",
+          "type": "string"
+        },
+        "yaw": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Yaw",
+          "type": "number"
+        },
+        "pitch": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Pitch",
+          "type": "number"
+        }
+      },
+      "required": [
+        "source",
+        "target",
+        "yaw",
+        "pitch"
+      ],
+      "title": "Link",
+      "type": "object"
+    },
+    "Music": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "project_id": {
+          "title": "Project Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "kind": {
+          "const": "music",
+          "title": "Kind",
+          "type": "string"
+        },
+        "mime": {
+          "const": "audio/wav",
+          "title": "Mime",
+          "type": "string"
+        },
+        "size": {
+          "title": "Size",
+          "type": "integer"
+        },
+        "sha256": {
+          "title": "Sha256",
+          "type": "string"
+        },
+        "width": {
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "title": "Height",
+          "type": "integer"
+        },
+        "duration": {
+          "title": "Duration",
+          "type": "number"
+        },
+        "credit": {
+          "minLength": 1,
+          "title": "Credit",
+          "type": "string"
+        },
+        "warning": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Warning"
+        }
+      },
+      "required": [
+        "id",
+        "project_id",
+        "name",
+        "kind",
+        "mime",
+        "size",
+        "sha256",
+        "width",
+        "height",
+        "duration",
+        "credit",
+        "warning"
+      ],
+      "title": "Music",
+      "type": "object"
+    },
+    "Narration": {
+      "additionalProperties": false,
+      "properties": {
+        "introduction": {
+          "maxLength": 1800,
+          "minLength": 1,
+          "title": "Introduction",
+          "type": "string"
+        },
+        "segments": {
+          "items": {
+            "$ref": "#/$defs/Segment"
+          },
+          "maxItems": 12,
+          "minItems": 1,
+          "title": "Segments",
+          "type": "array"
+        },
+        "audio": {
+          "items": {
+            "$ref": "#/$defs/Audio"
+          },
+          "maxItems": 13,
+          "minItems": 2,
+          "title": "Audio",
+          "type": "array"
+        }
+      },
+      "required": [
+        "introduction",
+        "segments",
+        "audio"
+      ],
+      "title": "Narration",
+      "type": "object"
+    },
+    "Room": {
+      "additionalProperties": false,
+      "properties": {
+        "checkpoint_id": {
+          "title": "Checkpoint Id",
+          "type": "string"
+        },
+        "room_id": {
+          "title": "Room Id",
+          "type": "string"
+        },
+        "asset_id": {
+          "title": "Asset Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "yaw": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Yaw",
+          "type": "number"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "facts": {
+          "items": {
+            "$ref": "#/$defs/Fact"
+          },
+          "title": "Facts",
+          "type": "array"
+        },
+        "estimated": {
+          "title": "Estimated",
+          "type": "boolean"
+        },
+        "projection": {
+          "enum": [
+            "photo",
+            "equirectangular"
+          ],
+          "title": "Projection",
+          "type": "string"
+        },
+        "anchor": {
+          "$ref": "#/$defs/Anchor"
+        }
+      },
+      "required": [
+        "checkpoint_id",
+        "room_id",
+        "asset_id",
+        "label",
+        "yaw",
+        "summary",
+        "facts",
+        "estimated",
+        "projection",
+        "anchor"
+      ],
+      "title": "Room",
+      "type": "object"
+    },
+    "Segment": {
+      "additionalProperties": false,
+      "properties": {
+        "checkpoint_id": {
+          "title": "Checkpoint Id",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 1800,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "checkpoint_id",
+        "text",
+        "sources"
+      ],
+      "title": "Segment",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "generation_id": {
+      "title": "Generation Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "locale": {
+      "enum": [
+        "vi",
+        "en"
+      ],
+      "title": "Locale",
+      "type": "string"
+    },
+    "rooms": {
+      "items": {
+        "$ref": "#/$defs/Room"
+      },
+      "maxItems": 12,
+      "minItems": 1,
+      "title": "Rooms",
+      "type": "array"
+    },
+    "connections": {
+      "items": {
+        "$ref": "#/$defs/Link"
+      },
+      "title": "Connections",
+      "type": "array"
+    },
+    "navigation": {
+      "items": {
+        "$ref": "#/$defs/Hotspot"
+      },
+      "title": "Navigation",
+      "type": "array"
+    },
+    "itinerary": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Itinerary",
+      "type": "array"
+    },
+    "model": {
+      "$ref": "#/$defs/Geometry"
+    },
+    "narration": {
+      "$ref": "#/$defs/Narration"
+    },
+    "music": {
+      "$ref": "#/$defs/Music"
+    },
+    "approved": {
+      "const": true,
+      "title": "Approved",
+      "type": "boolean"
+    },
+    "ai_voice_disclosure": {
+      "const": true,
+      "title": "Ai Voice Disclosure",
+      "type": "boolean"
+    },
+    "published_at": {
+      "title": "Published At",
+      "type": "string"
+    },
+    "public_id": {
+      "title": "Public Id",
+      "type": "string"
+    },
+    "assets": {
+      "items": {
+        "$ref": "#/$defs/Asset"
+      },
+      "title": "Assets",
+      "type": "array"
+    }
+  },
+  "required": [
+    "version",
+    "id",
+    "generation_id",
+    "name",
+    "locale",
+    "rooms",
+    "connections",
+    "navigation",
+    "itinerary",
+    "model",
+    "narration",
+    "music",
+    "approved",
+    "ai_voice_disclosure",
+    "published_at",
+    "public_id",
+    "assets"
+  ],
+  "title": "PublishedTour",
+  "type": "object"
+}

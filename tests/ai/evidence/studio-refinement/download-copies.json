@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "identical_files": {
+    "Estagent_Business_LangGraph_Flow.md": true,
+    "Estagent_Business_LangGraph_Flow.mmd": true,
+    "Estagent_Business_LangGraph_StateGraph.mmd": true,
+    "Estagent_Business_LangGraph_Flow.reference.mmd": true
+  }
+}

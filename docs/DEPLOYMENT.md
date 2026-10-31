@@ -1,5 +1,21 @@
 # Production — Estagent trên VM + DuckDNS
 
+## Source bổ sung: AI Generation Studio
+
+Giữ luồng VM/DuckDNS và các guard keyless preview hiện có. Source có thêm
+`server/creator/`, `web/studio*`; Docker/release allowlists đã bổ sung. Backend
+phục vụ `/business/create`, static Caddy có rewrite sang studio.html. Template
+proxy tương lai có thêm `/api/studio/*` và `/api/studio-tours/*`, không strip prefix.
+Đây là thay đổi source, chưa rollout backend hoặc thay edge production.
+
+STUDIO_DATA_DIR=/data/studio trên volume Estagent riêng; gồm metadata/assets và
+graph checkpoint DB. Backup/rollback phải giữ cùng assistant và tour storage;
+chỉ một API process. OPENAI_MODEL_VISION/TTS dùng cùng OPENAI_API_KEY backend.
+Không có Blender adapter thì graph chờ integration và chặn publish; không claim
+Supabase/Redis/3D renderer đã nối. Chi tiết: `CREATOR-STUDIO.md`.
+Native QA không kế thừa TOUR_/STUDIO_/CREATOR_ data path từ shell; dùng DB tạm.
+SQLite integrity probe đóng connection trước khi xóa thư mục QA trên Windows.
+
 ## Current release — integrated keyless preview
 
 Demo data đã publish theo yêu cầu Thái: [Không gian Hackathon — 4 điểm panorama](https://estagent.duckdns.org/viewer.html?tour=f9c9100bf6effa0f141594dd972bed6d), có trong thư viện Xem tour.

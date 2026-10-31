@@ -4,6 +4,7 @@ Uses temporary SQLite, synthetic input and a fake key only. Full smoke never sen
 a valid model request. Existing application tests mock model/network calls.
 """
 import io
+from contextlib import closing
 import os
 from pathlib import Path
 import shutil
@@ -25,7 +26,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     blob = subprocess.check_output([
-        'git', 'archive', sha, 'server/assistant', 'server/tours', 'web', 'tests/ai',
+        'git', 'archive', sha, 'server/assistant', 'server/tours', 'server/creator', 'web', 'tests/ai',
     ], cwd=ROOT)
     print(f'Application snapshot: {sha}; deploy tooling: current uncommitted files', flush=True)
     with tempfile.TemporaryDirectory(prefix='estagent-native-qa-') as directory:
@@ -35,7 +36,7 @@ def main():
         shutil.copytree(ROOT / 'deploy', stage / 'deploy', ignore=shutil.ignore_patterns(
             'evidence', '__pycache__', '.env', '.env.*', 'runtime', '*.tar', '*.tar.gz'))
         env = {k: v for k, v in os.environ.items() if not k.startswith((
-            'OPENAI_', 'ASSISTANT_', 'LANGCHAIN_', 'LANGSMITH_'))}
+            'OPENAI_', 'ASSISTANT_', 'TOUR_', 'STUDIO_', 'CREATOR_', 'ESTAGENT_', 'LANGCHAIN_', 'LANGSMITH_'))}
         env.update({
             'PYTHONDONTWRITEBYTECODE': '1', 'NO_PROXY': '127.0.0.1,localhost',
             'ASSISTANT_DB': str(stage / 'data' / 'checkpoints.sqlite'),
@@ -108,7 +109,7 @@ def main():
                     except subprocess.TimeoutExpired:
                         process.kill()
                         process.wait(timeout=5)
-            with sqlite3.connect(env['ASSISTANT_DB']) as db:
+            with closing(sqlite3.connect(env['ASSISTANT_DB'])) as db:
                 if db.execute('PRAGMA quick_check').fetchone() != ('ok',):
                     raise RuntimeError('SQLite integrity check failed')
         print('PASS native restart: SQLite reopens and passes quick_check', flush=True)

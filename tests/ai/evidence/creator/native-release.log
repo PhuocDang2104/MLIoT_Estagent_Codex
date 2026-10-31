@@ -1,0 +1,20 @@
+Application snapshot: b2fbe49872003712783d6e240455bbb43a8b8429; deploy tooling: current uncommitted files
+PASS config: missing key rejected without starting runtime
+PASS keyless preview: explicit opt-in accepted; nonempty key rejected
+CONFIG OK (presence/format only; model access and quota not verified)
+PASS config: blank key, non-HTTPS origin, unknown field rejected
+unconfigured: SMOKE PASS: state/cookie, wrong origin, invalid turn, body limit, unconfigured=503; static HTML; no valid model request or profile mutation sent
+HEALTH PASS (HTTP + checkpoint read; no model/quota check)
+PASS health: unconfigured server fails production health
+configured-fixture: SMOKE PASS: state/cookie, wrong origin, invalid turn, body limit; static HTML; no valid model request or profile mutation sent
+HEALTH PASS (HTTP + checkpoint read; no model/quota check)
+PASS native restart: SQLite reopens and passes quick_check
+...........                                                              [100%]
+============================== warnings summary ===============================
+..\..\uv\cache\archive-v0\NAAnwhgxDA2W8LbT\Lib\site-packages\langgraph\checkpoint\base\__init__.py:18
+  C:\Users\ADMIN\AppData\Local\uv\cache\archive-v0\NAAnwhgxDA2W8LbT\Lib\site-packages\langgraph\checkpoint\base\__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+    from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+11 passed, 1 warning in 2.31s
+LOCAL QA PASS; Docker build/volume/TLS/live OpenAI NOT verified

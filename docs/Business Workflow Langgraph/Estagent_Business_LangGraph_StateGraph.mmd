@@ -1,0 +1,52 @@
+---
+config:
+  flowchart:
+    curve: linear
+  theme: base
+  themeVariables:
+    clusterBkg: '#ffffff'
+    clusterBorder: '#dedee1'
+    edgeLabelBackground: '#fafafa'
+    fontFamily: Manrope, Arial, sans-serif
+    fontSize: 13px
+    lineColor: '#81848a'
+    primaryColor: '#fafafa'
+    primaryTextColor: '#292c2e'
+    secondaryColor: '#ededed'
+    tertiaryColor: '#fafafa'
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	understand(understand)
+	scene(scene)
+	spatial(spatial)
+	spatial_review(spatial_review)
+	build_model(build_model)
+	mapping(mapping)
+	semantic(semantic)
+	navigation(navigation)
+	narration(narration)
+	final_review(final_review)
+	voice(voice)
+	assemble(assemble)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> understand;
+	assemble --> __end__;
+	build_model --> mapping;
+	mapping --> semantic;
+	narration --> final_review;
+	navigation --> narration;
+	semantic --> navigation;
+	spatial --> spatial_review;
+	understand --> scene;
+	scene -.-> spatial;
+	spatial_review -.-> __end__;
+	spatial_review -.-> build_model;
+	final_review -.-> __end__;
+	final_review -.-> voice;
+	voice -.-> assemble;
+	scene -.-> scene;
+	voice -.-> voice;
+	classDef default fill:#fafafa,stroke:#dedee1,color:#292c2e
+	classDef first fill:#fff0eb,stroke:#ed321e,color:#292c2e
+	classDef last fill:#292c2e,stroke:#292c2e,color:#ffffff

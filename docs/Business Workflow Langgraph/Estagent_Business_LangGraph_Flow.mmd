@@ -1,0 +1,63 @@
+%% Generated from server/creator/graph.py by scripts/export_studio_graph.py.
+%% Solid edges inside LG are actual StateGraph edges. Dotted edges describe API/status boundaries.
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Manrope, Arial, sans-serif", "fontSize": "13px", "lineColor": "#96999e", "primaryTextColor": "#292c2e", "primaryColor": "#fafafa", "secondaryColor": "#ededed", "tertiaryColor": "#fafafa", "edgeLabelBackground": "#fafafa", "clusterBkg": "#ffffff", "clusterBorder": "#dedee1"}, "flowchart": {"curve": "basis", "nodeSpacing": 30, "rankSpacing": 42}}}%%
+flowchart TB
+    INPUT["Business · ảnh + mô tả + tùy chọn"]:::boundary
+    API["FastAPI · validate / upload / tạo generation"]:::boundary
+    QUEUED["queued · trả 202, chạy nền"]:::boundary
+    INPUT -.-> API -.-> QUEUED
+    subgraph LG["LANGGRAPH STATEGRAPH · RUNTIME HIỆN TẠI"]
+        __start__["START"]:::terminal
+        understand["understand<br/>OpenAI · trích xuất hồ sơ"]:::node
+        scene["scene<br/>OpenAI Vision · từng ảnh"]:::node
+        spatial["spatial<br/>Tạo room / checkpoint nháp"]:::node
+        spatial_review["spatial_review<br/>interrupt · Business kiểm tra"]:::review
+        build_model["build_model<br/>Adapter dựng 3D"]:::worker
+        mapping["mapping<br/>Kiểm tra room / anchor"]:::node
+        semantic["semantic<br/>Giữ dữ kiện có nguồn"]:::node
+        navigation["navigation<br/>Hotspots + hành trình hợp lệ"]:::node
+        narration["narration<br/>OpenAI · viết lời giới thiệu"]:::node
+        final_review["final_review<br/>interrupt · Duyệt lời giới thiệu"]:::review
+        voice["voice<br/>OpenAI TTS · từng đoạn"]:::node
+        assemble["assemble<br/>Kiểm tra và đóng gói"]:::node
+        __end__["END"]:::terminal
+        __start__ --> understand
+        assemble --> __end__
+        build_model --> mapping
+        mapping --> semantic
+        narration --> final_review
+        navigation --> narration
+        semantic --> navigation
+        spatial --> spatial_review
+        understand --> scene
+        scene -->|"Còn ảnh"| scene
+        scene -->|"Đủ ảnh"| spatial
+        spatial_review -->|"Từ chối"| __end__
+        spatial_review -->|"Duyệt"| build_model
+        final_review -->|"Từ chối"| __end__
+        final_review -->|"Duyệt"| voice
+        voice -->|"Đủ audio"| assemble
+        voice -->|"Còn đoạn"| voice
+    end
+    QUEUED -.-> __start__
+    WAIT["waiting_integration<br/>Chưa có adapter · Không publish"]:::waiting
+    build_model -. "interrupt khi thiếu worker" .-> WAIT
+    WAIT -. "Retry khi adapter sẵn sàng" .-> build_model
+    FAILED["failed · giữ checkpoint đã hoàn tất"]:::waiting
+    LG -. "Exception / process dừng lúc đang chạy" .-> FAILED
+    FAILED -. "Retry có giới hạn tại node đang dở" .-> LG
+    REJECTED["rejected · Không publish"]:::waiting
+    READY["completed · Bản nháp đủ tài sản"]:::boundary
+    __end__ -. "rejected = true" .-> REJECTED
+    __end__ -. "package + approved" .-> READY
+    PUBLISH["Business chọn xuất bản<br/>API kiểm approval + music + assets"]:::review
+    SNAPSHOT["Snapshot bất biến"]:::terminal
+    VIEWER["Viewer · ảnh / 360° + audio<br/>GLB download · OpenAI Q&A chỉ đọc"]:::boundary
+    READY -.-> PUBLISH -.-> SNAPSHOT -.-> VIEWER
+    classDef node fill:#fafafa,stroke:#d4d6da,color:#292c2e,stroke-width:1px;
+    classDef review fill:#fff0eb,stroke:#ed321e,color:#8c3428,stroke-width:1.5px;
+    classDef worker fill:#eeeef0,stroke:#81848a,color:#292c2e,stroke-width:1.5px;
+    classDef terminal fill:#292c2e,stroke:#292c2e,color:#ffffff,stroke-width:1.5px;
+    classDef boundary fill:#f3f3f4,stroke:#bfc2c7,color:#63656b,stroke-width:1px;
+    classDef waiting fill:#fafafa,stroke:#bfc2c7,color:#7a7d82,stroke-width:1px,stroke-dasharray:4 4;
+    style LG fill:#ffffff,stroke:#d4d6da,color:#292c2e

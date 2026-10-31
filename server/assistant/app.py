@@ -16,6 +16,10 @@ from openai import OpenAI, APIError
 from pydantic import BaseModel, Field, ConfigDict
 from langgraph.checkpoint.sqlite import SqliteSaver
 from .graph import build_graph, make_extractor, LABELS, QUESTIONS
+from server.creator.api import router as creator_router
+from server.creator.service import Creator
+from server.creator.provider import OpenAIProvider
+from server.creator.models import ViewerQuestion
 
 ROOT = Path(__file__).resolve().parents[2]
 WEB = ROOT / 'web'
@@ -26,7 +30,7 @@ class Turn(BaseModel):
     text: str = Field(min_length=1, max_length=2000)
     request_id: str = Field(pattern=r'^[a-zA-Z0-9-]{8,80}$')
 
-def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, tour_interpreter=None):
+def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, tour_interpreter=None, creator_provider=None, creator_worker=None):
     env = dict(os.environ if env is None else env)
     origin = env.get('ASSISTANT_ORIGIN', 'http://127.0.0.1:5180')
     required = tuple(x.strip() for x in env.get('ASSISTANT_REQUIRED_FIELDS','address,area,bedrooms').split(','))
@@ -45,22 +49,30 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
         def unavailable(_): raise ValueError('Cần cấu hình OpenAI ở máy chủ để tiếp tục.')
         graph = build_graph(extractor or (make_extractor(client,env.get('OPENAI_MODEL_TEXT','gpt-6.1-sol')) if client else unavailable),saver,required)
         app.state.graph = graph
-        yield
-        if client: client.close()
-        connection.close()
+        app.state.creator = Creator(Path(env.get('STUDIO_DATA_DIR', path.parent / 'studio')),
+            creator_provider or (OpenAIProvider(client, env) if client else None), creator_worker)
+        try:
+            yield
+        finally:
+            app.state.creator.close()
+            if client: client.close()
+            connection.close()
 
     app = FastAPI(lifespan=lifespan,docs_url=None,redoc_url=None,openapi_url=None)
+    app.include_router(creator_router(origin))
 
     @app.middleware('http')
     async def boundaries(request, call_next):
-        if request.url.path.startswith('/api/assistant/'):
-            if request.method == 'POST' and request.headers.get('origin') != origin:
+        if request.url.path.startswith(('/api/assistant/', '/api/studio/', '/api/studio-tours/')):
+            writing = request.method in ('POST', 'DELETE', 'PATCH', 'PUT')
+            if writing and request.headers.get('origin') != origin:
                 return JSONResponse({'error':'Nguồn yêu cầu không hợp lệ.'},status_code=403)
-            if request.method == 'POST':
+            if writing:
+                limit = 20*1024*1024 if request.url.path.startswith('/api/studio/projects/') and request.url.path.endswith('/assets') else 65536
                 size = 0; chunks = []
                 async for chunk in request.stream():
                     size += len(chunk)
-                    if size > 65536: return JSONResponse({'error':'Yêu cầu quá lớn.'},status_code=413)
+                    if size > limit: return JSONResponse({'error':'Yêu cầu quá lớn.'},status_code=413)
                     chunks.append(chunk)
                 request._body = b''.join(chunks)
         response = await call_next(request)
@@ -141,9 +153,41 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
     @app.get('/')
     def home(): return FileResponse(WEB/'index.html')
 
+    @app.get('/business/create')
+    @app.get('/business/projects/{project_id}/generate')
+    def studio(project_id: str = ''): return FileResponse(WEB/'studio.html')
+
+    def load_published(tour_id):
+        rows = app.state.creator.store.rows('SELECT data FROM published WHERE id=?', (tour_id,))
+        if not rows: raise HTTPException(404, 'Tour chưa được xuất bản.')
+        return json.loads(rows[0]['data'])
+
+    @app.get('/api/studio-tours/{tour_id}')
+    def published(tour_id: str, response: Response, request: Request):
+        package = load_published(tour_id)
+        token = request.cookies.get('estagent_studio_viewer', '')
+        if not re.fullmatch(r'[a-f0-9]{64}', token):
+            response.set_cookie('estagent_studio_viewer', secrets.token_hex(32), path='/api/studio-tours/',
+                httponly=True, secure=origin.startswith('https:'), samesite='strict', max_age=30*24*3600)
+        return package
+
+    @app.post('/api/studio-tours/{tour_id}/questions')
+    def viewer_question(tour_id: str, data: ViewerQuestion, request: Request):
+        token = request.cookies.get('estagent_studio_viewer', '')
+        if not re.fullmatch(r'[a-f0-9]{64}', token):
+            raise HTTPException(401, 'Tải lại tour để bắt đầu trò chuyện.')
+        return app.state.creator.answer(token, load_published(tour_id), data)
+
+    @app.get('/api/studio-tours/{tour_id}/assets/{asset_id}')
+    def public_asset(tour_id: str, asset_id: str):
+        package = load_published(tour_id)
+        asset = next((a for a in package['assets'] if a['id'] == asset_id), None)
+        if not asset: raise HTTPException(404)
+        return Response(app.state.creator.store.content(asset), media_type=asset['mime'])
+
     @app.get('/{filename}')
     def static_file(filename:str):
-        allowed = {'assistant.html','assistant.css','assistant.js','index.html','experience.html','styles.css','app.js','i18n.js','intake.js','property.js','motion.css','motion.js','creator.html','viewer.html','tour.css','tour-common.js','creator.js','viewer.js','panorama.js'}
+        allowed = {'assistant.html','assistant.css','assistant.js','index.html','experience.html','styles.css','app.js','i18n.js','intake.js','property.js','motion.css','motion.js','creator.html','viewer.html','tour.css','tour-common.js','creator.js','viewer.js','panorama.js','studio.html','studio.css','studio.js','studio-panorama.js','studio-tour.html','studio-tour.js'}
         if filename not in allowed or not (WEB/filename).is_file(): raise HTTPException(404)
         return FileResponse(WEB/filename)
 

@@ -61,7 +61,10 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
             yield
         finally:
             try:
-                app.state.narration.close()
+                try:
+                    app.state.close_video_exports()
+                finally:
+                    app.state.narration.close()
             finally:
                 try:
                     app.state.creator.close()

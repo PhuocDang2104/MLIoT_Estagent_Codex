@@ -24,4 +24,4 @@ def plan(snapshot, aspect):
                 width=720 if aspect == 'portrait' else 1280, height=1280 if aspect == 'portrait' else 720,
                 duration=round(start, 6), scenes=scenes, music=music,
                 audio_status='complete' if recorded == len(scenes) else 'partial' if recorded or music else 'silent',
-                notice='Editorial sequence of supplied photos/panoramas, not room adjacency or 3D. Audio uses uploaded source-language recordings only.')
+                notice='Editorial sequence of supplied photos/panoramas, not room adjacency or 3D. Audio uses the published snapshot tracks matching its source language, including declared AI-generated narration.')

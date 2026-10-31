@@ -1,4 +1,6 @@
 import {$,t,language,api,node,notice,link,requestID} from './tour-common.js';
+import {mountNarrationPanel} from './narration-panel.js';
+let narrationPanel=null,narrationRevision='',narrationDraft='';
 let manifest=null, session=null, attachments=[], busy=false, dirty=false, pendingCreate=null, pendingTurn=null;
 let chatSceneID=null;
 function dirtyState(){dirty=true;$('#reviewed').checked=false;$('#publish').disabled=true;$('#preview').removeAttribute('href');$('#revision').textContent=t('Unsaved changes — save before preview.','Có thay đổi chưa lưu — lưu trước khi xem thử.');}
@@ -24,7 +26,18 @@ $('#drop-zone').onclick=()=>$('#photos').click();
 $('#photos').onchange=e=>{attach(e.target.files);e.target.value='';};
 $('#drop-zone').ondragover=e=>e.preventDefault();$('#drop-zone').ondrop=e=>{e.preventDefault();attach(e.dataTransfer.files);};
 function field(label,value,change,tag='input'){const wrap=node('label',label);const input=node(tag);input.value=value;input.oninput=()=>{change(input.value);dirtyState();};wrap.append(input);return wrap;}
+function syncNarrationPanel(){
+ if(!manifest){narrationPanel?.destroy();narrationPanel=null;narrationDraft='';narrationRevision='';return;}
+ if(narrationDraft!==manifest.id){narrationPanel?.destroy();narrationPanel=null;narrationDraft=manifest.id;}
+ if(!narrationPanel){narrationPanel=mountNarrationPanel($('#narration-panel'),{api,
+  getManifest:async()=>{if(dirty||busy)throw Error(t('Save draft changes first.','Hãy lưu thay đổi trước.'));return api(`/drafts/${manifest.id}`);},
+  onManifest:async()=>{manifest=await api(`/drafts/${manifest.id}`);resetReview();render();}
+ });narrationRevision=String(manifest.revision);}
+ else if(!busy&&narrationRevision!==String(manifest.revision)){narrationRevision=String(manifest.revision);narrationPanel.refresh();}
+}
+document.addEventListener('narration-preview-start',()=>$('#creator-audio-preview').pause());
 function render(){
+  if(!busy)syncNarrationPanel();
   $('#empty-draft').hidden=!!manifest;$('#draft-editor').hidden=!manifest;$('#drop-zone').hidden=!!manifest;
   $('#send').textContent=manifest?t('Send to assistant ↗','Gửi cho trợ lý ↗'):t('Send & create draft ↗','Gửi & tạo bản nháp ↗');
   $('#connection').textContent=session?.configured?t('AI configured','AI đã cấu hình'):t('AI not connected','AI chưa kết nối');
@@ -65,7 +78,7 @@ $('#save-draft').onclick=async()=>{if(busy)return;setBusy(true);try{
   resetReview();await refreshList();render();notice(t('Changes saved. Open the preview to review.','Đã lưu. Mở xem thử để kiểm tra.'));
 }catch(e){notice(e.message,true);}finally{setBusy(false);}};
 $('#composer').onsubmit=async e=>{
-  e.preventDefault();$('#creator-audio-preview').pause();if(busy)return;const text=$('#message').value.trim();if(!manifest&&!attachments.length){notice(t('Attach at least one photo first.','Thêm ít nhất một ảnh trước.'),true);return;}if(manifest&&(!text||dirty)){notice(t('Save edits and enter a message first.','Lưu thay đổi và nhập tin nhắn trước.'),true);return;}
+  e.preventDefault();narrationPanel?.pause();$('#creator-audio-preview').pause();if(busy)return;const text=$('#message').value.trim();if(!manifest&&!attachments.length){notice(t('Attach at least one photo first.','Thêm ít nhất một ảnh trước.'),true);return;}if(manifest&&(!text||dirty)){notice(t('Save edits and enter a message first.','Lưu thay đổi và nhập tin nhắn trước.'),true);return;}
   setBusy(true);notice(t('Working…','Đang xử lý…'));
   try{
     if(!manifest){

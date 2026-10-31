@@ -32,3 +32,6 @@
 
 !server/narration/
 !server/narration/*.py
+
+!server/exports/
+!server/exports/*.py

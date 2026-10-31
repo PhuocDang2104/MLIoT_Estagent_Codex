@@ -25,6 +25,9 @@ Deploy: [STUDIO-DEPLOY.md](STUDIO-DEPLOY.md).
 - Queue tối đa 8, project tối đa 12 ảnh/80 MB, tối đa 20 versions/project,
   tối đa 20 edit proposals/version. Existing shared API admission limits áp dụng
   cả đề xuất/apply; đây là attempt caps, không phải ngân sách USD.
+- Ảnh upload mới được bỏ embedded metadata/EXIF và áp orientation trước khi
+  tính projection/hash; không công khai EXIF gốc qua worker/published asset.
+  Đây không phải migration cho media đã lưu hoặc snapshot cũ.
 - `/api/studio/health` kiểm dispatcher và metadata DB, không gọi model. Docker
   health kiểm cả assistant và Studio. Configured không đồng nghĩa key/quota hợp lệ.
 

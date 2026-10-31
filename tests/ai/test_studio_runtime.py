@@ -358,3 +358,21 @@ def test_offline_backup_preserves_sqlite_media_and_excludes_previous_backups(tmp
     assert (root/'media'/'fixture.bin').read_bytes() == b'synthetic'
     second = backup(root,'another')
     assert len(json.loads((second/'BACKUP.json').read_text())['files']) == 2
+
+
+def test_new_uploads_remove_private_exif_and_apply_orientation(tmp_path):
+    import io
+    from PIL import Image
+    exif = Image.Exif(); exif[315] = 'synthetic-private-owner'; exif[274] = 6
+    image = io.BytesIO()
+    Image.new('RGB',(128,64),'blue').save(image,format='JPEG',exif=exif)
+    with TestClient(app(tmp_path)) as client:
+        pid = draft(client)
+        response = client.post(f'/api/studio/projects/{pid}/assets?name=metadata.jpg',content=image.getvalue(),headers=HEADERS)
+        assert response.status_code == 201,response.text
+        asset = response.json()
+        assert (asset['width'],asset['height']) == (64,128) and asset['projection'] == 'photo'
+        data = client.get(f"/api/studio/projects/{pid}/assets/{asset['id']}").content
+        assert b'synthetic-private-owner' not in data
+        with Image.open(io.BytesIO(data)) as clean:
+            assert not clean.getexif() and clean.size == (64,128)

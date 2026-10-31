@@ -51,6 +51,28 @@ def wav_duration(data):
         return duration
 
 
+def sanitize_image(data):
+    """Validate before decoding; remove embedded metadata and bake EXIF orientation."""
+    from PIL import Image, ImageOps
+    image_info(data)
+    with Image.open(io.BytesIO(data)) as source:
+        if getattr(source, 'is_animated', False):
+            raise ValueError('Use a static property image')
+        if not source.info and not source.getexif():
+            return data
+        fmt = source.format
+        pixels = ImageOps.exif_transpose(source)
+        pixels = pixels.convert('RGB' if fmt == 'JPEG' else 'RGBA' if 'A' in pixels.getbands() or pixels.mode == 'P' else 'RGB')
+        pixels.info.clear()
+        pixels.getexif().clear()
+        output = io.BytesIO()
+        pixels.save(output, format=fmt, **({'quality':92} if fmt in ('JPEG','WEBP') else {}))
+        result = output.getvalue()
+        if len(result) > 20*1024*1024:
+            raise ValueError('Normalized image exceeds 20 MB; resize the image')
+        return result
+
+
 class Store:
     def __init__(self, root):
         root.mkdir(parents=True, exist_ok=True, mode=0o700)

@@ -8,7 +8,7 @@ import wave
 from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import StreamingResponse
 from .models import ProjectInput, Action, Review, EditRequest, ApplyEdit
-from .store import image_info, wav_duration
+from .store import image_info, wav_duration, sanitize_image
 
 COOKIE = 'estagent_studio'
 
@@ -67,6 +67,7 @@ def router(origin):
                 mime, width, height = 'audio/wav', 0, 0
                 duration = wav_duration(data)
             else:
+                data = sanitize_image(data)
                 mime, width, height = image_info(data)
                 duration = None
         except (ValueError, EOFError, IndexError, struct.error, wave.Error) as error:

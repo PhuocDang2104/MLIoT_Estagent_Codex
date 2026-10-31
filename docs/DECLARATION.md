@@ -264,3 +264,12 @@ Only packaging, compressed GLB and a Three.js viewer are new integration work.
 glTF Transform 4.5.0 produces the compressed derivative; meshoptimizer 1.2.0 MIT
 decoder is vendored. No claim of fresh AI reconstruction or independently
 verified dataset licensing. Source ZIP/media stay outside Git. See SEOUL-SAMPLE.md.
+
+Seoul English media follow-up: newly authored narration is grounded in the eight
+provided panoramas; eight bounded OpenAI gpt-4o-mini-tts/alloy calls produced the
+voice. FFmpeg renders a 1080p perspective tour from the existing 2048x1024 sources;
+this does not add source detail or claim new reconstruction. Caption sentence
+timings are estimated within measured audio chapters. Segoe UI is used by the
+local renderer; its font file is not distributed. The English-only video, voice,
+TXT and VTT are a user-authorized exception for Seoul only. New Codex-assisted
+code exposes these immutable assets and reuses Seoul on the landing page.

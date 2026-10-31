@@ -1,5 +1,6 @@
 """Read-only catalog for the explicitly supplied cached home; no ZIP/file gateway."""
 import json
+import math
 from pathlib import Path
 import re
 from fastapi import HTTPException, Request, Response
@@ -19,19 +20,46 @@ def read_catalog(path, demo_id=DEMO_ID, bundle_sha=BUNDLE_SHA):
         doc = json.loads(Path(path).read_text())
         if doc['id'] != demo_id or doc['source_bundle_sha256'] != bundle_sha:
             raise ValueError()
+        export_types = {'.mp4': 'video/mp4', '.txt': 'text/plain', '.vtt': 'text/vtt'} if demo_id == SEOUL_ID else {}
         for name, asset in doc['assets'].items():
             if (not re.fullmatch(r'(?:runtime|house)/[A-Za-z0-9_./-]+', name)
                     or any(p in {'', '.', '..'} for p in name.split('/'))
-                    or not name.endswith(('.js', '.css', '.json', '.jpg', '.png', '.svg', '.glb', '.wav'))
+                    or not name.endswith(('.js', '.css', '.json', '.jpg', '.png', '.svg', '.glb', '.wav', *export_types))
                     or not re.fullmatch('[a-f0-9]{64}', asset['sha256'])
                     or asset['key'] != f'demos/{demo_id}/{asset["sha256"]}/{name}'
-                    or asset['content_type'] not in TYPES or not isinstance(asset['bytes'], int)
+                    or asset['content_type'] not in TYPES | set(export_types.values()) or not isinstance(asset['bytes'], int)
                     or asset['bytes'] <= 0):
                 raise ValueError()
         if not {'house/manifest.json', 'house/dollhouse-studio.glb'} <= doc['assets'].keys():
             raise ValueError()
         if doc['thumbnail'] not in doc['assets']:
             raise ValueError()
+        if 'exports' in doc:
+            package = doc['exports']
+            if (demo_id != SEOUL_ID or package['locale'] != 'en'
+                    or package['scope'] != 'seoul_sample_only'
+                    or package['voice_source'] != 'openai_generated'
+                    or package['voice_model'] != 'gpt-4o-mini-tts'
+                    or not math.isfinite(package['duration_seconds'])
+                    or not 1 <= package['duration_seconds'] <= 600):
+                raise ValueError()
+            for kind, extension, mime in [('video', 'mp4', 'video/mp4'), ('audio', 'wav', 'audio/wav'),
+                    ('transcript', 'txt', 'text/plain'), ('captions', 'vtt', 'text/vtt')]:
+                name = package[kind]
+                if name != f'house/exports/seoul-tour-en.{extension}' or doc['assets'][name]['content_type'] != mime:
+                    raise ValueError()
+            ids = ['00000000', '00000030', '00000070', '00000110', '00000150', '00000180', '00000250', '00000310']
+            if [c['capture_id'] for c in package['chapters']] != ids:
+                raise ValueError()
+            previous_end = 0
+            for chapter in package['chapters']:
+                start, duration = chapter['start'], chapter['duration']
+                if (not math.isfinite(start) or not math.isfinite(duration) or start < previous_end - .01
+                        or duration <= 0 or start + duration > package['duration_seconds'] + .1
+                        or not isinstance(chapter['text'], str) or not 1 <= len(chapter['text']) <= 2000
+                        or not isinstance(chapter['title'], str) or not 1 <= len(chapter['title']) <= 120):
+                    raise ValueError()
+                previous_end = start + duration
         locales=set()
         for item in doc.get('intro', []):
             if (item['locale'] not in {'en','vi'} or item['locale'] in locales
@@ -80,8 +108,18 @@ def install_demos(app, env, web):
             result.append({'id': SEOUL_ID, 'kind': 'cached_demo', 'title': 'SEOUL — Furnished apartment',
                  'href': f'/demos/{SEOUL_ID}', 'thumbnail_url': f'/api/demos/{SEOUL_ID}/assets/{seoul["thumbnail"]}',
                  'rooms': 6, 'captures': 8, 'markers': 5, 'source_mode': 'user_provided_cached',
-                 'rights_status': 'not_independently_verified', 'audio_available': False})
+                 'rights_status': 'not_independently_verified', 'audio_available': bool(seoul.get('exports'))})
         return result
+
+    @app.get('/api/demos/{demo_id}/exports')
+    def demo_exports(demo_id: str):
+        if demo_id != SEOUL_ID or not seoul or not seoul.get('exports'):
+            raise HTTPException(404)
+        package = seoul['exports']
+        return {k: v for k, v in package.items() if k not in {'video', 'audio', 'transcript', 'captions'}} | {
+            kind: {'url': f'/api/demos/{SEOUL_ID}/assets/{package[kind]}',
+                   'download_url': f'/api/demos/{SEOUL_ID}/assets/{package[kind]}?download=1'}
+            for kind in ['video', 'audio', 'transcript', 'captions']}
 
     @app.get('/api/demos/{demo_id}/intro')
     def demo_intro(demo_id: str):
@@ -127,6 +165,9 @@ def install_demos(app, env, web):
             start, length, status = 0, info.size, 200
             headers = {'Accept-Ranges': 'bytes', 'ETag': '"'+item['sha256']+'"',
                        'X-Content-Type-Options': 'nosniff', 'Cross-Origin-Resource-Policy': 'same-origin'}
+            if demo_id == SEOUL_ID and request.query_params.get('download') == '1' and name in {
+                    selected_catalog.get('exports', {}).get(kind) for kind in ['video', 'audio', 'transcript', 'captions']}:
+                headers['Content-Disposition'] = f'attachment; filename="{name.rsplit("/", 1)[-1]}"'
             selected = request.headers.get('range')
             if selected:
                 match = re.fullmatch(r'bytes=([0-9]{0,20})-([0-9]{0,20})', selected)

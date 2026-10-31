@@ -357,3 +357,15 @@ library combines cached demos, Studio snapshots and legacy photo snapshots.
 No published schema or existing snapshot is converted. Placeholder music is
 covered by upload admission limits. The existing 20 MiB self-contained GLB limit
 also applies to local Blender output.
+
+## Seoul sample media exception — 2026-10-31
+
+Explicit user authorization adds `GET /api/demos/seoul-apartment/exports` for
+one reviewed, immutable English package. It returns locale, measured duration,
+eight source capture chapters, and video/audio/transcript/captions objects with
+same-origin `url` and `download_url`. Missing packages and every other demo ID
+return 404. Only the pinned Seoul catalog can admit MP4/TXT/VTT export assets;
+the four exact export filenames are validated with hashes, MIME and chapter bounds.
+Asset GET/HEAD supports byte ranges and `?download=1` attachment headers for
+these files. No generation endpoint, published schema or ZInD exception is added.
+The landing preview and sample CTA now reference the same furnished Seoul model.

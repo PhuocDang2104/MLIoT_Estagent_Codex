@@ -61,5 +61,14 @@ Retry-After waits for upload 429 responses. No AI/narration caps or schema chang
 Acceptance: real HTTP upload retry/browser regression, admission-limit tests,
 web gate and guarded production update with existing data preserved.
 
+Additional direct user request: Seoul only receives video/transcript exports and
+generated voice, in English only. Prepare one bounded batch (eight cached TTS
+attempts with a separate usage receipt), render a narrated 1080p video from the
+original panoramas, and serve reviewed MP4/WAV/TXT/VTT through the pinned Seoul
+catalog. No general public generation or ZInD export exception. User also requests
+the landing model and sample CTA use the furnished Seoul home. Preserve shared
+rotation/accessibility controls and disclose AI-generated voice. Validate codec,
+duration, transcript/caption identity, Range/download headers and browser playback.
+
 Upload follow-up completed at `e12582f`; evidence and exact retry behavior are in
 `UPLOAD-RETRY-FIX.md`. No paid calls; all existing uploaded asset rows preserved.

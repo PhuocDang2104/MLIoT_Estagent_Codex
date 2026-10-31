@@ -1,5 +1,20 @@
 # Khai báo nguồn có sẵn và phần build trong thời gian thi
 
+## Product writeup and README — 2026-10-31
+
+Thai supplied `Langgraph Rag Spatial Context Assistant.png` and
+`Langgraph Tour Generation OpenAI Architecture.png` for repository publication.
+Both PNGs are included byte-for-byte; no new generated image or third-party
+README artwork is added. The existing Estagent favicon is reused as the header mark.
+Codex assisted original English README and Vietnamese product copy, grounded in
+current source, user views, modeling/runtime and release documentation. Broad
+RAG/external-API architecture goals are distinguished from implemented features.
+Layout references: [Dify](https://github.com/langgenius/dify),
+[Supabase](https://github.com/supabase/supabase) and
+[GitHub README guidance](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes).
+No external prose/assets copied, no runtime dependency or API change, no paid
+model call or production rollout. H0 unconfirmed; no in-contest build claim.
+
 ## Studio runtime framework — 2026-10-31
 
 Codex-assisted changes reuse main Studio/legacy tour editing, existing LangGraph,

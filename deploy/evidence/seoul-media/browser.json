@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "url": "https://estagent.duckdns.org/",
+  "checks": [
+    "Seoul furnished landing GLB visible",
+    "pause control and keyboard rotation",
+    "sample CTA opens Seoul viewer",
+    "five model checkpoints",
+    "1920x1080 video playback and seek; 133.56 seconds",
+    "English captions visibly displayed",
+    "voice playback; matching duration",
+    "voice and video pause each other",
+    "eight transcript chapters displayed",
+    "browser transcript download matches SHA256",
+    "390px viewer without horizontal overflow",
+    "kitchen checkpoint opens capture 2 of 8"
+  ],
+  "console_errors": [],
+  "screenshots": [
+    "landing.png",
+    "video.png",
+    "mobile-media.png"
+  ]
+}

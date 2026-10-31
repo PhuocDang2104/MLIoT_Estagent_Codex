@@ -72,3 +72,8 @@ duration, transcript/caption identity, Range/download headers and browser playba
 
 Upload follow-up completed at `e12582f`; evidence and exact retry behavior are in
 `UPLOAD-RETRY-FIX.md`. No paid calls; all existing uploaded asset rows preserved.
+
+Seoul media and landing follow-up completed on application release `5200bca`
+with versioned media configuration; concurrent English/sample-input work retained.
+See `SEOUL-MEDIA-RELEASE.md` and `deploy/evidence/seoul-media/` for production,
+browser, media-hash and eight-call voice evidence. No global demo export exception.

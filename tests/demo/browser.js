@@ -35,6 +35,8 @@ async page => {
  checks.push('source map polygon changes room');
  for(const [width,height] of [[1440,1000],[390,844],[320,740]]){
   await page.setViewportSize({width,height});
+  await page.waitForFunction(()=>document.querySelector('#notice').textContent==='',null,{timeout:10000});
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   if(!await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&document.documentElement.scrollHeight<=innerHeight))throw Error('Overflow '+width);
   const box=await page.locator('#viewport canvas').boundingBox();if(box.width<width*.7||box.height<height*.7)throw Error('Viewer not immersive '+width);
   await page.screenshot({path:'/private/tmp/estagent-house-evidence/panorama-'+width+'.png'});

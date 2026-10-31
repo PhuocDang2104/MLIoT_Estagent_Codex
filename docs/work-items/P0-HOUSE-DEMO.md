@@ -7,3 +7,5 @@ Import duy nhất ZIPZInD hợp lệ đã user chỉ định ở /opt/estagent, 
 Acceptance: thẻ NHÀ DEMO trong library, linkHTTP200, actualGLBload, đổi>=3rooms/captures, map/markerthật, equirectangular đúngnguồn, cachelabelvisible,1440/390/320,noJSerrors; SHA bytes MinIO verified; Hackathoncanonical4point và8assethashes nguyên. CleanSHA pushedmain→artifactchecksum→rollout→browser. Globalchat/realtime keyless; chỉTTS lane được dùngkey riêng khi handoff, khôngpaidcalls từ lane này.
 
 User trực tiếp yêu cầu demo này xem được trong app; không tự mở rộng dataset khác. Public/export license chưa verify phải ghi đúng, không giảclaimsource/license/buildhômnay. Handoff và checkpoints ghi dưới đây.
+
+14:24 checkpoint: isolated VM preview http://127.0.0.1:5198/demos/zind-house-000; /api/demos catalog + exact member cover path available to UX. Actual private MinIO 37 objects/25,713,075 bytes, all source/readback SHA verified. Browser actual GLB textures/3 rooms/map/16markers and 1440/390/320 PASS after CSP blob fetch correction. No original tour mutation or paid calls. Source screenshots stay /private/tmp/estagent-house-evidence. Production rollout next.

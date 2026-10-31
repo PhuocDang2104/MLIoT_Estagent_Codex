@@ -1,0 +1,16 @@
+[
+  {
+    "name": "seoul-apartment-dollhouse",
+    "bytes": 115265812,
+    "meshes": 111,
+    "images": 27,
+    "triangles": 1686672
+  },
+  {
+    "name": "seoul-web-fixed",
+    "bytes": 30725056,
+    "meshes": 111,
+    "images": 27,
+    "triangles": 1686672
+  }
+]

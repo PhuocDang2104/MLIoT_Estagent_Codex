@@ -1,9 +1,10 @@
 import * as THREE from './assets/vendor/three/build/three.module.min.js';
 import { GLTFLoader } from './assets/vendor/three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from './assets/vendor/three/examples/jsm/controls/OrbitControls.js';
+import { MeshoptDecoder } from './assets/vendor/meshopt/meshopt_decoder.js';
 
 /** Owns its complete lifecycle, including GLB loads that finish after disposal. */
-export function houseModel(host, url, rooms, onCapture) {
+export function houseModel(host, url, rooms, onCapture, options = {}) {
   let stopped = false, frame, root;
   const stage = document.createElement('div');
   stage.className = 'house-stage';
@@ -19,7 +20,7 @@ export function houseModel(host, url, rooms, onCapture) {
   renderer.setPixelRatio(Math.min(devicePixelRatio,2));
   renderer.setClearColor(0xf0efeb,1);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.3;
+  renderer.toneMappingExposure = options.exposure ?? 1.3;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.domElement.tabIndex = 0;
@@ -78,7 +79,7 @@ export function houseModel(host, url, rooms, onCapture) {
     }
     camera.aspect=aspect; camera.updateProjectionMatrix();
   }); observer.observe(stage);
-  new GLTFLoader().load(url, gltf => {
+  new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).load(url, gltf => {
     if(stopped) { release(gltf.scene); return; }
     root = gltf.scene; scene.add(root);
     const bounds = new THREE.Box3().setFromObject(root), size = bounds.getSize(new THREE.Vector3());
@@ -86,7 +87,7 @@ export function houseModel(host, url, rooms, onCapture) {
     const radius = Math.max(size.length(),1);
     camera.near = Math.max(.02,radius/1000); camera.far=radius*12; camera.updateProjectionMatrix();
     initialTarget = center.clone();
-    initialPosition = center.clone().add(new THREE.Vector3(.8,1.1,1).normalize().multiplyScalar(radius*.53/framingSine(camera.aspect)));
+    initialPosition = center.clone().add(new THREE.Vector3(...(options.cameraDirection ?? [.8,1.1,1])).normalize().multiplyScalar(radius*(options.framing ?? .53)/framingSine(camera.aspect)));
     reset.onclick();
     controls.minDistance = radius*.15; controls.maxDistance = radius*4;
     sun.position.copy(center).add(new THREE.Vector3(radius,radius*1.5,radius));
@@ -97,6 +98,7 @@ export function houseModel(host, url, rooms, onCapture) {
       if(o.isMesh) { o.castShadow=true; o.receiveShadow=true; }
       if(['wall','trim','window'].includes(o.userData.kind)) wallObjects.push(o);
     });
+    walls.hidden = wallObjects.length === 0;
     // Deliberately no coplanar scene-wide floor/shadow catcher.
     for(const room of rooms.filter(r => r.anchor && r.anchor.dollhouse_visible !== false)) {
       const button = document.createElement('button'); button.className='house-marker';

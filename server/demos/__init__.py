@@ -8,21 +8,23 @@ from server.object_storage import ObjectResponse
 
 DEMO_ID = 'zind-house-000'
 BUNDLE_SHA = '734f7053604b67c24701acff3a044e2d33241272149e9596b0eefdca5fc592e3'
+SEOUL_ID = 'seoul-apartment'
+SEOUL_SHA = '254d6bc4a53ac452e07247b05b1418066f7ad4546a072e0ed1325a099e5b8d58'
 TYPES = {'image/jpeg', 'image/png', 'image/svg+xml', 'model/gltf-binary',
          'application/javascript', 'text/css', 'application/json', 'audio/wav'}
 
 
-def read_catalog(path):
+def read_catalog(path, demo_id=DEMO_ID, bundle_sha=BUNDLE_SHA):
     try:
         doc = json.loads(Path(path).read_text())
-        if doc['id'] != DEMO_ID or doc['source_bundle_sha256'] != BUNDLE_SHA:
+        if doc['id'] != demo_id or doc['source_bundle_sha256'] != bundle_sha:
             raise ValueError()
         for name, asset in doc['assets'].items():
             if (not re.fullmatch(r'(?:runtime|house)/[A-Za-z0-9_./-]+', name)
                     or any(p in {'', '.', '..'} for p in name.split('/'))
                     or not name.endswith(('.js', '.css', '.json', '.jpg', '.png', '.svg', '.glb', '.wav'))
                     or not re.fullmatch('[a-f0-9]{64}', asset['sha256'])
-                    or asset['key'] != f'demos/{DEMO_ID}/{asset["sha256"]}/{name}'
+                    or asset['key'] != f'demos/{demo_id}/{asset["sha256"]}/{name}'
                     or asset['content_type'] not in TYPES or not isinstance(asset['bytes'], int)
                     or asset['bytes'] <= 0):
                 raise ValueError()
@@ -60,17 +62,26 @@ def read_catalog(path):
 def install_demos(app, env, web):
     raw = env.get('DEMO_CATALOG_PATH', '')
     catalog = read_catalog(raw) if raw else None
-    if catalog and app.state.object_storage is None:
+    seoul_path = env.get('SEOUL_CATALOG_PATH', '')
+    seoul = read_catalog(seoul_path, SEOUL_ID, SEOUL_SHA) if seoul_path else None
+    catalogs = {key: value for key, value in [(DEMO_ID, catalog), (SEOUL_ID, seoul)] if value}
+    if catalogs and app.state.object_storage is None:
         raise ValueError('Cached demo requires configured private MinIO storage')
 
     @app.get('/api/demos')
     def catalog_list():
-        if not catalog:
-            return []
-        return [{'id': DEMO_ID, 'kind': 'cached_demo', 'title': 'NHÀ DEMO — Nhà mẫu 000',
+        result = []
+        if catalog:
+            result.append({'id': DEMO_ID, 'kind': 'cached_demo', 'title': 'NHÀ DEMO — Nhà mẫu 000',
                  'href': f'/demos/{DEMO_ID}', 'thumbnail_url': f'/api/demos/{DEMO_ID}/assets/{catalog["thumbnail"]}',
                  'rooms': 15, 'captures': 32, 'markers': 16, 'source_mode': 'user_provided_cached',
-                 'rights_status': 'not_independently_verified', 'audio_available': bool(catalog.get('intro'))}]
+                 'rights_status': 'not_independently_verified', 'audio_available': bool(catalog.get('intro'))})
+        if seoul:
+            result.append({'id': SEOUL_ID, 'kind': 'cached_demo', 'title': 'SEOUL — Furnished apartment',
+                 'href': f'/demos/{SEOUL_ID}', 'thumbnail_url': f'/api/demos/{SEOUL_ID}/assets/{seoul["thumbnail"]}',
+                 'rooms': 6, 'captures': 8, 'markers': 5, 'source_mode': 'user_provided_cached',
+                 'rights_status': 'not_independently_verified', 'audio_available': False})
+        return result
 
     @app.get('/api/demos/{demo_id}/intro')
     def demo_intro(demo_id: str):
@@ -88,22 +99,23 @@ def install_demos(app, env, web):
 
     @app.get('/demos/{demo_id}')
     def demo_page(demo_id: str):
-        if demo_id != DEMO_ID or not catalog:
+        if demo_id not in catalogs:
             raise HTTPException(404)
-        return FileResponse(web/'demos'/'house.html', headers={
-            'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' blob:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'"})
+        return FileResponse(web/'demos'/('seoul.html' if demo_id == SEOUL_ID else 'house.html'), headers={
+            'Content-Security-Policy': "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' blob:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'"})
 
     @app.get('/demos/static/{name}')
     def demo_static(name: str):
-        if name not in {'house.css', 'house.js'}:
+        if name not in {'house.css', 'house.js', 'seoul.css', 'seoul.js'}:
             raise HTTPException(404)
         return FileResponse(web/'demos'/name)
 
     @app.api_route('/api/demos/{demo_id}/assets/{name:path}', methods=['GET', 'HEAD'])
     def asset(demo_id: str, name: str, request: Request):
-        if demo_id != DEMO_ID or not catalog or name not in catalog['assets']:
+        selected_catalog = catalogs.get(demo_id)
+        if not selected_catalog or name not in selected_catalog['assets']:
             raise HTTPException(404)
-        item = catalog['assets'][name]
+        item = selected_catalog['assets'][name]
         store = request.app.state.object_storage
         if store is None:
             raise HTTPException(503, 'Demo storage unavailable')

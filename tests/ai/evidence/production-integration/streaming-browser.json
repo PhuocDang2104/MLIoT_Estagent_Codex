@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "synthetic": true,
+  "checks": [
+    "summary grows through real SSE",
+    "reload restores final summary",
+    "320px no overflow"
+  ],
+  "page_errors": []
+}

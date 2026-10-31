@@ -33,6 +33,12 @@ Paths: integration requires root config, `server/`, `pipelines/core/`, `web/`,
 Existing dependencies retained; production image adds optional Debian Blender
 alongside FFmpeg. Verify actual GLB output on the deployed Blender version.
 
+Added user scope: import the premade Seoul ZIP as a separate read-only library
+sample with source panoramas/floorplan and original furniture. New optional
+SEOUL_CATALOG_PATH, viewer and vendored MIT meshopt decoder; preparation uses
+glTF Transform 4.5.0 outside app dependencies. See SEOUL-SAMPLE.md. No change to
+generated-tour contracts or the existing pinned ZInD catalog.
+
 Acceptance: strict all gate with no skips; synthetic end-to-end Studio and legacy
 photo routes; real container Blender; unchanged old public tours/demo hashes;
 private backup before cutover; healthy Docker/HTTPS; live progress/Three.js and

@@ -257,3 +257,10 @@ and use equivalent Windows/Linux OS file locks for narration/export. The optiona
 Docker image installs Debian Blender alongside existing FFmpeg. New integration
 fixtures are synthetic, with no new dataset imagery committed. H0 is unconfirmed.
 See `PRODUCTION-INTEGRATION.md` for validation and deployment evidence.
+
+Seoul sample: user-supplied premade furnished Blender/GLB scene, floorplan and
+eight original panoramas; source-assisted recovery predates this integration.
+Only packaging, compressed GLB and a Three.js viewer are new integration work.
+glTF Transform 4.5.0 produces the compressed derivative; meshoptimizer 1.2.0 MIT
+decoder is vendored. No claim of fresh AI reconstruction or independently
+verified dataset licensing. Source ZIP/media stay outside Git. See SEOUL-SAMPLE.md.

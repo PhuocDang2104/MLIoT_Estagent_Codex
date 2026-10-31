@@ -147,7 +147,7 @@ function chatBubble(role,text){const bubble=node('p',text,`viewer-message ${role
 function renderLibrary(){
   $('#tour-library').replaceChildren();
   if(!libraryTours.length)$('#tour-library').append(node('p',t('No published tours yet. A Creator must review and publish a tour first.','Chưa có tour được xuất bản. Creator cần xem thử và duyệt tour trước.'),'empty-state'));
-  for(const tour of libraryTours){const card=link('',tour.kind==='cached_demo'?tour.href:(tour.viewer_url||`/viewer.html?tour=${tour.id}`),'library-card');const img=node('img');img.src=tour.thumbnail_url;img.alt='';card.append(img,node('h2',tour.title),node('span',tour.kind==='cached_demo'?t('Cached model + 32 panoramas ↗','Model mẫu + 32 panorama ↗'):tour.format==='studio'?t('3D + panorama · Open tour ↗','3D + panorama · Mở tour ↗'):t('Open tour ↗','Mở tour ↗')));$('#tour-library').append(card);}
+  for(const tour of libraryTours){const card=link('',tour.kind==='cached_demo'?tour.href:(tour.viewer_url||`/viewer.html?tour=${tour.id}`),'library-card');const img=node('img');img.src=tour.thumbnail_url;img.alt='';card.append(img,node('h2',tour.title),node('span',tour.kind==='cached_demo'?t(`Cached model + ${tour.captures} panoramas ↗`,`Model mẫu + ${tour.captures} panorama ↗`):tour.format==='studio'?t('3D + panorama · Open tour ↗','3D + panorama · Mở tour ↗'):t('Open tour ↗','Mở tour ↗')));$('#tour-library').append(card);}
 }
 $('#audio-language').value=narrationLanguage();
 $('#audio-language').onchange=()=>{stop();audioLocale=$('#audio-language').value;if(manifest)select(index);};

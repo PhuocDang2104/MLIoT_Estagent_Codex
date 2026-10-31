@@ -75,6 +75,14 @@ if (input) {
 document.addEventListener('languagechange', () => { toggle?.setAttribute('aria-label', toggle.getAttribute('aria-expanded') === 'true' ? t('Close menu', 'Đóng menu') : t('Open menu', 'Mở menu')); });
 if (toggle) toggle.setAttribute('aria-label', t('Open menu', 'Mở menu'));
 
+// One pause control covers both independent hero renderers, including image failure.
+const heroControl=document.querySelector('#hero-rotation');
+if(heroControl){
+ const reduced=matchMedia('(prefers-reduced-motion: reduce)');let paused=false;
+ const sync=()=>{const stopped=paused||reduced.matches;heroControl.textContent=reduced.matches?t('Still view','Góc nhìn tĩnh'):stopped?t('Resume rotation','Tiếp tục xoay'):t('Pause rotation','Dừng xoay');heroControl.ariaPressed=String(stopped);heroControl.disabled=reduced.matches;document.dispatchEvent(new CustomEvent('heromotionchange',{detail:{paused:stopped}}));};
+ heroControl.onclick=()=>{paused=!paused;sync();};document.addEventListener('heropause',()=>{paused=true;sync();});reduced.addEventListener('change',sync);document.addEventListener('languagechange',sync);sync();
+}
+
 // CC0 Lythwood Lounge is a full 360×180 equirectangular panorama.
 // Projection adapted from studio-panorama.js; provenance in assets/panoramas/README.md.
 function startHeroPanorama(image) {
@@ -95,16 +103,15 @@ function startHeroPanorama(image) {
   if(image.naturalWidth>limit){source=document.createElement('canvas');source.width=limit;source.height=Math.round(limit*image.naturalHeight/image.naturalWidth);source.getContext('2d').drawImage(image,0,0,source.width,source.height);}
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,source);if(gl.getError()!==gl.NO_ERROR)throw new Error('Panorama texture unavailable');
   const location=gl.getUniformLocation(program,'camera'),motion=matchMedia('(prefers-reduced-motion: reduce)');
-  let yaw=.65,paused=false,visible=true,drag=null,frame=0,last=0;
+  let yaw=.65,paused=button.ariaPressed==='true',visible=true,drag=null,frame=0,last=0;
   const draw=()=>{const dpr=Math.min(devicePixelRatio||1,2),w=Math.round(canvas.clientWidth*dpr),h=Math.round(canvas.clientHeight*dpr);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}gl.viewport(0,0,w,h);const aspect=w/h,lens=Math.tan(Math.PI*70/360);gl.uniform3f(location,yaw,lens*Math.min(1,aspect),lens*Math.min(1,1/aspect));gl.drawArrays(gl.TRIANGLES,0,3);};
-  const syncLabel=()=>{const stopped=paused||motion.matches;button.textContent=motion.matches?t('Still view','Góc nhìn tĩnh'):stopped?t('Resume rotation','Tiếp tục xoay'):t('Pause rotation','Dừng xoay');button.ariaPressed=String(stopped);button.disabled=motion.matches;};
   const tick=now=>{frame=0;if(paused||motion.matches||document.hidden||!visible){last=0;return;}if(last)yaw+=(Math.min(now-last,60)/1000)*.035;last=now;draw();frame=requestAnimationFrame(tick);};
-  const sync=()=>{cancelAnimationFrame(frame);last=0;syncLabel();draw();if(!paused&&!motion.matches&&!document.hidden&&visible)frame=requestAnimationFrame(tick);};
+  const sync=()=>{cancelAnimationFrame(frame);last=0;draw();if(!paused&&!motion.matches&&!document.hidden&&visible)frame=requestAnimationFrame(tick);};
   canvas.hidden=false;image.hidden=true;button.hidden=false;sync();
-  button.onclick=()=>{paused=!paused;sync();};
-  canvas.onpointerdown=e=>{paused=true;drag=e.clientX;canvas.setPointerCapture(e.pointerId);sync();};
+  document.addEventListener('heromotionchange',e=>{paused=e.detail.paused;sync();});
+  canvas.onpointerdown=e=>{document.dispatchEvent(new Event('heropause'));drag=e.clientX;canvas.setPointerCapture(e.pointerId);sync();};
   canvas.onpointermove=e=>{if(drag===null)return;yaw-=(e.clientX-drag)*.004;drag=e.clientX;draw();};canvas.onpointerup=canvas.onpointercancel=()=>drag=null;
-  motion.addEventListener('change',sync);window.addEventListener('resize',draw);document.addEventListener('visibilitychange',sync);document.addEventListener('languagechange',syncLabel);
+  motion.addEventListener('change',sync);window.addEventListener('resize',draw);document.addEventListener('visibilitychange',sync);
   new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;sync();}).observe(canvas);
   window.addEventListener('pagehide',()=>cancelAnimationFrame(frame));window.addEventListener('pageshow',sync);
 }
@@ -114,4 +121,10 @@ if(document.querySelector('#demo-hero')){
  const image=document.querySelector('#demo-hero');
  image.onload=()=>{image.hidden=false;state.hidden=true;try{startHeroPanorama(image);}catch{image.hidden=false;document.querySelector('#hero-panorama').hidden=true;document.querySelector('#hero-rotation').hidden=true;}};
  image.onerror=unavailable;image.src='/assets/panoramas/lythwood-lounge-8k.jpg';
+}
+
+if(document.querySelector('#hero-building')){
+ const labelBuilding=()=>document.querySelector('#hero-building').setAttribute('aria-label',t('3D building illustration. Drag or use arrow keys to rotate.','Mô hình toà nhà minh hoạ. Kéo hoặc dùng phím mũi tên để xoay.'));
+ labelBuilding();document.addEventListener('languagechange',labelBuilding);
+ import('/assets/models/building-preview.js').then(module=>module.mountBuildingPreview()).catch(error=>{console.error('Building preview module:',error);document.querySelector('#building-state').textContent=t('3D preview unavailable.','Không tải được mô hình 3D.');});
 }

@@ -10,7 +10,7 @@ This is a lane handback, not a declaration that the full product or deployment i
   rental-seeker/JTBD context. Independent Claude review described old MAIN source, not this browser run.
 - Cwd: `/Users/anhoaithai/Documents/AHT/1. PROJECTS/CodexHackathon/.worktrees/product-sync`.
 - Branch: `integration/product-sync`; base: `da2105de1ada4ae865cd5d293553c28c219a4476`.
-- Implementation commit: **recorded in the handoff follow-up commit**. No merge, push, deploy, auth, SSH,
+- Implementation commit: **`3cb92285055315868585b15db82c8c141b08b641`**. This follow-up only records the verified implementation SHA. No merge, push, deploy, auth, SSH,
   GPU, model download or sub-agent. Main checkout was not modified.
 - Source files: `server/tours/{api,models}.py`, `web/{creator,viewer,tour-common,panorama}.js`,
   `web/{creator,viewer}.html`, `web/tour.css`, `server/assistant/app.py`.

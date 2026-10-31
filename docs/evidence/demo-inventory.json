@@ -1,0 +1,76 @@
+{
+  "inspected_date": "2026-10-31",
+  "source_commit": "6c50572344930f338b83517c908b88edf05dd8f1",
+  "mode": "read_only_remote_zip_headers_hashes_and_public_http",
+  "private_data_read": false,
+  "production_mutations": false,
+  "asset_uploads_or_provider_calls": false,
+  "bundles": [
+    {
+      "path": "/opt/estagent/zind-house-000-threejs-handoff.zip",
+      "bytes": 310757708,
+      "sha256": "734f7053604b67c24701acff3a044e2d33241272149e9596b0eefdca5fc592e3",
+      "runtime_manifest_sha256": "36a04f9d83615fc35809a36b1a6189bd1514523e5e2b56e6ccb2172ab753fe3c",
+      "zip_readable": true,
+      "file_count": 239,
+      "house": "000",
+      "floor": "floor_01",
+      "annotated_spaces": 15,
+      "source_panoramas": 32,
+      "source_panorama_dimensions": [2048, 1024],
+      "source_panorama_total_bytes": 15293072,
+      "all_panorama_sha256_match_metadata": true,
+      "selected_dollhouse_checkpoints": 16,
+      "unique_cached_view_videos": 13,
+      "cached_video_mvhd_seconds_each": 3.917,
+      "all_cached_video_sha256_match_manifest": true,
+      "cached_video_manifest_dimensions": [4096, 2048],
+      "cached_video_manifest_source_upsampled": true,
+      "audio_file_count": 0,
+      "single_public_house_runtime_bytes_including_old_models": 153718691,
+      "duplicate_runtime_roots": ["viewer/public/house", "viewer/dist/house"],
+      "current_model": {
+        "path": "viewer/public/house/dollhouse-studio.glb",
+        "bytes": 9682280,
+        "glb_version": 2,
+        "declared_length_matches": true,
+        "scenes": 1,
+        "meshes": 876,
+        "embedded_images": 12,
+        "provenance": "authored_model_from_ZInD_annotations_with_approximate_fixture_placement"
+      },
+      "dataset_source": "https://github.com/zillow/zind/tree/main/sample_tour/000",
+      "terms_reference": "https://bridgedataoutput.com/zillowterms",
+      "public_redistribution_export_rights": "not_verified",
+      "browser_visual_validation_in_this_task": false,
+      "full_video_decode_in_this_task": false,
+      "imported_into_Estagent_in_this_task": false
+    },
+    {
+      "path": "/opt/estagent/seoul-floorplan-and-model.zip.filepart",
+      "bytes": 230592384,
+      "zip_readable": false,
+      "status": "incomplete_or_unrecognized_do_not_import"
+    }
+  ],
+  "public_library_observation": {
+    "count": 1,
+    "tours": [
+      {
+        "id": "f9c9100bf6effa0f141594dd972bed6d",
+        "title": "DEMO — Không gian Hackathon · 4 điểm panorama",
+        "scene_count": 4,
+        "locale": "vi",
+        "scene_projection": "cylindrical",
+        "audio_status": "unavailable",
+        "source": "previously_published_user_event_photos_not_a_rental_listing"
+      }
+    ]
+  },
+  "limitations": [
+    "No private databases, env, cookies, secrets or shared ops configuration read",
+    "File existence, metadata and headers are not proof of running image-to-3D inference",
+    "Dataset terms page opened but returned no readable text",
+    "Canonical source/demo data unchanged; full import and public rights still require review"
+  ]
+}

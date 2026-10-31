@@ -1,5 +1,10 @@
 # VIDEO EXPORT — handoff cho Tatejo và Deploy
 
+## Cập nhật ưu tiên cho Deploy
+
+Coordinator đã duyệt **VIDEO_EXPORT_RENDERER=ffmpeg**; đọc mục P0 cuối file cho runtime Linux
+768MiB đã probe. Các yêu cầu Node/Chrome/2GiB bên dưới chỉ còn áp dụng cho mode HyperFrames.
+
 ## Kết luận
 
 **PARTIAL: capability local đã xuất/phát MP4 thật; production chưa được nghiệm thu.**
@@ -190,3 +195,54 @@ chưa triển khai hay lách skill bằng renderer thay thế. Export không ph�
 - HTTP/SQLite/WAV/H.264/AAC/HyperFrames/browser thật; crash/quota history metadata là fixture;
   MinIO production và subjective VO quality **chưa kiểm chứng**. `DO_NOT_TRACK=1` cho renderer;
   không gửi feedback/upload composition/provider/cloud render.
+
+## P0 native FFmpeg follow-up — coordinator approved, 2026-10-31
+
+Implementation + Linux evidence SHA: `85b3fb634515a556fc2d8193c2924fd0643925a5`; base `7797ef0`.
+
+Coordinator đã chốt backend native để tránh Node/Chromium trên VM. Dùng
+`VIDEO_EXPORT_RENDERER=ffmpeg`; default `hyperframes` vẫn giữ compatibility và proof trước đó.
+Trong mode ffmpeg, không cần VIDEO_EXPORT_HYPERFRAMES/Node/Chrome; cần ffmpeg/ffprobe trên PATH
+và Pillow11.3.0 + font Manrope đã có. Unknown renderer báo ValueError, không auto fallback.
+Source/ownership/quota/job API/MinIO policy và feature enable flag không thay đổi.
+
+Implementation: Pillow render chữ vào PNG overlay (không nhét user text vào filter/shell),
+FFmpeg fixed argv crop/pan theo aspect, H.264 scene clips tuần tự → concat → AAC mix theo
+source-locale timing. Music .25/.05 giữ ratio .2. Encode/filter threads1, một process render
+mỗi thời điểm, tổng native render timeout180s, ProcessScope termination cũ, cap180s/50MiB cũ.
+Không model/provider/cloud hay cached video placeholder. HF backend không bị thay thế.
+
+Linux candidate riêng trên VM được giao: `estagent-video-native:qa-final`, container
+`estagent-video-native-final`, không port publish, không volume/env/credentials production.
+`deploy/Dockerfile.video-runtime` là candidate độc lập, KHÔNG thay Dockerfile/compose của Deploy:
+Python3.13 slim-bookworm, **apt ffmpeg=7:5.1.9-0+deb12u1**, Pillow11.3.0, FastAPI0.138.0.
+Đây là QA image tối thiểu; production image cần giữ toàn bộ dependency API hiện có.
+
+Evidence native: `tests/exports/evidence/native-*`. Local app regression4 PASS + config1 PASS;
+Linux actual MP4 hai aspect6s H.264/AAC, gain0.200, motion và chữ đã xem, browser playback PASS.
+Container cap **1CPU /768MiB /swap cùng768MiB /pids64**, network none lúc render, không OOM.
+`native-linux-proof.json` ghi ru_maxrss child/self riêng (KiB); không cộng thành peak tổng.
+Kernel không cung cấp memory.peak trong probe này: chỉ claim RSS từng nhóm và hard cgroup bound
+đã chạy, không claim worst-case RAM toàn API hoặc full-service throughput đã nghiệm thu.
+
+Deploy NEED: merge code native, đặt VIDEO_EXPORT_RENDERER=ffmpeg, thêm apt pin trên bookworm;
+Node/Chrome không cần. Áp lifecycle/MinIO MP4/static build patch đã bàn giao nếu chưa áp dụng.
+Giữ feature disabled tới khi integration private MinIO + API smoke hoàn tất; không chặn house-demo.
+Không cần root quyết lại framework; mục NEED chọn FFmpeg phía trên là lịch sử trước quyết định này.
+
+Tái lập candidate: build `-f deploy/Dockerfile.video-runtime`, run với
+`--cpus=1 --memory=768m --memory-swap=768m --pids-limit=64 --network=none`.
+Entrypoint `tests/exports/native_proof.py /output` tạo synthetic input và hai MP4 thật;
+không mount data production. Output/scene logs giữ ngoài Git trong candidate và scratch `/tmp`.
+Local API checks: `VIDEO_EXPORT_RENDERER=ffmpeg QA_OUTPUT_DIR=<new scratch> uv run --python 3.13
+--with pytest --with jsonschema --with-requirements server/assistant/requirements.txt python -m pytest -q tests/exports/test_exports.py tests/exports/test_native_config.py`.
+HF vẫn chạy được bằng env cũ; không rerender HF vì không đổi implementation nhánh đó.
+
+Final native candidate evidence: image `sha256:35668661b315348f3ebb539982630c264b0fb0e16c6fae06347b9b0cecc96349`,
+exit0/OOM=false; child ru_maxrss177628 KiB, Python61744 KiB. Đây không phải peak RSS tổng app.
+Hai file final có SHA256 trùng artifact đã browser phát; `native-linux-artifacts.json` lưu hash.
+MP4 local: `/private/tmp/estagent-video-native-linux-final/{portrait,landscape}.mp4`;
+VM: `/tmp/estagent-video-native-final-result/{portrait,landscape}.mp4`. Đều6s, 720×1280/1280×720,
+H.264/AAC, duck0.200. Container đã exit; không app/edge/volume/credential production bị đổi.
+Native code dùng nguồn/dependency hiện có, Pillow11.3.0 và Manrope OFL; Debian FFmpeg5.1.9 GPL
+thay runtime HF trong mode mới, không bundle binary/media vào Git. H0 vẫn unknown.

@@ -28,9 +28,11 @@ async page => {
   check(before!==await pixels(),'Drag changes rendered camera');
   const dragged=await pixels();await page.locator('#zoom-in').click();check(dragged!==await pixels(),'Zoom changes rendered camera');
   await canvas.focus();const keyBefore=await pixels();await page.keyboard.press('ArrowLeft');check(keyBefore!==await pixels(),'Keyboard camera navigation');
-  await page.locator('#viewer-chat summary').click();const chatBefore=await pixels();await page.locator('#question').fill('Fixture audit; this question is NOT submitted.');await page.locator('#question').press('ArrowLeft');check(chatBefore===await pixels(),'Typing and arrows in chat do not drag camera');
-  await page.keyboard.press('Escape');check(!await page.locator('#viewer-chat').evaluate(e=>e.open),'Escape closes panel');
-  check(await page.evaluate(()=>document.activeElement===document.querySelector('#viewer-chat summary')),'Escape restores focus');
+  check(!await page.locator('#viewer-chat').isVisible(),'Keyless production hides AI chat');
+  check(!await page.locator('#viewer-audio').isVisible(),'Empty audio panel hidden');
+  await page.locator('#viewer-info summary').click();
+  await page.keyboard.press('Escape');check(!await page.locator('#viewer-info').evaluate(e=>e.open),'Escape closes panel');
+  check(await page.evaluate(()=>document.activeElement===document.querySelector('#viewer-info summary')),'Escape restores focus');
   await page.locator('#reset-view').click();await page.locator('#fullscreen').click();await checkedWait(()=>!!document.fullscreenElement);
   check(await page.evaluate(()=>document.fullscreenElement.id==='tour-view'),'Gesture fullscreen includes controls');
   await page.keyboard.press('Escape');await checkedWait(()=>!document.fullscreenElement);check(true,'Escape exits fullscreen');
@@ -44,18 +46,18 @@ async page => {
     check(size.x===0&&size.y===0&&size.w===width&&size.h===height,'Stage fills '+width+' viewport');
     check(size.sw===width&&size.sh===height,'No page overflow '+width);
     check(await page.evaluate(()=>document.elementFromPoint(innerWidth/2,innerHeight*.45).id==='panorama'),'Center remains draggable '+width);
-    await page.screenshot({path:'/private/tmp/estagent-wave3-viewer-evidence/after-'+width+'.png'});
-    for(const id of ['viewer-info','viewer-stops','viewer-audio','viewer-chat']){
+    await page.screenshot({path:'/private/tmp/estagent-demo-ux-production/after-'+width+'.png'});
+    for(const id of ['viewer-info','viewer-stops']){
       await page.locator('#'+id+' summary').click();
       const box=await page.locator('#'+id+' .panel-body').boundingBox();check(box.x>=0&&box.y>=0&&box.x+box.width<=width+.5&&box.y+box.height<=height,'Panel fits '+id+' '+width);
       await page.locator('#'+id+' .panel-close').click();
     }
-    if(width===390){await page.locator('[data-lang="vi"]').click();await page.locator('#viewer-info summary').click();await page.screenshot({path:'/private/tmp/estagent-wave3-viewer-evidence/details-vi-390.png'});await page.locator('#viewer-info .panel-close').click();await page.locator('[data-lang="en"]').click();}
+    if(width===390){await page.locator('[data-lang="vi"]').click();await page.locator('#viewer-info summary').click();await page.screenshot({path:'/private/tmp/estagent-demo-ux-production/details-vi-390.png'});await page.locator('#viewer-info .panel-close').click();await page.locator('[data-lang="en"]').click();}
   }
   await page.emulateMedia({reducedMotion:'reduce'});await page.locator('#previous').click();await checkedWait(()=>!document.querySelector('#panorama').hidden);check(await page.evaluate(()=>document.getAnimations().length===0),'Reduced motion disables scene transition');
   await page.locator('.viewer-back').click();await page.locator('.library-card').first().waitFor();check(!await page.locator('body').evaluate(b=>b.classList.contains('is-immersive')),'Library keeps document layout');
-  await page.screenshot({path:'/private/tmp/estagent-wave3-viewer-evidence/library-320.png'});
-  await page.locator('.library-card').first().click();await page.locator('#tour-view').waitFor();check(await page.locator('body').evaluate(b=>b.classList.contains('is-immersive')),'Library opens immersive viewer');
+  await page.screenshot({path:'/private/tmp/estagent-demo-ux-production/library-320.png'});
+  await page.locator('.library-card[href*="viewer.html?tour="]').first().click();await page.locator('#tour-view').waitFor();check(await page.locator('body').evaluate(b=>b.classList.contains('is-immersive')),'Library opens immersive viewer');
   check(errors.length===0,'No JS errors');
   return {pass:true,source:'actual deployed frontend + API over TLS; GET-only, no local overrides',sizes,checks,errors,methods:[...new Set(requests.map(s=>s.split(' ')[0]))]};
 }

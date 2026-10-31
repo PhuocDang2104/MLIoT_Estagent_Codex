@@ -39,3 +39,14 @@ Với checkout sạch trên main: `git fetch origin` rồi `git pull --ff-only o
 Đang làm ở branch riêng thì giữ thay đổi, ghi base và đưa PR/handback cho integrator; không reset/force để làm sạch main.
 Khi handback phải có branch/SHA, file đã sửa, config/schema thay đổi, test đã chạy, blocker/mock/live và nguồn sử dụng.
 Chạy app tích hợp: `bash scripts/dev.sh`, xem README và docs/INTEGRATION-HANDOFF.md.
+
+## Demo UX integration — latest prepared source
+
+Integration/release owner works in `.worktrees/demo-ux`, branch
+`integration/demo-ux`; root reviews and accepts. Source includes origin/main
+bad806c plus Viewer20c8974, Creator269f2e2 and backend2a84d3e. Shared source paths
+are resolved explicitly; no root user edits are staged. Integrated strict web/AI
+and real localhost create→publish→fullviewport browser/audio checks PASS.
+See `DEMO-UX-HANDOFF.md` and `deploy/evidence/demo-ux-release/`. Before this release,
+actual VM source is bad806c, not the historical e0002f4 entry above. Final deployed
+SHA belongs in the new release manifest after read-only production acceptance.

@@ -1,0 +1,14 @@
+{
+  "manifest_path": "/api/tours/published/f9c9100bf6effa0f141594dd972bed6d",
+  "manifest_sha256": "16d5ab4d0273162273f9741e6a40928de0a50c67843e5c33e0492204a65391d4",
+  "media": {
+    "/api/tours/published/f9c9100bf6effa0f141594dd972bed6d/assets/163814d1385c47e78b42b644ab31b85d": "0d971683a0a6abd9eb589f758070adb0ccbf23d2d36b9674d63044e3a1d8be61",
+    "/api/tours/published/f9c9100bf6effa0f141594dd972bed6d/assets/163814d1385c47e78b42b644ab31b85d?thumbnail=1": "f04f7419540c7850a192ed9b821e78a5406df0a811a5b41743d85bc75d461ed9",
+    "/api/tours/published/f9c9100bf6effa0f141594dd972bed6d/assets/38f0531fe4dcbec3afe3f5c0a87630d7": "0e77cbe127e0aee21da2ee80a7656540f273a99907c3098ce9208e0a73afe886",
+    "/api/tours/published/f9c9100bf6effa0f141594dd972bed6d/assets/38f0531fe4dcbec3afe3f5c0a87630d7?thumbnail=1": "7446893c6ff4e1c7d7715732c4f9f93c2d1e917ed20a804bc270c68f0d68b181",
+    "/api/tours/published/f9c9100bf6effa0f141594dd972bed6d/assets/88f24dd3f4be9366d9f8c867b0dccb2d": "a604706387267e9d2efb6913f77b8da357998b574ee7a83ba793a6be6e862f47",
+    "/api/tours/published/f9c9100bf6effa0f141594dd972bed6d/assets/88f24dd3f4be9366d9f8c867b0dccb2d?thumbnail=1": "e1071feeab56f3c7f4c2fd8f967042d696a2522c4118faf6ec0871076e10df2b",
+    "/api/tours/published/f9c9100bf6effa0f141594dd972bed6d/assets/c464586db912af1e0f68dc66ed05c2be": "6e36be350e00bcbe709a48960416a4f693db04be3b41192ef2a04f71501f60db",
+    "/api/tours/published/f9c9100bf6effa0f141594dd972bed6d/assets/c464586db912af1e0f68dc66ed05c2be?thumbnail=1": "80923d21801337795841d8c1ec28b8bafc22e0ae2e9cd4f371431346e9b8dd49"
+  }
+}

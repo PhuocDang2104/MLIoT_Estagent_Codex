@@ -1,15 +1,18 @@
 async page => {
-  const base='__BASE_URL__';const errors=[],events=[];
+  const base='__BASE_URL__';const errors=[],events=[],chatRequests=[];
+  page.on('request',request=>{if(request.method()==='POST'&&request.url().endsWith('/chat'))chatRequests.push(request.url());});
   const check=(ok,message)=>{if(!ok)throw new Error(message);};
   page.on('pageerror',e=>errors.push(e.message));
   await page.context().route('**/*',route=>route.request().url().startsWith(base+'/')?route.continue():route.abort());
   await page.setViewportSize({width:1280,height:1000});
-  await page.goto(base+'/creator.html');await page.waitForFunction(()=>document.querySelector('#connection')?.textContent.includes('AI'));
+  await page.goto(base+'/creator.html');await page.waitForFunction(()=>document.querySelector('#connection')?.textContent.length);
   await page.locator('[data-lang="en"]').click();
+  await page.locator('#content-locale').selectOption('en');
   await page.locator('#photos').setInputFiles(['__IMAGE_ONE__','__IMAGE_TWO__']);
   await page.locator('#send').click();await page.locator('.scene-card').nth(1).waitFor();
   await page.waitForFunction(()=>!document.querySelector('#send').disabled);
   const draftURL=page.url();
+  await page.locator('.creator-audio summary').click();
   const sceneIDs=await page.locator('.scene-card').evaluateAll(cards=>cards.map(c=>c.dataset.scene));
   const attach=async(kind,file,scene,transcript)=>{
     await page.locator('#audio-kind').selectOption(kind);
@@ -27,7 +30,7 @@ async page => {
   const doc=await attach('narration','__VOICE_TWO__',sceneIDs[1],'Checkpoint two: synthetic 660 Hz tone, not speech.');
   check(doc.audio.status==='ready'&&doc.revision===4,'Audio availability/revision wrong');
   check(!await page.locator('#reviewed').isChecked(),'Audio update did not clear review');
-  await page.reload();await page.locator('.attached-audio').nth(2).waitFor();
+  await page.reload();await page.locator('.creator-audio summary').click();await page.locator('.attached-audio').nth(2).waitFor();
   const previewPath=await page.locator('#preview').getAttribute('href');
   // Private preview reads real WAV over the same-origin backend.
   const preview=await page.context().newPage();await preview.goto(base+previewPath);
@@ -36,7 +39,7 @@ async page => {
   await preview.close();
   await page.locator('#reviewed').check();const publication=page.waitForResponse(r=>r.url().endsWith('/publish'));
   await page.locator('#publish').click();const published=await (await publication).json();
-  await page.locator('#published-link a').click();await page.locator('#scene-title').waitFor();
+  await page.locator('#published-link a[href^="/viewer.html"]').click();await page.locator('#scene-title').waitFor();
   await page.evaluate(()=>{
     window.__audioEvents=[];
     for(const id of ['narration-track','music-track'])for(const event of ['playing','pause','ended','error','loadedmetadata'])document.getElementById(id).addEventListener(event,()=>window.__audioEvents.push({id,event,time:document.getElementById(id).currentTime}));
@@ -58,24 +61,17 @@ async page => {
   await page.waitForFunction(url=>document.querySelector('#narration-track').getAttribute('src')===url&&document.querySelector('#narration-track').currentTime>.1,published.audio.narration[1].track.url);
   state=await read();check(state['narration-track'].duration===4,'Rapid navigation did not choose second recording');check(await page.locator('#narration-track').count()===1,'Overlapping narration elements');
   check((await page.locator('#subtitle').innerText()).includes('Checkpoint two'),'Transcript not synced to selected scene');
-  await page.locator('#viewer-chat summary').click();
-  await page.waitForFunction(()=>document.querySelector('#narration-track').paused&&document.querySelector('#music-track').paused,{},{timeout:1500});
-  state=await read();check(state['narration-track'].paused&&state['music-track'].paused,'Chat open did not stop audio');
-  await page.locator('#question').fill('What is known about this current stop?');
-  const chatPending=page.waitForResponse(r=>r.url().endsWith('/chat')&&r.request().method()==='POST');
-  await page.locator('#ask').click();const chat=await chatPending;
-  check(chat.status()===503,'Keyless server must honestly return 503');
-  check(chat.request().postDataJSON().scene_id===sceneIDs[1],'Current scene_id not posted');
-  check((await page.locator('#answer').innerText()).length>0,'503 message not visible');
-  await page.screenshot({path:'tests/immersive/evidence/chat-keyless-503.png'});
-  await page.locator('#viewer-chat summary').click();await page.waitForTimeout(200);check((await read())['narration-track'].paused,'Chat close automatically resumed narration');
+  check(!await page.locator('#viewer-chat').isVisible(),'Keyless viewer exposes AI chat');
+  check(chatRequests.length===0,'Keyless flow sent a chat request');
+  await page.locator('#pause').click();
+  check((await read())['narration-track'].paused,'Pause did not preserve selected narration');
   if(!await page.locator('#viewer-audio').evaluate(el=>el.open))await page.locator('#viewer-audio summary').click();await page.locator('#play').click();await page.waitForFunction(()=>!document.querySelector('#narration-track').paused);
   await page.locator('#audio-seek').fill('3.7');await page.locator('#audio-seek').dispatchEvent('input');
   await page.waitForFunction(()=>document.querySelector('#narration-track').ended);
   state=await read();check(Math.abs(state['music-track'].volume-.4)<.001&&!state['music-track'].paused,'Music not restored at narration end');
-  await page.locator('[data-lang="vi"]').click();state=await read();check(state['narration-track'].paused&&state['music-track'].paused&&!state['narration-track'].src,'Locale mismatch retained wrong-language recording');
-  check((await page.locator('#audio-state').innerText()).includes('ngôn ngữ'),'Missing locale not disclosed');
-  await page.locator('[data-lang="en"]').click();
+  await page.locator('#audio-language').selectOption('vi');state=await read();check(state['narration-track'].paused&&state['music-track'].paused&&!state['narration-track'].src,'Locale mismatch retained wrong-language recording');
+  check(/language|ngôn ngữ/.test(await page.locator('#audio-state').innerText()),'Missing locale not disclosed');
+  await page.locator('#audio-language').selectOption('en');
   await page.screenshot({path:'tests/immersive/evidence/viewer-recorded-audio.png',fullPage:true});
   for(const width of [390,320]){await page.setViewportSize({width,height:844});check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`Audio controls overflow at ${width}`);}
   await page.locator('.audio-panel').screenshot({path:'tests/immersive/evidence/audio-controls-mobile.png'});
@@ -90,7 +86,7 @@ async page => {
   await page.locator('#next').click();await page.waitForFunction(()=>document.querySelector('#scene-counter').textContent==='2 / 2');
   await page.context().unroute(failedURL);
   // Remove narration from a new draft revision; the earlier published recording remains readable.
-  await page.goto(draftURL);await page.locator('.attached-audio').nth(2).waitFor();
+  await page.goto(draftURL);await page.locator('.creator-audio summary').click();await page.locator('.attached-audio').nth(2).waitFor();
   const removal=page.waitForResponse(r=>r.url().endsWith('/audio')&&r.request().method()==='PUT');
   await page.locator('.attached-audio').nth(1).getByRole('button',{name:'Remove',exact:true}).click();
   check((await removal).status()===200,'Remove narration failed');await page.waitForFunction(()=>!document.querySelector('#attach-audio').disabled);
@@ -100,5 +96,5 @@ async page => {
   check((await page.request.get(base+published.audio.narration[0].track.url)).status()===200,'Draft edit destroyed public audio');
   await page.evaluate(data=>localStorage.setItem('audio-evidence',JSON.stringify(data)),{publishedID:published.id,draftURL,audioURL:published.audio.narration[0].track.url});
   check(errors.length===0,`JavaScript errors: ${errors.join('; ')}`);
-  return {pass:true,realMediaDecode:true,durations:{voiceOne:8,voiceTwo:4,music:30},duck:{base:.25,duringVoice:.05,changedBase:.4,changedDuringVoice:.08},pauseResume:true,rapidSceneChange:true,independentMuteGain:true,chatCancelNoAutoResume:true,currentScenePOST:chat.request().postDataJSON().scene_id===sceneIDs[1],keyless503:chat.status()===503,localeMismatch:true,missingSceneRecording:true,loadFailure:'one WAV network request intentionally aborted; navigation still works',audioSource:'Synthetic sine tones, not speech/music; actual local WAV uploads and HTMLMediaElement playback',events,errors};
+  return {pass:true,realMediaDecode:true,durations:{voiceOne:8,voiceTwo:4,music:30},duck:{base:.25,duringVoice:.05,changedBase:.4,changedDuringVoice:.08},pauseResume:true,rapidSceneChange:true,independentMuteGain:true,keylessChatHidden:true,keylessChatRequests:chatRequests.length,localeMismatch:true,missingSceneRecording:true,loadFailure:'one WAV network request intentionally aborted; navigation still works',audioSource:'Synthetic sine tones, not speech/music; actual local WAV uploads and HTMLMediaElement playback',events,errors};
 }

@@ -28,7 +28,7 @@ phân biệt được fix với reproduce sai; tiếp tục phần độc lập 
 
 ## Trạng thái vòng này
 
-- Production source `37962a3`, image `7bcd22d5…`, https://estagent.duckdns.org: Viewer glass,2CTA landing, MinIO và Studio runtime đã deploy/kiểm thật. Bằng chứng đầy đủ: `deploy/evidence/wave3-release/release.json`, `status/web.md`.
+- Production source `e0002f4`, image `ea236835…`, https://estagent.duckdns.org: Viewer glass,2CTA landing, MinIO và Studio runtime đã deploy/kiểm thật. Bằng chứng đầy đủ: `deploy/evidence/wave3-release/release.json`, `status/web.md`.
 - Main đồng thời nhận Studio472280f; ancestry guard chặn push cũ. Thái xác nhận được gộp, release lane merge và chạy lại AI/web strict +26rollback tests trước clean artifact/cutover. Không force-push hoặc đụng root `.env.example` riêng user.
 - E2E design c33e843 chỉ docs/inventory metadata được merge sau rollout; ZIP/dataset không publish, rights public/export chưa chốt. TTS EN/VI và Video Export được giao lane khác cho phiên bản kế tiếp.
 - Không paid AI/geometry/3D reconstruction claim; giữ keyless và guards. Screenshot demo thật local-only; không stage/publish env/DB/user video.

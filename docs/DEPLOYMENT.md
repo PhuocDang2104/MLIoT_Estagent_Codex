@@ -250,3 +250,10 @@ Production browser passed actual deployed files without overrides. Harness fixes
 only: timer polling for the same animation-settled condition, and scene selection
 computed from manifest.start_scene_id (the demo starts at index1). Neither change
 modified the application to satisfy an invented test assumption.
+
+Follow-up CSS-only2c57fbd accepted after the main wave3 handback: latest production
+source e0002f440c05a3b3d3a3b06f53108867152c9f1a, image ea236835… (full values in
+release.json). Web strict + actual production Viewer1440/390/320 panels, fullscreen,
+drag/keyboard PASS; exact CSS/landing source and original manifest/8asset hashes
+verified. Backend/config unchanged from37962a3; that runtime-aware release is kept
+as rollback baseline. No additional data migration or TTS/Video work.

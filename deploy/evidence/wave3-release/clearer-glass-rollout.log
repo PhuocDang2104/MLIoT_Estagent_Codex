@@ -1,0 +1,62 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.53kB done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/python:3.13-slim
+#2 DONE 1.2s
+
+#3 [ 1/12] FROM docker.io/library/python:3.13-slim@sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 1.75MB 0.0s done
+#4 DONE 0.1s
+
+#5 [ 4/12] RUN pip install --no-cache-dir -r server/assistant/requirements.txt     && groupadd --gid 10001 assistant     && useradd --uid 10001 --gid assistant --no-create-home assistant     && mkdir /data && chown assistant:assistant /data
+#5 CACHED
+
+#6 [ 2/12] WORKDIR /app
+#6 CACHED
+
+#7 [ 3/12] COPY server/assistant/requirements.txt /app/server/assistant/requirements.txt
+#7 CACHED
+
+#8 [ 5/12] COPY server/assistant/ /app/server/assistant/
+#8 CACHED
+
+#9 [ 7/12] COPY server/tours/ /app/server/tours/
+#9 CACHED
+
+#10 [ 8/12] COPY server/limits.py /app/server/limits.py
+#10 CACHED
+
+#11 [ 9/12] COPY server/storage.py /app/server/storage.py
+#11 CACHED
+
+#12 [ 6/12] COPY server/creator/ /app/server/creator/
+#12 CACHED
+
+#13 [10/12] COPY server/object_storage.py /app/server/object_storage.py
+#13 CACHED
+
+#14 [11/12] COPY web/ /app/web/
+#14 DONE 0.1s
+
+#15 [12/12] COPY deploy/entrypoint.py deploy/smoke.py deploy/backup_data.py /app/deploy/
+#15 DONE 0.2s
+
+#16 exporting to image
+#16 exporting layers 0.1s done
+#16 writing image sha256:ea236835ad8dd33832f9a2acf0e855c7eb290de049cb19993f02b0385d310bbd 0.0s done
+#16 naming to docker.io/library/estagent-assistant:e0002f440c05a3b3d3a3b06f53108867152c9f1a
+#16 naming to docker.io/library/estagent-assistant:e0002f440c05a3b3d3a3b06f53108867152c9f1a 0.0s done
+#16 DONE 0.1s
+ Container estagent-assistant-assistant-1 Recreate 
+ Container estagent-assistant-assistant-1 Recreated 
+ Container estagent-assistant-assistant-1 Starting 
+ Container estagent-assistant-assistant-1 Started 
+ Container estagent-assistant-assistant-1 Waiting 
+{"source": "e0002f440c05a3b3d3a3b06f53108867152c9f1a", "image": "sha256:ea236835ad8dd33832f9a2acf0e855c7eb290de049cb19993f02b0385d310bbd", "healthy": true, "change": "glass CSS only; backend/config/data unchanged"}
+ Container estagent-assistant-assistant-1 Healthy 

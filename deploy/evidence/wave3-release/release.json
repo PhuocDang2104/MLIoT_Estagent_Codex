@@ -1,7 +1,7 @@
 {
-  "source_sha": "37962a3d6ab198dfde7e336e9c61d697a47a0a3f",
-  "image": "sha256:7bcd22d5d901564823eda926585c413a9f8a77ea789dbb4b728ac9dabd5d0c71",
-  "artifact_sha256": "8d146a0a74ef68061ca79b7c21d868a3df5f78cdca629ba0ccce01d5de80aed4",
+  "source_sha": "e0002f440c05a3b3d3a3b06f53108867152c9f1a",
+  "image": "sha256:ea236835ad8dd33832f9a2acf0e855c7eb290de049cb19993f02b0385d310bbd",
+  "artifact_sha256": "be8146eae00d322f8cefeb3347db348d7d08185cd857a76ac75744e1158cf2fe",
   "url": "https://estagent.duckdns.org",
   "source_clean_main_at_build": true,
   "health": "healthy",
@@ -32,5 +32,8 @@
     "geometry reconstruction",
     "physical iOS QA"
   ],
-  "dataset_zip_published": false
+  "dataset_zip_published": false,
+  "backend_acceptance_source_sha": "37962a3d6ab198dfde7e336e9c61d697a47a0a3f",
+  "latest_patch": "2c57fbd: viewer glass opacity only; backend/deploy config unchanged",
+  "latest_css_viewer1440_390_320_pass": true
 }

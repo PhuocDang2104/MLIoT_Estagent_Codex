@@ -150,6 +150,9 @@ def build_graph(provider, saver, emit, read_asset, write_audio, write_model, wor
             adjacency[link['source']].append(link['target'])
             hotspots.append({**link, 'label': rooms[link['target']]['label'],
                              'target_yaw': rooms[link['target']]['yaw']})
+        priority = {r['checkpoint_id']:i for i,r in enumerate(s['rooms'])}
+        for targets in adjacency.values():
+            targets.sort(key=priority.__getitem__)
         first = s['rooms'][0]['checkpoint_id']
         itinerary, visited = [first], {first}
         def visit(current):

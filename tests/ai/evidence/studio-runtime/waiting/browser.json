@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "fixture": "finite provider, no geometry worker, synthetic PNG",
+  "checks": [
+    "upload",
+    "real HTTP/LangGraph/SQLite",
+    "spatial review",
+    "SSE",
+    "reload",
+    "completed cards collapsed; user expansion retained",
+    "publish blocked without worker",
+    "preview placeholder",
+    "390/320 no overflow",
+    "separate browser session",
+    "pre-geometry chat proposal and confirmed spatial fork"
+  ],
+  "page_errors": [],
+  "live_openai": false
+}

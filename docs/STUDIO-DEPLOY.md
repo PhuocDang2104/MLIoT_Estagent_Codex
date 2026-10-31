@@ -60,10 +60,10 @@ Không in env/key ra terminal/log. Giữ preview nếu chưa có ngân sách liv
 PREVIOUS_ENV=/opt/estagent/runtime/preview-346a0ba.env
 test -f "$PREVIOUS_ENV"
 PREVIOUS_IMAGE=$(docker inspect --format '{{.Image}}' estagent-assistant-assistant-1)
-ENV="/opt/estagent/runtime/studio-$SHA.env"
-test ! -e "$ENV"
-install -m 600 "$PREVIOUS_ENV" "$ENV"
-python3 - "$ENV" "$SHA" <<'PY'
+STUDIO_ENV="/opt/estagent/runtime/studio-$SHA.env"
+test ! -e "$STUDIO_ENV"
+install -m 600 "$PREVIOUS_ENV" "$STUDIO_ENV"
+python3 - "$STUDIO_ENV" "$SHA" <<'PY'
 from pathlib import Path
 import sys
 p = Path(sys.argv[1])
@@ -73,8 +73,8 @@ p.write_text('\n'.join('ASSISTANT_IMAGE=estagent-assistant:'+sys.argv[2]
     if line.startswith('ASSISTANT_IMAGE=') else line for line in lines)+'\n')
 p.chmod(0o600)
 PY
-docker compose --env-file "$ENV" -f deploy/compose.yaml config --quiet
-docker compose --env-file "$ENV" -f deploy/compose.yaml run --rm --no-deps --entrypoint python assistant /app/deploy/entrypoint.py --check-config
+docker compose --env-file "$STUDIO_ENV" -f deploy/compose.yaml config --quiet
+docker compose --env-file "$STUDIO_ENV" -f deploy/compose.yaml run --rm --no-deps --entrypoint python assistant /app/deploy/entrypoint.py --check-config
 printf '%s\n' "$PREVIOUS_IMAGE" > "$RELEASE/PREVIOUS_IMAGE"
 chmod 600 "$RELEASE/PREVIOUS_IMAGE"
 ```
@@ -91,10 +91,10 @@ Backup cần dung lượng tương đương dữ liệu đang có; kiểm dung l
 
 ```bash
 df -h /var/lib/docker
-docker compose --env-file "$ENV" -f deploy/compose.yaml stop -t 120 assistant
-docker compose --env-file "$ENV" -f deploy/compose.yaml run --rm --no-deps --entrypoint python assistant /app/deploy/backup_data.py --root /data --label "pre-$SHA"
-docker compose --env-file "$ENV" -f deploy/compose.yaml up -d --no-build --wait --wait-timeout 180 assistant
-docker compose --env-file "$ENV" -f deploy/compose.yaml exec -T assistant python /app/deploy/smoke.py --base-url http://127.0.0.1:5180 --origin https://estagent.duckdns.org --check-static
+docker compose --env-file "$STUDIO_ENV" -f deploy/compose.yaml stop -t 120 assistant
+docker compose --env-file "$STUDIO_ENV" -f deploy/compose.yaml run --rm --no-deps --entrypoint python assistant /app/deploy/backup_data.py --root /data --label "pre-$SHA"
+docker compose --env-file "$STUDIO_ENV" -f deploy/compose.yaml up -d --no-build --wait --wait-timeout 180 assistant
+docker compose --env-file "$STUDIO_ENV" -f deploy/compose.yaml exec -T assistant python /app/deploy/smoke.py --base-url http://127.0.0.1:5180 --origin https://estagent.duckdns.org --check-static
 curl --fail --silent --show-error https://estagent.duckdns.org/api/studio/health
 curl --fail --silent --show-error --output /dev/null https://estagent.duckdns.org/business/create
 ```

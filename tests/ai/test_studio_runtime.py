@@ -9,7 +9,7 @@ import pytest
 from fastapi.testclient import TestClient
 from server.creator.runtime import RuntimeLock, DurableQueue
 from server.creator.worker import HTTPGeometryWorker, WorkerPending
-from tests.ai.creator_fixtures import Provider, Worker
+from tests.ai.creator_fixtures import Provider, Worker, png
 from tests.ai.test_creator import app, draft, post, settled, spatial, COOKIE, HEADERS
 
 
@@ -122,6 +122,27 @@ def test_navigation_and_semantic_routes_are_selective(tmp_path):
         grandchild = settled(client,apply(client,child,edit,'rename-apply').json()['id'])
         assert grandchild['review']['kind'] == 'final' and provider.calls.count('script') == 2
         assert provider.calls.count('observe') == 2
+
+
+def test_navigation_prefers_requested_order_over_original_link_order(tmp_path):
+    provider = Editor()
+    with TestClient(app(tmp_path,provider,Worker())) as client:
+        pid = draft(client)
+        assert client.post(f'/api/studio/projects/{pid}/assets?name=third.png',content=png(3),headers=HEADERS).status_code == 201
+        gid = post(client,f'/projects/{pid}/generations',{'request_id':'three-room-start'}).json()['id']
+        g = settled(client,gid)
+        review = spatial(g)
+        review['connections'] = [{'source':a,'target':b,'yaw':0,'pitch':0}
+            for a in ('cp01','cp02','cp03') for b in ('cp01','cp02','cp03') if a != b]
+        assert post(client,f'/generations/{gid}/review',review).status_code == 202
+        g = settled(client,gid)
+        provider.plan['order'] = ['cp03','cp02','cp01']
+        edit = proposal(client,g).json()
+        child = settled(client,apply(client,g,edit).json()['id'])
+        service = client.app.state.creator
+        route = service.graph.get_state(service.config(child['id'])).values['itinerary']
+        assert list(dict.fromkeys(route)) == provider.plan['order']
+        assert provider.calls.count('script') == 1 and provider.calls.count('observe') == 3
 
 
 def test_untrusted_edits_stale_revision_origin_and_owner(tmp_path):

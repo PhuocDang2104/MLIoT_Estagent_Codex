@@ -3,9 +3,9 @@
 ## Studio runtime framework — 2026-10-31
 
 Codex-assisted changes reuse main Studio/legacy tour editing, existing LangGraph,
-SQLite/FastAPI/OpenAI/httpx/Pydantic and site theme. New: durable outbox, OS lock,
+SQLite/FastAPI/OpenAI/httpx/Pydantic/Pillow and site theme. New: durable outbox, OS lock,
 versioned confirmed edit routing, optional async geometry HTTP adapter, health,
-offline backup helper and operator runbook. No new app dependency or external
+offline backup helper, metadata-free new uploads and operator runbook. No new app dependency or external
 asset/source copied. Official Structured Outputs documentation informed the
 OpenAI schema integration. QA uses generated PNG/WAV/triangle GLB and mocked SDK/
 worker transport; zero paid calls, no user property data. H0 unconfirmed; no

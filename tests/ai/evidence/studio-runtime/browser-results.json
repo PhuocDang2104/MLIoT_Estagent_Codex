@@ -1,0 +1,17 @@
+[
+  {
+    "mode": "full",
+    "status": "PASS",
+    "paid_calls": 0
+  },
+  {
+    "mode": "waiting",
+    "status": "PASS",
+    "paid_calls": 0
+  },
+  {
+    "mode": "keyless",
+    "status": "PASS",
+    "paid_calls": 0
+  }
+]

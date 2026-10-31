@@ -55,7 +55,7 @@ Deploy: [STUDIO-DEPLOY.md](STUDIO-DEPLOY.md).
 |---|---|---|
 | Yaw hoặc connections | spatial_review → build_model → mapping → semantic → navigation → narration | Brief/observations; geometry/anchors cũ bị vô hiệu |
 | Label/summary | semantic → navigation → narration | Geometry, brief, vision |
-| Order/start | navigation → narration | Geometry và script; không gọi LLM viết lại |
+| Order/start | navigation → narration | Geometry/script; ưu tiên thứ tự mới trong các đường nối đã duyệt, không tạo đường nối giả |
 | Script/introduction | narration → final_review | Geometry/vision; áp dụng script xác nhận, không gọi LLM viết lại |
 
 Sau final review, chỉ tái sử dụng audio khi checkpoint và text khớp chính xác

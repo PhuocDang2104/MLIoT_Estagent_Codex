@@ -1,0 +1,221 @@
+{
+  "node_ids": [
+    "__start__",
+    "edit",
+    "understand",
+    "scene",
+    "spatial",
+    "spatial_review",
+    "build_model",
+    "mapping",
+    "semantic",
+    "navigation",
+    "narration",
+    "final_review",
+    "voice",
+    "assemble",
+    "__end__"
+  ],
+  "edges": [
+    {
+      "source": "assemble",
+      "target": "__end__",
+      "conditional": false
+    },
+    {
+      "source": "build_model",
+      "target": "mapping",
+      "conditional": false
+    },
+    {
+      "source": "mapping",
+      "target": "semantic",
+      "conditional": false
+    },
+    {
+      "source": "narration",
+      "target": "final_review",
+      "conditional": false
+    },
+    {
+      "source": "navigation",
+      "target": "narration",
+      "conditional": false
+    },
+    {
+      "source": "semantic",
+      "target": "navigation",
+      "conditional": false
+    },
+    {
+      "source": "spatial",
+      "target": "spatial_review",
+      "conditional": false
+    },
+    {
+      "source": "understand",
+      "target": "scene",
+      "conditional": false
+    },
+    {
+      "source": "__start__",
+      "target": "edit",
+      "conditional": true
+    },
+    {
+      "source": "__start__",
+      "target": "understand",
+      "conditional": true
+    },
+    {
+      "source": "edit",
+      "target": "narration",
+      "conditional": true
+    },
+    {
+      "source": "edit",
+      "target": "navigation",
+      "conditional": true
+    },
+    {
+      "source": "edit",
+      "target": "semantic",
+      "conditional": true
+    },
+    {
+      "source": "edit",
+      "target": "spatial_review",
+      "conditional": true
+    },
+    {
+      "source": "scene",
+      "target": "scene",
+      "conditional": true
+    },
+    {
+      "source": "scene",
+      "target": "spatial",
+      "conditional": true
+    },
+    {
+      "source": "spatial_review",
+      "target": "__end__",
+      "conditional": true
+    },
+    {
+      "source": "spatial_review",
+      "target": "build_model",
+      "conditional": true
+    },
+    {
+      "source": "final_review",
+      "target": "__end__",
+      "conditional": true
+    },
+    {
+      "source": "final_review",
+      "target": "voice",
+      "conditional": true
+    },
+    {
+      "source": "voice",
+      "target": "assemble",
+      "conditional": true
+    },
+    {
+      "source": "voice",
+      "target": "voice",
+      "conditional": true
+    }
+  ],
+  "graph_source_sha256": "fe5372a66a009c5f961c343997f3f3bdd7666975a659136d7e51f1b85152a016",
+  "source": "StateGraph.builder.edges + branches.ends; Graph.draw_mermaid()",
+  "compiled_visualization_edges": [
+    {
+      "source": "__start__",
+      "target": "edit"
+    },
+    {
+      "source": "__start__",
+      "target": "understand"
+    },
+    {
+      "source": "build_model",
+      "target": "mapping"
+    },
+    {
+      "source": "edit",
+      "target": "narration"
+    },
+    {
+      "source": "edit",
+      "target": "navigation"
+    },
+    {
+      "source": "edit",
+      "target": "semantic"
+    },
+    {
+      "source": "edit",
+      "target": "spatial_review"
+    },
+    {
+      "source": "final_review",
+      "target": "voice"
+    },
+    {
+      "source": "mapping",
+      "target": "semantic"
+    },
+    {
+      "source": "narration",
+      "target": "final_review"
+    },
+    {
+      "source": "navigation",
+      "target": "narration"
+    },
+    {
+      "source": "scene",
+      "target": "scene"
+    },
+    {
+      "source": "scene",
+      "target": "spatial"
+    },
+    {
+      "source": "semantic",
+      "target": "navigation"
+    },
+    {
+      "source": "spatial",
+      "target": "spatial_review"
+    },
+    {
+      "source": "spatial_review",
+      "target": "build_model"
+    },
+    {
+      "source": "understand",
+      "target": "scene"
+    },
+    {
+      "source": "voice",
+      "target": "assemble"
+    },
+    {
+      "source": "voice",
+      "target": "voice"
+    },
+    {
+      "source": "assemble",
+      "target": "__end__"
+    },
+    {
+      "source": "final_review",
+      "target": "__end__"
+    }
+  ],
+  "executed": false,
+  "live_api_calls": 0
+}

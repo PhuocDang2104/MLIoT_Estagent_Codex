@@ -60,3 +60,6 @@ retain successful file progress in the current submission, and honor bounded
 Retry-After waits for upload 429 responses. No AI/narration caps or schema changes.
 Acceptance: real HTTP upload retry/browser regression, admission-limit tests,
 web gate and guarded production update with existing data preserved.
+
+Upload follow-up completed at `e12582f`; evidence and exact retry behavior are in
+`UPLOAD-RETRY-FIX.md`. No paid calls; all existing uploaded asset rows preserved.

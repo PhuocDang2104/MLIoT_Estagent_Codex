@@ -322,3 +322,7 @@ Studio is the default `/business/create`; photo tours remain `/business/photos`.
 Seoul furnished sample is `/demos/seoul-apartment`. Astra High / Terra / Sol / TTS
 connections verified; key remains backend-only with request caps. Existing tours
 and ZInD data preserved. See [release evidence and rollback](STUDIO-SEOUL-RELEASE.md).
+
+## Upload retry correction — 2026-10-31
+
+Current production source `e12582f`, Studio/Blender ready. Upload allowance24/minute, saved-file retry progress and bounded Retry-After countdown. AI caps unchanged; all existing uploads/tours preserved. See [incident, validation and rollback](UPLOAD-RETRY-FIX.md).

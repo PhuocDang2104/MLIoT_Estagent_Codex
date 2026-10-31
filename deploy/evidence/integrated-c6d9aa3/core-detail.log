@@ -1,0 +1,7 @@
+..s                                                                      [100%]
+==================================== PASSES ====================================
+=========================== short test summary info ============================
+PASSED tests/core/test_blender_worker.py::test_disabled_and_missing_worker
+PASSED tests/core/test_blender_worker.py::test_worker_failure_and_timeout_never_mark_complete
+SKIPPED [1] tests/core/test_blender_worker.py:39: Install Blender or set STUDIO_BLENDER_EXECUTABLE for real CLI acceptance
+2 passed, 1 skipped in 0.69s

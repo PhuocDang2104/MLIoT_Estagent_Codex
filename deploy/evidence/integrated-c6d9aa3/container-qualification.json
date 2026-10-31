@@ -1,0 +1,37 @@
+{
+  "application": {
+    "pass": true,
+    "fixture": "Synthetic planner and silence WAV, real Debian Blender, no API calls; isolated tmpfs DB only",
+    "default_studio_route": true,
+    "legacy_photo_route": true,
+    "auto_geometry_configured": true,
+    "geometry_final_review_and_publish": true,
+    "blender_version": "Blender 3.4.1",
+    "worker_timeout_seconds": 180,
+    "duration_seconds": 3.546,
+    "glb_bytes": 678240,
+    "glb_sha256": "c433337b8d4f7b7a87f3e2be603b438ec41297c7443508a5ee510564c8125416",
+    "meshes": 74,
+    "images": 3,
+    "memory_peak": null,
+    "memory_limit": "1073741824",
+    "cpu_limit": "100000 100000",
+    "pids_limit": "128",
+    "pids_peak": null,
+    "external_calls": 0,
+    "production_data_mounted": false,
+    "synthetic_package_immutable": true
+  },
+  "runtime": {
+    "source": "c6d9aa3f363576b4839b3041e030f4196d5e8b00",
+    "image": "sha256:bd91d278e301413d07515f563a5750c8ac22a16dd6c94850779316993b39b1bb",
+    "exit_code": 0,
+    "oom_killed": false,
+    "memory": 1073741824,
+    "nano_cpus": 1000000000,
+    "pids_limit": 128,
+    "network": "none",
+    "read_only": true,
+    "production_cutover": false
+  }
+}

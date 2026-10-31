@@ -1,0 +1,24 @@
+{
+  "candidate": "c6d9aa3f363576b4839b3041e030f4196d5e8b00",
+  "candidate_image": "sha256:bd91d278e301413d07515f563a5750c8ac22a16dd6c94850779316993b39b1bb",
+  "contains_landing_correction": "c73c636ba71381decbf842e15801e9af43d26762",
+  "contains_teammate": "80f477b36aa9886516fe8f5225af9ca54e132c0d",
+  "artifact_sha256": "68970c641dd0281fff1dcf1122add5e893ba4f3046ace27a04450d59ef503f8e",
+  "build_args": {
+    "WITH_BLENDER": "1"
+  },
+  "candidate_deployed": false,
+  "observed_external_production_source": "80f477b36aa9886516fe8f5225af9ca54e132c0d",
+  "observed_external_production_image": "sha256:1123f15664ee4979ae6778a293a8616ac2a4c6af0ddcf96e94ad7745c6ccd45a",
+  "production_health": "healthy",
+  "gate_command_pass": true,
+  "local_core_actual": "2 passed, 1 skipped (Blender unavailable locally)",
+  "target_blender_qualification": "PASS,1CPU/1GiB/pids128,networknone,read-only,tmpfs-only",
+  "blocking_need": [
+    "Production lease handback from external writer",
+    "Legacy standalone snapshot/candidate validation interrupted because external writer replaced production container; obtain current baseline/backup",
+    "Final candidate HTTP/browser acceptance and controlled cutover remain pending"
+  ],
+  "provider_calls_by_release": 0,
+  "budget_note": "40 provider attempts is not a USD cap"
+}

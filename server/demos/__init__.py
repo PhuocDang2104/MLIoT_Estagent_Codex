@@ -72,7 +72,7 @@ def install_demos(app, env, web):
     def catalog_list():
         result = []
         if catalog:
-            result.append({'id': DEMO_ID, 'kind': 'cached_demo', 'title': 'NHÀ DEMO — Nhà mẫu 000',
+            result.append({'id': DEMO_ID, 'kind': 'cached_demo', 'title': 'DEMO HOUSE — Sample home 000',
                  'href': f'/demos/{DEMO_ID}', 'thumbnail_url': f'/api/demos/{DEMO_ID}/assets/{catalog["thumbnail"]}',
                  'rooms': 15, 'captures': 32, 'markers': 16, 'source_mode': 'user_provided_cached',
                  'rights_status': 'not_independently_verified', 'audio_available': bool(catalog.get('intro'))})

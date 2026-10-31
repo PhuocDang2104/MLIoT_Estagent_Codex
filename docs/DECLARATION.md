@@ -264,3 +264,10 @@ Only packaging, compressed GLB and a Three.js viewer are new integration work.
 glTF Transform 4.5.0 produces the compressed derivative; meshoptimizer 1.2.0 MIT
 decoder is vendored. No claim of fresh AI reconstruction or independently
 verified dataset licensing. Source ZIP/media stay outside Git. See SEOUL-SAMPLE.md.
+
+English demo defaults: Codex-assisted UI translation and preselection of the
+same eight user-supplied Seoul panorama files. No new imagery, furniture, model
+generation or provider requests were used for this change. Source bytes retain
+their capture identities. Existing multilingual user content is preserved.
+Verification uses real local uploads with source assets supplied outside Git;
+provider generation remains an explicit user action. H0 remains unconfirmed.

@@ -7,19 +7,19 @@ from .package import Room, Narration, Geometry
 from .scene_plan import validate_plan
 
 STEPS = {
-    'edit': 'Áp dụng chỉnh sửa đã xác nhận',
-    'understand': 'Phân tích thông tin bất động sản',
-    'scene': 'Nhận diện từng không gian',
-    'spatial': 'Chuẩn bị sơ đồ và checkpoint',
-    'spatial_review': 'Kiểm tra bố cục không gian',
-    'build_model': 'Dựng mô hình nhà 3D',
-    'mapping': 'Liên kết phòng và panorama',
-    'semantic': 'Tổng hợp thông tin có nguồn',
-    'navigation': 'Tạo điều hướng tham quan',
-    'narration': 'Soạn lời giới thiệu từng khu',
-    'final_review': 'Duyệt nội dung tour',
-    'voice': 'Tạo giọng giới thiệu',
-    'assemble': 'Kiểm tra gói tour',
+    'edit': 'Apply approved edits',
+    'understand': 'Analyze property information',
+    'scene': 'Identify each space',
+    'spatial': 'Prepare layout and checkpoints',
+    'spatial_review': 'Review spatial layout',
+    'build_model': 'Build the 3D house model',
+    'mapping': 'Link rooms and panoramas',
+    'semantic': 'Summarize sourced information',
+    'navigation': 'Create tour navigation',
+    'narration': 'Write each space introduction',
+    'final_review': 'Review tour content',
+    'voice': 'Generate narration voice',
+    'assemble': 'Validate tour package',
 }
 
 
@@ -112,7 +112,7 @@ def build_graph(provider, saver, emit, read_asset, write_audio, write_model, wor
         if not getattr(worker, 'requires_scene_plan', False):
             return {'rooms':rooms,'connections':[]}
         progress = {'on_progress':lambda value: emit(s['project']['generation_id'],
-            'spatial','running','Đang dựng kế hoạch không gian',event_type='model_progress',progress=value)} if getattr(provider,'supports_modeling_progress',False) else {}
+            'spatial','running','Building the spatial plan',event_type='model_progress',progress=value)} if getattr(provider,'supports_modeling_progress',False) else {}
         value = provider.modeling_plan(s['project'],rooms,s['observations'],s['assets'],read_asset,s.get('clarification',''),**progress)
         plan = validate_plan(value,rooms,s['assets'])
         captures = {c['checkpoint_id']:c for c in plan['captures']}
@@ -127,7 +127,7 @@ def build_graph(provider, saver, emit, read_asset, write_audio, write_model, wor
 
     def spatial_review(s):
         review = Review.model_validate(interrupt({'kind': 'spatial',
-            'message': 'Xác nhận tên khu, hướng nhìn và đường nối thực tế. Chưa có số đo hình học.'}))
+            'message': 'Confirm space names, viewing directions and actual connections. No measured geometry is available.'}))
         validate_review(review, s['rooms'],s.get('modeling_plan'),s.get('plan_attempts',0))
         if review.decision == 'revise':
             return {'revise_plan':True, 'clarification':s.get('clarification','')+'\n'+review.clarification}
@@ -139,7 +139,7 @@ def build_graph(provider, saver, emit, read_asset, write_audio, write_model, wor
     def model(s):
         if worker is None:
             interrupt({'kind': 'integration', 'message':
-                'Bố cục đã lưu. Cần kết nối worker dựng 3D để tiếp tục.'})
+                'Layout saved. Connect a 3D geometry worker to continue.'})
             # Browser review endpoints cannot resume this boundary.
             raise ValueError('Geometry adapter is not configured')
         project = dict(s['project'])
@@ -208,7 +208,7 @@ def build_graph(provider, saver, emit, read_asset, write_audio, write_model, wor
 
     def final_review(s):
         review = Review.model_validate(interrupt({'kind': 'final',
-            'message': 'Kiểm tra nội dung và mô hình trước khi tạo giọng đọc.'}))
+            'message': 'Review the content and model before generating narration.'}))
         validate_review(review, s['rooms'])
         script = dict(s['script'])
         if review.introduction is not None:

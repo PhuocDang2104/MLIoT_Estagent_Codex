@@ -3,7 +3,7 @@ export function panorama(container, url, initialYaw = 0) {
   const canvas = document.createElement("canvas");
   canvas.setAttribute(
     "aria-label",
-    "Ảnh panorama 360°. Kéo hoặc dùng phím mũi tên để xoay.",
+    "360° panorama. Drag or use the arrow keys to look around.",
   );
   canvas.tabIndex = 0;
   const gl = canvas.getContext("webgl");
@@ -15,7 +15,7 @@ export function panorama(container, url, initialYaw = 0) {
   if (!gl) {
     const img = new Image();
     img.src = url;
-    img.alt = "Panorama gốc";
+    img.alt = "Original panorama";
     container.replaceChildren(img);
     return () => {};
   }
@@ -104,7 +104,7 @@ export function panorama(container, url, initialYaw = 0) {
   img.onerror = () => {
     if (!disposed) {
       const p = document.createElement("p");
-      p.textContent = "Không tải được panorama. Hãy tải lại trang.";
+      p.textContent = "Could not load the panorama. Reload the page.";
       container.replaceChildren(p);
     }
   };

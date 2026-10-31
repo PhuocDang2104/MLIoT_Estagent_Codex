@@ -25,7 +25,7 @@ def router(origin):
         value = request.cookies.get(COOKIE, '')
         if not re.fullmatch(r'[a-f0-9]{64}', value):
             if response is None:
-                raise HTTPException(401, 'Tải lại Studio để bắt đầu phiên.')
+                raise HTTPException(401, 'Reload Studio to start a session.')
             value = secrets.token_hex(32)
             response.set_cookie(COOKIE, value, path='/api/studio/', httponly=True,
                 secure=origin.startswith('https:'), samesite='strict', max_age=30*24*3600)
@@ -60,12 +60,12 @@ def router(origin):
         token = owner(request)
         project = service.store.project(token, project_id)
         if kind not in ('panorama', 'floorplan', 'music') or not 1 <= len(name) <= 150 or len(credit) > 300:
-            raise HTTPException(422, 'Thông tin tệp không hợp lệ.')
+            raise HTTPException(422, 'Invalid file information.')
         data = await request.body()
         try:
             if kind == 'music':
                 if not credit.strip():
-                    raise ValueError('Nhập nguồn và quyền sử dụng nhạc nền.')
+                    raise ValueError('Enter the music source and usage rights.')
                 mime, width, height = 'audio/wav', 0, 0
                 duration = wav_duration(data)
             else:
@@ -79,22 +79,22 @@ def router(origin):
             if kind == 'music':
                 return replace_music(service.store, project_id, name, data, credit.strip())
             if service.store.rows('SELECT id FROM generations WHERE project=?', (project_id,)):
-                raise HTTPException(409, 'Đầu vào đã khóa khi bắt đầu tạo tour.')
+                raise HTTPException(409, 'Inputs are locked once tour generation starts.')
             assets = service.store.assets(project_id)
             digest = hashlib.sha256(data).hexdigest()
             duplicate = next((a for a in assets if a['sha256'] == digest and a['kind'] == kind), None)
             if duplicate:
                 return duplicate
             if sum(a['size'] for a in assets) + len(data) > 80*1024*1024:
-                raise HTTPException(413, 'Project vượt giới hạn 80 MB.')
+                raise HTTPException(413, 'The project exceeds the 80 MB limit.')
             if sum(a['kind'] == kind for a in assets) >= (12 if kind == 'panorama' else 1):
-                raise HTTPException(422, 'Đã đạt giới hạn tệp của loại này.')
+                raise HTTPException(422, 'The file limit for this type has been reached.')
             projection = 'equirectangular' if project.get('panorama_confirmed') and kind == 'panorama' and abs(width/height-2) <= .15 else 'photo'
             with upload_reservation(request,4096 if service.store.object_storage else len(data)):
                 return service.store.put_asset(project_id, name, kind, mime, data,
                     {**({'projection': projection} if kind == 'panorama' else {}),
                      'width': width, 'height': height, 'duration': duration, 'credit': credit.strip(),
-                     'warning': 'Ảnh không có tỷ lệ panorama 2:1; hãy kiểm tra.' if kind == 'panorama' and abs(width/height-2) > .15 else None})
+                     'warning': 'This image does not have a 2:1 panorama ratio; please check it.' if kind == 'panorama' and abs(width/height-2) > .15 else None})
 
     @routes.post('/projects/{project_id}/music/placeholder')
     def placeholder(project_id: str, data: Action, request: Request):
@@ -114,7 +114,7 @@ def router(origin):
             if service.store.rows('SELECT id FROM published WHERE project=?', (project_id,)) or (
                 (not asset or asset['kind'] != 'music') and
                 service.store.rows('SELECT id FROM generations WHERE project=?', (project_id,))):
-                raise HTTPException(409, 'Đầu vào đã khóa khi bắt đầu tạo tour.')
+                raise HTTPException(409, 'Inputs are locked once tour generation starts.')
             service.store.execute('DELETE FROM assets WHERE id=? AND project=?', (asset_id, project_id))
         return {'removed': True}
 
@@ -124,7 +124,7 @@ def router(origin):
         service.store.project(owner(request), project_id)
         found = next((a for a in service.store.assets(project_id) if a['id'] == asset_id), None)
         if not found:
-            raise HTTPException(404, 'Không tìm thấy tệp.')
+            raise HTTPException(404, 'File not found.')
         return service.store.response(found,range_header=request.headers.get('range'))
 
     @routes.post('/projects/{project_id}/generations', status_code=202)
@@ -173,7 +173,7 @@ def router(origin):
             if cursor < 0:
                 raise ValueError('Negative cursor')
         except ValueError:
-            raise HTTPException(422, 'Event cursor không hợp lệ.') from None
+            raise HTTPException(422, 'Invalid event cursor.') from None
         async def stream():
             nonlocal cursor
             while not await request.is_disconnected():

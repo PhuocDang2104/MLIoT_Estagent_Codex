@@ -39,7 +39,7 @@ def main():
         page.locator('.extras > summary').click()
         page.locator('#floorplan').set_input_files({'name': 'Plan.png', 'mimeType': 'image/png', 'buffer': png(100)})
         page.locator('#save-project').click()
-        page.locator('#notice').filter(has_text='tự tiếp tục').wait_for()
+        page.locator('#notice').filter(has_text='resuming in').wait_for()
         assert page.locator('#save-project').is_disabled()
         page.screenshot(path=str(out/'upload-countdown.png'))
         page.locator('#notice').filter(has_text='Synthetic transient failure').wait_for()

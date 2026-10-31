@@ -110,7 +110,7 @@ class Store:
             self.db.execute('ALTER TABLE jobs ADD COLUMN available_at REAL NOT NULL DEFAULT 0')
         self.interrupted = [r['id'] for r in self.db.execute("SELECT id FROM generations WHERE status='running' OR (status='queued' AND id NOT IN (SELECT generation FROM jobs WHERE status='queued'))")]
         self.db.execute("UPDATE jobs SET status='failed' WHERE status='running'")
-        self.db.execute("UPDATE generations SET status='failed',error='Tiến trình đã dừng. Kiểm tra rồi chọn thử lại.' WHERE status='running' OR (status='queued' AND id NOT IN (SELECT generation FROM jobs WHERE status='queued'))")
+        self.db.execute("UPDATE generations SET status='failed',error='The process stopped. Check the configuration and retry.' WHERE status='running' OR (status='queued' AND id NOT IN (SELECT generation FROM jobs WHERE status='queued'))")
         self.db.execute("UPDATE edits SET status='failed' WHERE status='running'")
         self.db.execute("UPDATE viewer_requests SET status='failed' WHERE status='running'")
         self.db.commit()
@@ -142,7 +142,7 @@ class Store:
     def project(self, owner, project_id):
         rows = self.rows('SELECT data FROM projects WHERE id=? AND owner=?', (project_id, owner))
         if not rows:
-            raise HTTPException(404, 'Không tìm thấy project trong phiên này.')
+            raise HTTPException(404, 'Project not found in this session.')
         return json.loads(rows[0]['data'])
 
     def assets(self, project_id):
@@ -278,7 +278,7 @@ class Store:
             rows = self.rows('SELECT payload,result FROM actions WHERE owner=? AND request=?', (owner, request_id))
             if rows:
                 if rows[0]['payload'] != serialized:
-                    raise HTTPException(409, 'Request ID đã dùng cho nội dung khác.')
+                    raise HTTPException(409, 'This request ID was already used for different content.')
                 return json.loads(rows[0]['result'])
             with self.db:
                 self.in_action = True

@@ -46,9 +46,9 @@ class UploadStorage:
                 used = self.usage()
                 free = shutil.disk_usage(self.root).free
             except OSError:
-                raise HTTPException(507, 'Upload storage unavailable / Không thể kiểm tra dung lượng lưu trữ.') from None
+                raise HTTPException(507, 'Upload storage unavailable.') from None
             if used + growth > self.max_bytes or free - growth < self.min_free_bytes:
-                raise HTTPException(507, 'Upload storage limit reached. Existing tours remain readable / Đã đạt giới hạn lưu trữ; tour hiện có vẫn xem được.')
+                raise HTTPException(507, 'Upload storage limit reached. Existing tours remain readable.')
             yield
 
 
@@ -62,7 +62,7 @@ def upload_reservation(request, payload_bytes):
             with guard.reserve(payload_bytes):
                 yield
         except (OSError, sqlite3.Error):
-            raise HTTPException(507, 'Upload storage unavailable / Không thể lưu tệp; hãy thử lại sau.') from None
+            raise HTTPException(507, 'Upload storage unavailable.') from None
 
 
 def validate_storage(env, paths=None):

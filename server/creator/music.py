@@ -12,11 +12,11 @@ CREDIT = ('Dream Culture — Kevin MacLeod (incompetech.com). '
 def replace_music(store, project_id, name, data, credit):
     """Called under the store lock; published asset IDs must remain immutable."""
     if store.rows('SELECT id FROM published WHERE project=?', (project_id,)):
-        raise HTTPException(409, 'Nhạc của tour đã xuất bản được giữ nguyên. Tạo project mới để thay đổi.')
+        raise HTTPException(409, 'Published music is preserved. Create a new project to change it.')
     duration = wav_duration(data)
     assets = store.assets(project_id)
     if sum(a['size'] for a in assets if a['kind'] != 'music') + len(data) > 80*1024*1024:
-        raise HTTPException(413, 'Project vượt giới hạn 80 MB.')
+        raise HTTPException(413, 'The project exceeds the 80 MB limit.')
     result = store.put_asset(project_id, name, 'music', 'audio/wav', data,
         {'width':0, 'height':0, 'duration':duration, 'credit':credit, 'warning':None})
     result.update(name=name, credit=credit)

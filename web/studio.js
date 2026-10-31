@@ -2,29 +2,29 @@ import { panorama } from "./studio-panorama.js";
 import { houseModel, planPreview } from "./studio-model.js";
 const $ = (selector) => document.querySelector(selector);
 const states = {
-  queued: "Đang chờ",
-  running: "Đang thực hiện",
-  completed: "Hoàn tất",
-  needs_review: "Cần duyệt",
-  waiting_integration: "Chờ dịch vụ 3D",
-  failed: "Cần thử lại",
-  rejected: "Đã từ chối",
+  queued: "Queued",
+  running: "Running",
+  completed: "Completed",
+  needs_review: "Review needed",
+  waiting_integration: "Waiting for 3D service",
+  failed: "Retry needed",
+  rejected: "Rejected",
 };
 const stepNames = {
-  edit: "Áp dụng chỉnh sửa",
-  understand: "Phân tích bất động sản",
-  scene: "Nhận diện không gian",
-  spatial: "Chuẩn bị bố cục",
-  spatial_review: "Kiểm tra bố cục",
-  build_model: "Dựng nhà 3D",
-  mapping: "Liên kết checkpoint",
-  semantic: "Tổng hợp thông tin",
-  navigation: "Tạo điều hướng",
-  narration: "Soạn lời giới thiệu",
-  final_review: "Duyệt nội dung",
-  voice: "Tạo giọng AI",
-  assemble: "Kiểm tra gói tour",
-  workflow: "Trạng thái bản nháp",
+  edit: "Apply edits",
+  understand: "Understand property",
+  scene: "Identify spaces",
+  spatial: "Prepare layout",
+  spatial_review: "Review layout",
+  build_model: "Build 3D house",
+  mapping: "Link checkpoints",
+  semantic: "Summarize information",
+  navigation: "Create navigation",
+  narration: "Write introduction",
+  final_review: "Review content",
+  voice: "Generate AI voice",
+  assemble: "Validate tour package",
+  workflow: "Draft status",
 };
 let session,
   project,
@@ -40,6 +40,74 @@ let session,
 const expandedActivities = new Map();
 // Keep successful files for a retry of the same idempotent project creation.
 const uploadedFiles = new Map();
+let sampleAbort, selectionEpoch = 0, sampleLoading = false;
+const sampleName = "Seoul sample apartment";
+const sampleDescription = "Explore this Seoul apartment using eight supplied panoramas. Recreate the visible spaces, materials and furnishings. No measured dimensions are supplied; clarify uncertain dimensions and connections before modeling.";
+function cancelSample() {
+  sampleAbort?.abort();
+  sampleAbort = null;
+  selectionEpoch++;
+  sampleLoading = false;
+  $("#save-project").disabled = busy;
+  $("#load-sample").disabled = busy;
+}
+function clearSelection() {
+  cancelSample();
+  selected.forEach(p => URL.revokeObjectURL(p.url));
+  selected = [];
+  pendingRequest = null;
+  $("#panorama-confirmed").checked = false;
+  renderSelected();
+}
+async function loadSample() {
+  if (busy || project) return;
+  clearSelection();
+  const epoch = selectionEpoch;
+  const controller = sampleAbort = new AbortController();
+  sampleLoading = true;
+  $("#save-project").disabled = true;
+  $("#load-sample").disabled = true;
+  $("#sample-status").textContent = "Loading the eight Seoul sample panoramas…";
+  try {
+    const base = "/api/demos/seoul-apartment/assets/";
+    const response = await fetch(base + "house/manifest.json", { signal: controller.signal });
+    if (!response.ok) throw Error("Sample unavailable");
+    const manifest = await response.json();
+    const captures = manifest.captures;
+    if (!Array.isArray(captures) || captures.length !== 8 ||
+        new Set(captures.map(c => c.image)).size !== 8 ||
+        captures.some(c => !/^house\/panos\/[0-9]{8}\.jpg$/.test(c.image))) throw Error("Invalid sample manifest");
+    const files = await Promise.all(captures.map(async capture => {
+      const image = await fetch(base + capture.image, { signal: controller.signal });
+      if (!image.ok) throw Error("Sample image unavailable");
+      const blob = await image.blob();
+      if (!blob.size || blob.size > 20 * 1024 * 1024) throw Error("Invalid sample image size");
+      return new File([blob], capture.image.split("/").pop(), { type: "image/jpeg" });
+    }));
+    if (epoch !== selectionEpoch) return;
+    await selectFiles(files, { sample: true, epoch });
+    if (epoch !== selectionEpoch) return;
+    if (selected.length !== 8) throw Error("Could not read all sample images");
+    $("#panorama-confirmed").checked = true;
+    const form = $("#create-form");
+    if (!form.elements.name.value) form.elements.name.value = sampleName;
+    if (!form.elements.description.value) form.elements.description.value = sampleDescription;
+    $("#sample-status").textContent = "8 Seoul sample panoramas selected. Remove any image or choose your own. Nothing is uploaded until you save.";
+  } catch (error) {
+    if (epoch !== selectionEpoch || error.name === "AbortError") return;
+    controller.abort();
+    selected.forEach(p => URL.revokeObjectURL(p.url));
+    selected = [];
+    renderSelected();
+    $("#sample-status").textContent = "The Seoul sample could not load. Try again or upload your own images.";
+  } finally {
+    if (epoch === selectionEpoch) {
+      sampleLoading = false;
+      $("#save-project").disabled = busy;
+      $("#load-sample").disabled = busy;
+    }
+  }
+}
 let editKey = "", editProposal = null, editRequest = null, applyRequest = null;
 setInterval(() => {
   const clock = document.querySelector('[data-model-clock]');
@@ -68,13 +136,13 @@ async function api(path, options = {}) {
   try {
     data = await response.json();
   } catch {
-    throw new Error("API chưa sẵn sàng. Kiểm tra kết nối backend của Studio.");
+    throw new Error("The API is unavailable. Check the Studio backend connection.");
   }
   if (!response.ok) {
     const error = new Error(
       typeof data.detail === "string"
         ? data.detail
-        : data.error || "Dữ liệu chưa hợp lệ. Kiểm tra lại các trường đã nhập.",
+        : data.error || "Invalid input. Please check the fields you entered.",
     );
     error.status = response.status;
     error.code = data.code;
@@ -93,7 +161,7 @@ async function uploadWithRetry(operation, saved, total) {
       const deadline = Date.now() + error.retryAfter * 1000 + 250;
       while (Date.now() < deadline) {
         const remaining = Math.ceil((deadline - Date.now()) / 1000);
-        notify(`Tạm dừng tải lên · tự tiếp tục sau ${remaining}s. Đã lưu ${saved}/${total} tệp.`);
+        notify(`Upload paused · resuming in ${remaining}s. Saved ${saved}/${total} files.`);
         await new Promise(resolve => setTimeout(resolve, Math.min(1000, deadline - Date.now())));
       }
     }
@@ -117,7 +185,7 @@ function imageTile(asset, url, remove) {
   const tile = node("div", null, { class: "image-tile" }),
     button = node("button", null, {
       type: "button",
-      "aria-label": "Xem " + asset.name,
+      "aria-label": "View " + asset.name,
     }),
     image = node("img", null, { src: url, alt: asset.name });
   button.append(image);
@@ -138,22 +206,36 @@ function imageTile(asset, url, remove) {
     const b = node("button", "×", {
       class: "remove",
       type: "button",
-      "aria-label": "Xóa " + asset.name,
+      "aria-label": "Remove " + asset.name,
     });
     b.onclick = remove;
     tile.append(b);
   }
   return tile;
 }
-async function selectFiles(files) {
+async function selectFiles(files, { sample = false, epoch } = {}) {
+  if (busy || !files.length) return;
+  if (!sample) {
+    if (sampleLoading || selected.some(p => p.sample)) {
+      clearSelection();
+      const form = $("#create-form");
+      if (form.elements.name.value === sampleName) form.elements.name.value = "";
+      if (form.elements.description.value === sampleDescription) form.elements.description.value = "";
+    }
+    cancelSample();
+    epoch = selectionEpoch;
+    pendingRequest = null;
+    $("#sample-status").textContent = "Your images are selected. Use the Seoul sample at any time.";
+  }
   for (const file of files) {
+    if (epoch !== selectionEpoch) return;
     if (
       !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
       file.size > 20 * 1024 * 1024 ||
       selected.length >= 12
     ) {
       notify(
-        "Chỉ nhận tối đa 12 ảnh JPEG, PNG, WebP, không quá 20 MB/ảnh.",
+        "Select up to 12 JPEG, PNG or WebP images, no larger than 20 MB each.",
         true,
       );
       continue;
@@ -168,14 +250,14 @@ async function selectFiles(files) {
       const image = new Image();
       image.src = url;
       await image.decode();
-      if (selected.length >= 12 || selected.some((p) => p.hash === hash)) {
+      if (epoch !== selectionEpoch || selected.length >= 12 || selected.some((p) => p.hash === hash)) {
         URL.revokeObjectURL(url);
         continue;
       }
-      selected.push({ file, url, hash });
+      selected.push({ file, url, hash, sample });
     } catch {
       URL.revokeObjectURL(url);
-      notify("Không đọc được ảnh " + file.name, true);
+      notify("Could not read image " + file.name, true);
     }
   }
   $("#panoramas").value = "";
@@ -185,13 +267,27 @@ function renderSelected() {
   $("#selected-images").replaceChildren(
     ...selected.map((p) =>
       imageTile({ name: p.file.name }, p.url, () => {
+        if (busy) return;
+        cancelSample();
+        pendingRequest = null;
         URL.revokeObjectURL(p.url);
         selected = selected.filter((x) => x !== p);
+        if (!selected.length) $("#panorama-confirmed").checked = false;
+        $("#sample-status").textContent = `${selected.length} images selected. Nothing is uploaded until you save.`;
         renderSelected();
       }),
     ),
   );
 }
+$("#load-sample").onclick = loadSample;
+$("#clear-images").onclick = () => {
+  if (busy) return;
+  clearSelection();
+  $("#sample-status").textContent = "Selection cleared. Upload your own images or use the Seoul sample.";
+};
+window.addEventListener("pagehide", () => {
+  cancelSample();
+});
 $("#panoramas").onchange = (e) => selectFiles([...e.target.files]);
 for (const type of ["dragover", "dragenter"])
   $("#dropzone").addEventListener(type, (e) => {
@@ -237,11 +333,12 @@ function newProject() {
   editProposal = editRequest = applyRequest = null;
   $("#create-view").hidden = false;
   $("#workspace-view").hidden = true;
-  $("#top-status").textContent = "Bản nháp";
+  $("#top-status").textContent = "Draft";
   $("#top-status").dataset.status = "draft";
   if (location.pathname !== "/business/create") history.pushState({}, "", "/business/create");
   renderProjects();
-  notify(session?.configured ? "" : "Chưa kết nối OpenAI. Bạn vẫn có thể lưu bản nháp.");
+  notify(session?.configured ? "" : "OpenAI is not connected. You can still save a draft.");
+  if (!selected.length) void loadSample();
 }
 
 $("#new-project").onclick = () => {
@@ -249,12 +346,12 @@ $("#new-project").onclick = () => {
 };
 $("#create-form").onsubmit = async (e) => {
   e.preventDefault();
-  if (busy) return;
+  if (busy || sampleLoading) return;
   if (!selected.length)
-    return notify("Thêm ít nhất một panorama trước khi lưu.", true);
+    return notify("Add at least one panorama before saving.", true);
   const form = new FormData(e.target);
   if ($("#music").files.length && !String(form.get("music_credit")).trim())
-    return notify("Nhập nguồn và quyền sử dụng nhạc nền.", true);
+    return notify("Enter the music source and usage rights.", true);
   busy = true;
   $("#save-project").disabled = true;
   try {
@@ -280,7 +377,7 @@ $("#create-form").onsubmit = async (e) => {
     ];
     for (const item of files) {
       if (saved.has(item.file)) { index++; continue; }
-      notify(`Đang lưu dữ liệu ${++index}/${files.length}…`);
+      notify(`Saving file ${++index}/${files.length}…`);
       await uploadWithRetry(() => api(
         `/projects/${result.id}/assets?` +
           new URLSearchParams({
@@ -312,13 +409,13 @@ $("#create-form").onsubmit = async (e) => {
     await openProject(result.id);
     notify(
       session.configured
-        ? "Tư liệu đã lưu."
-        : "Đã lưu bản nháp. Cần kết nối OpenAI để tạo tour.",
+        ? "Source files saved."
+        : "Draft saved. Connect OpenAI to generate a tour.",
     );
   } catch (error) {
     notify(
       error.message +
-        " Dữ liệu đã tải thành công được giữ lại; gửi lại để tiếp tục.",
+        " Successfully uploaded files are preserved; submit again to continue.",
       true,
     );
   } finally {
@@ -331,6 +428,7 @@ $("#create-form").addEventListener("input", () => {
 });
 
 async function openProject(id) {
+  cancelSample();
   stopStream();
   disposePreview();
   project = await api("/projects/" + id);
@@ -355,7 +453,7 @@ async function openProject(id) {
 function renderAssets() {
   renderMusic();
   $("#asset-count").textContent =
-    project.assets.filter((a) => a.kind === "panorama").length + " ảnh";
+    project.assets.filter((a) => a.kind === "panorama").length + " images";
   $("#assets").replaceChildren(
     ...project.assets
       .filter((a) => ["panorama", "floorplan"].includes(a.kind))
@@ -385,16 +483,16 @@ function renderMusic() {
   panel.replaceChildren();
   if (track) {
     panel.append(node("strong", track.name), node("audio", null, {
-      controls: "", preload: "none", src: assetUrl(track), "aria-label": "Nghe nhạc nền",
+      controls: "", preload: "none", src: assetUrl(track), "aria-label": "Preview background music",
     }), node("p", track.credit, { class: "muted" }));
-  } else panel.append(node("p", "Chưa có nhạc. Chọn nhạc mẫu hoặc tải WAV để xuất bản."));
+  } else panel.append(node("p", "No music yet. Choose the sample track or upload a WAV before publishing."));
   $("#music-options").hidden = !!project.published.length;
 }
 async function saveMusic(placeholder) {
   if (busy || !project) return;
   const file = $("#replacement-music").files[0];
   const credit = $("#replacement-credit").value.trim();
-  if (!placeholder && (!file || !credit)) return notify("Chọn WAV và nhập nguồn/quyền sử dụng.", true);
+  if (!placeholder && (!file || !credit)) return notify("Choose a WAV and enter its source and usage rights.", true);
   busy = true;
   $("#save-music").disabled = $("#use-placeholder").disabled = true;
   try {
@@ -403,7 +501,7 @@ async function saveMusic(placeholder) {
       {method:"POST",headers:{"Content-Type":"audio/wav"},body:file});
     project = await api("/projects/" + project.id);
     renderMusic();
-    notify("Đã lưu nhạc. Không cần tạo lại tour.");
+    notify("Music saved. You do not need to regenerate the tour.");
   } catch (error) { notify(error.message, true); }
   finally { busy = false; $("#save-music").disabled = $("#use-placeholder").disabled = false; }
 }
@@ -416,7 +514,7 @@ function renderHistory() {
       const div = node("div", null, { class: "history-item" }),
         b = node(
           "button",
-          `Bản ${project.generations.length - i} · ${states[g.status] || g.status}`,
+          `Version ${project.generations.length - i} · ${states[g.status] || g.status}`,
         );
       b.onclick = () =>
         openGeneration(g.id).catch((e) => notify(e.message, true));
@@ -426,7 +524,7 @@ function renderHistory() {
   );
   if (!project.generations.length)
     $("#history").append(
-      node("p", "Chưa có lần tạo tour.", { class: "muted" }),
+      node("p", "No tour generations yet.", { class: "muted" }),
     );
 }
 async function openGeneration(id) {
@@ -522,9 +620,9 @@ $("#publish").onclick = async () => {
     const box = $("#share");
     box.hidden = false;
     box.replaceChildren(
-      node("h3", "Tour đã xuất bản"),
-      node("p", "Sẵn sàng chia sẻ."),
-      node("a", "Mở tour ↗", {
+      node("h3", "Published tour"),
+      node("p", "Ready to share."),
+      node("a", "Open tour ↗", {
         href: `/studio-tour.html?id=${result.id}`,
         target: "_blank",
         rel: "noopener",
@@ -536,7 +634,7 @@ $("#publish").onclick = async () => {
     ];
     renderStages();
     renderMusic();
-    notify("Đã xuất bản phiên bản đã duyệt.");
+    notify("The approved version has been published.");
   } catch (e) {
     notify(e.message, true);
   } finally {
@@ -590,9 +688,9 @@ function renderStages() {
     else item.removeAttribute("aria-current");
   });
   $("#stage-summary").textContent = g
-    ? `${completed.size}/12 bước đã xong`
-    : "Đã lưu tư liệu";
-  if (published) $("#top-status").textContent = "Đã xuất bản";
+    ? `${completed.size}/12 steps complete`
+    : "Source files saved";
+  if (published) $("#top-status").textContent = "Published";
 }
 function renderGeneration() {
   const g = generation;
@@ -603,11 +701,11 @@ function renderGeneration() {
     (g?.status === "waiting_integration" && session.geometry_configured)
   );
   $("#retry").textContent =
-    g?.status === "waiting_integration" ? "Tiếp tục dựng 3D ↗" : "Thử lại";
+    g?.status === "waiting_integration" ? "Continue 3D build ↗" : "Retry";
   $("#publish").hidden = g?.status !== "completed";
-  $("#top-status").textContent = g ? states[g.status] : "Bản nháp";
+  $("#top-status").textContent = g ? states[g.status] : "Draft";
   $("#top-status").dataset.status = g?.status || "draft";
-  $("#generation-status").textContent = g ? states[g.status] : "Chưa bắt đầu";
+  $("#generation-status").textContent = g ? states[g.status] : "Not started";
   $("#empty-stream").hidden = !!g;
   $("#share").hidden = true;
   const latest = new Map();
@@ -645,7 +743,7 @@ function renderGeneration() {
         summary.addEventListener("click", () =>
           expandedActivities.set(key, !card.open),
         );
-        head.append(node("h3", stepNames[event.node_id] || "Cập nhật tour"));
+        head.append(node("h3", stepNames[event.node_id] || "Update tour"));
         summary.append(
           node(
             "span",
@@ -660,7 +758,7 @@ function renderGeneration() {
           node(
             "span",
             event.node_id === "scene" && status === "completed"
-              ? `${g.observations.length} ảnh`
+              ? `${g.observations.length} images`
               : states[status] || status,
             {
               class: "state-label",
@@ -671,21 +769,21 @@ function renderGeneration() {
           node(
             "p",
             status === "waiting_integration"
-              ? "Bố cục đã lưu. Dịch vụ dựng 3D chưa sẵn sàng."
+              ? "Layout saved. The 3D service is not ready."
               : event.message,
           ),
         );
         if (event.node_id === "spatial" && modelingProgress) {
-          const detail = node("section", null, {class:"model-thinking", "aria-label":"Tiến trình suy luận mô hình"});
-          const phases = {connecting:"Đang kết nối",thinking:"Đang phân tích bố cục",writing_plan:"Đang soạn kế hoạch 3D",validating:"Đang kiểm tra kế hoạch"};
+          const detail = node("section", null, {class:"model-thinking", "aria-label":"Model reasoning progress"});
+          const phases = {connecting:"Connecting",thinking:"Analyzing layout",writing_plan:"Drafting the 3D plan",validating:"Validating the plan"};
           detail.append(node("strong", `${modelingProgress.model} · ${modelingProgress.effort}`),
-            node("p", `${phases[modelingProgress.phase] || "Đang xử lý"} · ${modelingProgress.elapsed_seconds}s`, {class:"muted", "data-model-clock":status==='running'?modelingProgress.started_at || '':'',"data-phase":phases[modelingProgress.phase] || "Đang xử lý"}),
-            node("p", "Tóm tắt suy luận công khai từ mô hình. Bản nháp bên dưới chưa được kiểm chứng.", {class:"muted"}));
-          const text = node("div", modelingProgress.reasoning_summary || "Đang chờ tóm tắt đầu tiên từ mô hình…", {class:"thinking-summary"});
+            node("p", `${phases[modelingProgress.phase] || "Processing"} · ${modelingProgress.elapsed_seconds}s`, {class:"muted", "data-model-clock":status==='running'?modelingProgress.started_at || '':'',"data-phase":phases[modelingProgress.phase] || "Processing"}),
+            node("p", "Public reasoning summary from the model. The draft below has not been verified.", {class:"muted"}));
+          const text = node("div", modelingProgress.reasoning_summary || "Waiting for the first model summary…", {class:"thinking-summary"});
           detail.append(text);
           const preview=modelingProgress.plan_preview || {};
           if (preview.summary) detail.append(node("p", preview.summary, {class:"plan-summary"}));
-          if (modelingProgress.output_characters) detail.append(node("p", `${preview.spaces?.length || 0} không gian · ${preview.captures || 0} checkpoint · ${preview.fixtures || 0} vật dụng đang được mô tả`, {class:"muted"}));
+          if (modelingProgress.output_characters) detail.append(node("p", `${preview.spaces?.length || 0} spaces · ${preview.captures || 0} checkpoints · ${preview.fixtures || 0} fixtures being described`, {class:"muted"}));
           body.append(detail);
         }
         if (event.node_id === "scene" && g.observations.length) {
@@ -714,10 +812,10 @@ function renderGeneration() {
           node(
             "small",
             {
-              verified: "Bạn cung cấp",
-              observed: "Từ ảnh",
-              inferred: "Cần xác nhận",
-              unknown: "Chưa rõ",
+              verified: "Provided by you",
+              observed: "From images",
+              inferred: "Needs confirmation",
+              unknown: "Unknown",
             }[f.provenance],
           ),
         );
@@ -726,7 +824,7 @@ function renderGeneration() {
     );
   } else
     $("#brief").replaceChildren(
-      node("p", "Thông tin AI phân loại sẽ xuất hiện tại đây.", {
+      node("p", "Information classified by AI will appear here.", {
         class: "muted",
       }),
     );
@@ -767,11 +865,11 @@ function showEditProposal() {
   }
   for (const segment of proposal.plan.scripts) changes.append(node("li", `${segment.checkpoint_id}: ${segment.text}`));
   if (proposal.plan.introduction) changes.append(node("li", proposal.plan.introduction));
-  if (proposal.plan.order) changes.append(node("li", "Thứ tự: " + proposal.plan.order.join(" → ")));
-  if (proposal.plan.connections) changes.append(node("li", "Cập nhật đường nối; cần duyệt lại bố cục."));
+  if (proposal.plan.order) changes.append(node("li", "Order: " + proposal.plan.order.join(" → ")));
+  if (proposal.plan.connections) changes.append(node("li", "Connections updated; the layout needs another review."));
   box.append(changes);
   if (!proposal.can_apply) return;
-  const apply = node("button", "Áp dụng · Tạo bản mới", { type: "button", class: "primary", id: "apply-edit" });
+  const apply = node("button", "Apply · Create new version", { type: "button", class: "primary", id: "apply-edit" });
   apply.onclick = async () => {
     if (busy) return;
     busy = true; apply.disabled = true;
@@ -787,7 +885,7 @@ function showEditProposal() {
     } catch (e) { notify(e.message, true); }
     finally { busy = false; apply.disabled = false; }
   };
-  box.append(apply, node("p", "Bản mới cần duyệt trước khi xuất bản.", { class: "muted" }));
+  box.append(apply, node("p", "Review the new version before publishing.", { class: "muted" }));
 }
 
 $("#edit-form").onsubmit = async (event) => {
@@ -825,18 +923,18 @@ function renderReview() {
     node(
       "h2",
       g.review.kind === "spatial"
-        ? "Kiểm tra không gian"
+        ? "Review spaces"
         : g.review.kind === "final"
-          ? "Duyệt nội dung"
-          : "Chờ dựng 3D",
+          ? "Review content"
+          : "Waiting for 3D build",
     ),
     node(
       "p",
       g.review.kind === "spatial"
-        ? "Xác nhận khu vực và lối đi thực tế."
+        ? "Confirm the actual spaces and connections."
         : g.review.kind === "final"
-          ? "Kiểm tra lời giới thiệu trước khi tạo giọng."
-          : "Bố cục đã lưu. Tiếp tục khi dịch vụ 3D sẵn sàng.",
+          ? "Review the introduction before generating voice."
+          : "Layout saved. Continue when the 3D service is ready.",
       { class: "muted" },
     ),
   );
@@ -851,29 +949,29 @@ function renderReview() {
       const preview = node('div'); planPreview(preview,plan); form.append(preview);
       form.append(node('p',plan.summary));
       for (const text of [...plan.assumptions,...plan.questions]) form.append(node('p',text,{class:'muted'}));
-      const answer = node('textarea',null,{rows:'3',maxlength:'3000','aria-label':'Làm rõ bố cục',placeholder:'Bổ sung kích thước, phòng chung hoặc cửa nối…'});
-      const revise = node('button',`Cập nhật bố cục (${g.plan_attempts}/3)`,{type:'button'});
+      const answer = node('textarea',null,{rows:'3',maxlength:'3000','aria-label':'Clarify layout',placeholder:'Add dimensions, shared spaces or connecting doorways…'});
+      const revise = node('button',`Update layout (${g.plan_attempts}/3)`,{type:'button'});
       revise.disabled = g.plan_attempts >= 3;
       revise.onclick = () => {
-        if(!answer.value.trim()) return notify('Nhập thông tin làm rõ bố cục.',true);
+        if(!answer.value.trim()) return notify('Enter the layout clarification.',true);
         action(revise,`/generations/${g.id}/review`,{kind:'spatial',decision:'revise',clarification:answer.value.trim()});
       };
       form.append(answer,revise);
       if(plan.status==='provisional') {
-        const label=node('label',' Tôi chấp nhận bố cục và kích thước ước lượng.');
+        const label=node('label',' I accept the estimated layout and dimensions.');
         label.prepend(node('input',null,{type:'checkbox',name:'accept_approximate',required:''})); form.append(label);
       }
     }
     form.append(
-      node("span", "Ước lượng · Cần xác nhận", { class: "review-flag" }),
+      node("span", "Estimated · Confirmation needed", { class: "review-flag" }),
     );
     for (const room of g.rooms) {
       const row = node("div", null, {
           class: "room-edit",
           "data-checkpoint": room.checkpoint_id,
         }),
-        label = node("label", room.checkpoint_id + " · Khu vực"),
-        yawLabel = node("label", "Góc nhìn °");
+        label = node("label", room.checkpoint_id + " · Space"),
+        yawLabel = node("label", "Viewing direction °");
       label.append(
         node("input", null, {
           name: "label",
@@ -897,8 +995,8 @@ function renderReview() {
     }
     const fieldset = node("fieldset"),
       links = node("div", null, { id: "connections" });
-    fieldset.append(node("legend", "Lối đi hai chiều"), links);
-    const add = node("button", "＋ Nối hai khu", {
+    fieldset.append(node("legend", "Two-way connections"), links);
+    const add = node("button", "＋ Connect two spaces", {
       type: "button",
     });
     add.onclick = () => {
@@ -906,7 +1004,7 @@ function renderReview() {
       for (const name of ["source", "target"]) {
         const select = node("select", null, {
           name,
-          "aria-label": name === "source" ? "Checkpoint đi" : "Checkpoint đến",
+          "aria-label": name === "source" ? "From checkpoint" : "To checkpoint",
         });
         for (const room of g.rooms)
           select.append(
@@ -923,13 +1021,13 @@ function renderReview() {
             required: "",
             min: "-180",
             max: "180",
-            placeholder: name === "forward" ? "Đi °" : "Về °",
-            "aria-label": name === "forward" ? "Hướng đi °" : "Hướng về °",
+            placeholder: name === "forward" ? "Forward °" : "Reverse °",
+            "aria-label": name === "forward" ? "Forward heading °" : "Reverse heading °",
           }),
         );
       const remove = node("button", "×", {
         type: "button",
-        "aria-label": "Xóa đường nối",
+        "aria-label": "Remove connection",
       });
       remove.onclick = () => row.remove();
       row.append(remove);
@@ -941,9 +1039,9 @@ function renderReview() {
   if (g.review.kind === "final" && g.script) {
     editor.hidden = false;
     editor.append(
-      node("h2", "Lời giới thiệu"),
+      node("h2", "Introduction"),
     );
-    const introduction = node("label", "Mở đầu tour");
+    const introduction = node("label", "Tour introduction");
     introduction.append(node("textarea", g.script.introduction, {"data-introduction":"",rows:"3",maxlength:"1800",required:""}));
     editor.append(introduction);
     for (const segment of g.script.segments) {
@@ -966,11 +1064,11 @@ function renderReview() {
   const approve = node(
       "button",
       g.review.kind === "spatial"
-        ? "Xác nhận & tiếp tục ↗"
-        : "Duyệt & tạo giọng ↗",
+        ? "Confirm & continue ↗"
+        : "Approve & generate voice ↗",
       { class: "primary", type: "submit" },
     ),
-    reject = node("button", "Từ chối", { type: "button" });
+    reject = node("button", "Reject", { type: "button" });
   form.append(approve, reject);
   if(g.review.kind==='spatial' && g.modeling_plan?.status==='needs_clarification') approve.disabled=true;
   reject.onclick = () =>
@@ -1018,7 +1116,7 @@ function renderReview() {
           .value.trim(),
       }));
       if (!payload.introduction || payload.scripts.some((s) => !s.text))
-        return notify("Lời giới thiệu không được để trống.", true);
+        return notify("The introduction cannot be empty.", true);
     }
     action(approve, `/generations/${g.id}/review`, payload);
   };
@@ -1045,12 +1143,12 @@ function renderPreview() {
           assetUrl(asset),
           generation?.rooms.find((r) => r.asset_id === asset.id)?.yaw || 0,
         );
-        $("#preview-caption").textContent = asset.name + " · Kéo để xoay 360°.";
+        $("#preview-caption").textContent = asset.name + " · Drag to look around in 360°.";
       } else {
         box.append(
           node("img", null, { src: assetUrl(asset), alt: asset.name }),
         );
-        $("#preview-caption").textContent = asset.name + " · Ảnh thường";
+        $("#preview-caption").textContent = asset.name + " · Standard image";
       }
       return;
     }
@@ -1058,7 +1156,7 @@ function renderPreview() {
   if (mode === "floorplan") {
     if(generation?.modeling_plan) {
       planPreview(box,generation.modeling_plan);
-      $('#preview-caption').textContent = generation.modeling_plan.scale==='assumed' ? 'Bố cục ước lượng · chưa có tỷ lệ đo.' : 'Bố cục dựng từ dữ liệu đã duyệt.';
+      $('#preview-caption').textContent = generation.modeling_plan.scale==='assumed' ? 'Estimated layout · no measured scale.' : 'Layout built from approved data.';
       return;
     }
     const asset = project.assets.find((a) => a.kind === "floorplan");
@@ -1066,10 +1164,10 @@ function renderPreview() {
       box.append(
         node("img", null, {
           src: assetUrl(asset),
-          alt: "Bản vẽ do Business cung cấp",
+          alt: "Floorplan supplied by the owner",
         }),
       );
-      $("#preview-caption").textContent = "Mặt bằng bạn cung cấp.";
+      $("#preview-caption").textContent = "Your supplied floorplan.";
       return;
     }
   }
@@ -1078,12 +1176,12 @@ function renderPreview() {
       const room=generation.rooms.find(r=>r.checkpoint_id===checkpoint);
       activeAsset=project.assets.find(a=>a.id===room.asset_id); mode='panorama'; renderPreview();
     });
-    $('#preview-caption').append(node('a','Tải mô hình GLB ↗',{href:assetUrl(generation.model),download:'house.glb'}));
+    $('#preview-caption').append(node('a','Download GLB model ↗',{href:assetUrl(generation.model),download:'house.glb'}));
     return;
   }
   if (mode === "tour" && generation?.package) {
     const div = node("div");
-    div.append(node("p", "Giọng giới thiệu do AI tạo."));
+    div.append(node("p", "The introduction voice is AI-generated."));
     for (const audio of generation.package.narration.audio) {
       const player = node("audio", null, {
         controls: "",
@@ -1097,7 +1195,7 @@ function renderPreview() {
         node(
           "p",
           audio.checkpoint_id === "introduction"
-            ? "Giới thiệu chung"
+            ? "Overview"
             : generation.rooms.find(
                 (r) => r.checkpoint_id === audio.checkpoint_id,
               )?.label || "Khu tham quan",
@@ -1112,10 +1210,10 @@ function renderPreview() {
     node(
       "p",
       {
-        panorama: "Chọn ảnh để xem trước.",
-        floorplan: "Chưa có mặt bằng.",
-        model: "Mô hình chưa sẵn sàng.",
-        tour: "Tour sẽ xuất hiện sau khi hoàn tất.",
+        panorama: "Select an image to preview.",
+        floorplan: "No floorplan yet.",
+        model: "The model is not ready yet.",
+        tour: "The tour will appear when complete.",
       }[mode],
     ),
   );
@@ -1143,7 +1241,7 @@ try {
   if (match) await openProject(match[1]);
   else newProject();
   if (session && !session.configured)
-    notify("Trợ lý AI hiện chưa sẵn sàng. Bản nháp đã lưu vẫn được giữ lại.");
+    notify("The AI assistant is currently unavailable. Your saved draft is preserved.");
 } catch (e) {
   notify(e.message, true);
   $("#save-project").disabled = true;

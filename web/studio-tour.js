@@ -22,7 +22,7 @@ function pause() {
   playing = false;
   narration.pause();
   music.pause();
-  $("#play").textContent = "Tiếp tục giới thiệu";
+  $("#play").textContent = "Resume narration";
 }
 function select(checkpoint, continueItinerary = false) {
   playback++;
@@ -39,7 +39,7 @@ function select(checkpoint, continueItinerary = false) {
   const script = tour.narration.segments.find(
     (s) => s.checkpoint_id === checkpoint,
   );
-  $("#subtitle").textContent = script?.text || "Chưa có lời giới thiệu.";
+  $("#subtitle").textContent = script?.text || "No introduction available.";
   const audio = tour.narration.audio.find(
     (s) => s.checkpoint_id === checkpoint,
   );
@@ -93,12 +93,12 @@ async function play() {
     if (token !== playback || !playing) return;
     await narration.play();
     if (token !== playback || !playing) return;
-    $("#play").textContent = "Đang phát giới thiệu";
+    $("#play").textContent = "Playing narration";
   } catch {
     if (token !== playback) return;
     pause();
     notice(
-      "Không phát được âm thanh. Bạn vẫn có thể đọc lời giới thiệu và khám phá không gian.",
+      "Could not play audio. You can still read the introduction and explore the space.",
     );
   }
 }
@@ -137,12 +137,12 @@ narration.onended = () => {
 narration.onerror = () => {
   if (narration.getAttribute("src")) {
     pause();
-    notice("Không tải được lời giới thiệu. Hãy dùng phụ đề hoặc thử lại.");
+    notice("Could not load narration. Use captions or try again.");
   }
 };
 music.onerror = () => {
   pause();
-  notice("Không tải được nhạc nền. Tour vẫn có thể khám phá bằng hình ảnh.");
+  notice("Could not load background music. You can still explore the images.");
 };
 $("#question-form").onsubmit = async (e) => {
   e.preventDefault();
@@ -168,7 +168,7 @@ $("#question-form").onsubmit = async (e) => {
     );
     const data = await response.json();
     if (!response.ok)
-      throw new Error(data.detail || "Chưa kết nối được trợ lý.");
+      throw new Error(data.detail || "Could not connect to the assistant.");
     const reply = document.createElement("p");
     reply.className = "muted";
     reply.textContent = data.text;
@@ -187,10 +187,10 @@ window.addEventListener("pagehide", () => {
 });
 try {
   if (!/^[a-f0-9]{32}$/.test(id || ""))
-    throw new Error("Đường dẫn tour không hợp lệ.");
+    throw new Error("Invalid tour link.");
   const response = await fetch("/api/studio-tours/" + id);
   if (!response.ok)
-    throw new Error("Tour chưa được xuất bản hoặc không tồn tại.");
+    throw new Error("This tour is unpublished or does not exist.");
   tour = await response.json();
   $("#ask").disabled = false;
   $("#title").textContent = tour.name;
@@ -201,12 +201,12 @@ try {
     $("#room").append(option);
   }
   music.src = asset(tour.music.id);
-  $("#music-credit").textContent = "Nhạc nền: " + tour.music.credit;
+  $("#music-credit").textContent = "Background music: " + tour.music.credit;
   $("#model-link").href = asset(tour.model.asset_id);
   $("#model-link").setAttribute("download", "house.glb");
   select(tour.rooms[0].checkpoint_id);
 } catch (error) {
   notice(error.message);
-  $("#title").textContent = "Không mở được tour";
+  $("#title").textContent = "Could not open the tour";
   $("#ask").disabled = true;
 }

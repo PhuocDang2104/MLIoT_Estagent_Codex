@@ -7,7 +7,7 @@ export function mountNarrationPanel(container,{getManifest,onManifest,api,interv
   const heading=make('h3');
   const disclosure=make('p');
   const scene=make('select'),locale=make('select'),voice=make('select'),text=make('textarea');text.rows=5;text.maxLength=2000;
-  for(const [value,label] of [['en','English'],['vi','Tiếng Việt']]){const o=make('option',label);o.value=value;locale.append(o);}
+  for(const [value,label] of [['en','English'],['vi','Vietnamese']]){const o=make('option',label);o.value=value;locale.append(o);}
   const source=make('button');source.type='button';
   const approval=make('input');approval.type='checkbox';const approvalLabel=make('label');const approvalText=document.createTextNode('');approvalLabel.append(approval,approvalText);
   const generate=make('button'),attach=make('button'),cancel=make('button');

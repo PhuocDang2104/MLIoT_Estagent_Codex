@@ -84,7 +84,7 @@ def test_long_description_stays_within_existing_manifest_limits(tmp_path):
 
 
 @pytest.mark.parametrize('locale', ['en','vi'])
-def test_keyless_creator_and_viewer_errors_are_localized_and_nontechnical(tmp_path,locale):
+def test_keyless_creator_and_viewer_errors_are_english_and_nontechnical(tmp_path,locale):
     with TestClient(app_at(tmp_path)) as client:
         session(client);doc=create(client,[upload(client)])
         route=f'/drafts/{doc["id"]}'
@@ -94,7 +94,7 @@ def test_keyless_creator_and_viewer_errors_are_localized_and_nontechnical(tmp_pa
             response=post(client,path,{'text':'Tell me more','locale':locale,'revision':1,'request_id':'safe-error'})
             assert response.status_code==503
             detail=response.json()['detail']
-            assert ('Trợ lý' if locale=='vi' else 'The assistant') in detail
+            assert 'The assistant' in detail
             assert all(term not in detail for term in ['OPENAI','API_KEY','quota',' / ','configure'])
         assert client.get('/api/tours'+route).json()==doc
         assert client.get(f'/api/tours/published/{published["id"]}').json()==published
@@ -114,6 +114,6 @@ def test_provider_failures_keep_status_and_hide_internal_details(tmp_path,locale
         response=post(client,route+'/chat',{'text':'Help','locale':locale,'revision':1,'request_id':'provider-error'})
         assert response.status_code==(429 if failure=='rate' else 502)
         detail=response.json()['detail']
-        assert ('Trợ lý' if locale=='vi' else 'The assistant') in detail
+        assert 'The assistant' in detail
         assert all(term not in detail for term in ['secret','quota','API_KEY',' / '])
         assert client.get('/api/tours'+route).json()==doc

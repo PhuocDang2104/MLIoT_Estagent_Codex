@@ -59,3 +59,13 @@ Final accepted SHA, rollout and after-hash evidence will be recorded in release.
 
 No claims of live OpenAI/vision, new speech synthesis, reconstruction or physical
 iOS testing. Scene defaults are grounded text/neutral labels, not detected rooms.
+
+## Concurrent-main guard
+
+Before push, the ancestry guard caught new main2b6a332 (stale audio-ended guard
+for the cached house guide). It was merged as c430680; no commit was discarded.
+Strict web passed again. The changed guide browser passed against actual decoded
+production WAVs with only candidate house.js overridden: natural transitions,
+stale-ended rejection while playing/paused, all16views to finish at8x QA speed,
+VI script, pause/resume/manual navigation, rotation/reduced-motion and no JS errors.
+Evidence: `guide-before-deploy.json`; screenshots remain local.

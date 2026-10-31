@@ -59,3 +59,7 @@ Blocker implementation: none. Chưa deploy; QA mobile là Chrome emulation, khô
 Thái yêu cầu đổi chất liệu panel/nút theo screenshot. Chỉ sửa CSS viewer trong `web/tour.css`: nền kính trong có tint, blur28px/saturate160%, phản sáng gradient/viền/inset shadow, nút chọn trắng kính, ô nguồn bo mềm. Giữ nguyên layout, nội dung, API, camera/audio/chat; không thêm asset/dependency. Có prefix WebKit và nền đục fallback khi không hỗ trợ blur hoặc giảm transparency.
 
 Đã chạy lại strict web gate PASS và Chrome mở/đóng cả4 panel ở1440/390/320, không overflow/JS errors. Bằng chứng **chỉ local**: `/private/tmp/estagent-immersive-evidence/glass-gate.log`, `glass-browser.log`, `glass-1440.png`, `glass-390.png`, `glass-320.png`. Không stage ảnh chứa demo thật. Commit follow-up có parent `b0849df`; Deploy nhận riêng patch CSS/docs này theo quyền hiện có.
+
+### Follow-up: glass trong hơn
+
+Theo yêu cầu trực tiếp tiếp theo của Thái: giảm tint panel52%→30%, nút50%→25%, blur panel28px→20px; giảm phản chiếu nền và thêm bóng chữ nhẹ. Không đổi layout/logic. Browser1440/390/320 đóng/mở panel, không scroll/JS errors PASS; strict web gate PASS. Ảnh/log chỉ local: `/private/tmp/estagent-immersive-evidence/glass-clearer-{1440,390,320}.png`, `glass-clearer-browser.log`, `glass-clearer-gate.log`.

@@ -1,7 +1,7 @@
 FROM python:3.13-slim-bookworm
 RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg=7:5.1.9-0+deb12u1 && rm -rf /var/lib/apt/lists/*
 ARG WITH_BLENDER=0
-RUN if [ "$WITH_BLENDER" = "1" ]; then apt-get update && apt-get install -y --no-install-recommends blender && rm -rf /var/lib/apt/lists/*; fi
+RUN if [ "$WITH_BLENDER" = "1" ]; then apt-get update && apt-get install -y --no-install-recommends blender python3-numpy && rm -rf /var/lib/apt/lists/*; fi
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
 WORKDIR /app
 COPY server/assistant/requirements.txt /app/server/assistant/requirements.txt

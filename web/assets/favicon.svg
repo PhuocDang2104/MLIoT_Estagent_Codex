@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Estagent</title>
+  <rect width="64" height="64" rx="16" fill="#24292d"/>
+  <path d="M17 16h29v8H25v5h17v8H25v5h21v8H17z" fill="#f8f9fa"/>
+  <circle cx="51" cy="49" r="5" fill="#cb2b1b"/>
+</svg>

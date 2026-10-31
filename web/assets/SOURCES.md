@@ -1,5 +1,9 @@
 # Apartment photo assets
 
+## Estagent favicon
+
+`favicon.svg`: original geometric E monogram with the existing charcoal/cream/red brand palette, authored with Codex on 2026-10-31. No external image, font or paid service used. H0 unverified.
+
 Downloaded 2026-10-31 for Estagent UI illustration at 1000–1400px width. Images are independent stock photographs, not a single verified property, user uploads, or reconstructed 3D scenes. No affiliation/endorsement implied.
 
 | Local file | Photographer | Source |

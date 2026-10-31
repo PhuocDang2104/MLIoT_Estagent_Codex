@@ -8,6 +8,7 @@ Chưa có tour 3D end-to-end, Creator/Viewer hoàn chỉnh, audio tour hoặc t�
 - **Teammate backend:** [bắt đầu ở đây](docs/BACKEND-HANDOFF.md), [rule agent backend](server/AGENTS.md).
 - [API đang có và contract tour dự kiến](docs/CONTRACTS.md).
 - Yêu cầu đã xác nhận: [hai view Tạo/Xem tour](docs/USER-VIEWS.md), [nhạc nền + lời từng khu](docs/TOUR-AUDIO.md), MVP không auth.
+- [Thiết kế chat + gửi ảnh → tour như demo local](docs/CHAT-TO-TOUR.md): luồng Creator, nhánh panorama/ảnh thường, manifest và task liên lane.
 - [Test local 0.2.0](docs/LOCAL-PREVIEW.md), [deploy runbook](docs/DEPLOYMENT.md).
 - [Khai báo nguồn và thời gian build](docs/DECLARATION.md); [asset/license audit](web/evidence/ASSET-AUDIT.md).
 

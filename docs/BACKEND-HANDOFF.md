@@ -9,6 +9,7 @@ Không cần truy cập máy Thái, repo House VR Tour hoặc herdr để chạy
 1. `AGENTS.md`, `server/AGENTS.md`: ownership, Git và rule.
 2. File này + `CONTRACTS.md`: phân biệt API thật và tour draft.
 3. `USER-VIEWS.md`, `TOUR-AUDIO.md`: yêu cầu trực tiếp đã xác nhận.
+   `CHAT-TO-TOUR.md`: thiết kế mới dựa trên demo panorama local, input qua chat + ảnh; đề xuất API/schema còn cần review.
 4. `ASSISTANT.md`: runtime hiện có; `INTEGRATIONS.md`: dịch vụ mới chỉ là kế hoạch.
 5. `Product Proposal.md` và `Business Workflow Langgraph.md` trong docs: tầm nhìn, không phải toàn bộ đã duyệt/đã code.
 

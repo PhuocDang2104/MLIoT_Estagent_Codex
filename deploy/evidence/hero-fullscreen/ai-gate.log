@@ -1,0 +1,7 @@
+▶ ai compile
+  ok
+▶ ai pytest
+  ok
+▶ contract tour.json
+  ok
+GATE OK (ai)

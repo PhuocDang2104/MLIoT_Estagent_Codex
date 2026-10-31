@@ -50,6 +50,7 @@ File root (`package.json`, lockfile, `.gitignore`, `scripts/`, `AGENTS.md`) ch�
 UI thì thêm bằng chứng nhìn thấy: screenshot hoặc log Playwright. Pipeline thì thêm output thật khớp contract.
 
 ## 5. Git
+- Thái giao Tatejo giữ vai trò code integrator: review/merge/resolve conflict/push main; quy trình và handback teammate tại `docs/CODE-INTEGRATION.md`. Lane chỉ ghi nhánh/worktree của mình, không force-push main.
 - Trunk-based. Nhánh `<lane>/<task-id>-<slug>`, worktree ở `../CodexHackathon-wt/<task-id>` (tạo bằng `scripts/spawn.sh`).
 - Commit nhỏ, message `<lane>: <việc>`. PR/merge ≤ 90 phút một lần mỗi lane; `main` luôn xanh.
 - `main` đỏ → **dừng mọi merge** cho tới khi Dev 1 xanh lại (andon).

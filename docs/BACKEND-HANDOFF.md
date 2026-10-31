@@ -16,7 +16,7 @@ Không cần truy cập máy Thái, repo House VR Tour hoặc herdr để chạy
 3. `USER-VIEWS.md`, `TOUR-AUDIO.md`: yêu cầu trực tiếp đã xác nhận.
    `CHAT-TO-TOUR.md`: thiết kế mới dựa trên demo panorama local, input qua chat + ảnh; đề xuất API/schema còn cần review.
 4. `ASSISTANT.md`: runtime hiện có; `INTEGRATIONS.md`: dịch vụ mới chỉ là kế hoạch.
-5. `Product Proposal.md` và `Business Workflow Langgraph.md` trong docs: tầm nhìn, không phải toàn bộ đã duyệt/đã code.
+5. `Product Proposal.md` và `Business Workflow Langgraph/{Business Workflow Langgraph,Langgraph_UI_business}.md` trong docs: tầm nhìn/design của teammate, không phải toàn bộ đã code. Quy trình merge/sync: `docs/CODE-INTEGRATION.md`.
 
 MVP chưa cần auth. Có hai view **Tạo tour** và **Xem tour**. Tour phải có nhạc nền + lời giới thiệu từng khu;
 Viewer chỉ đọc nội dung đã duyệt và điều hướng, không sửa hồ sơ qua chat.

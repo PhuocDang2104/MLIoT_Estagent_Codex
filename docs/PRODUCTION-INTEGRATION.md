@@ -52,3 +52,11 @@ push/cutover to avoid overwriting concurrent teammate changes.
 Completed: deployed `ee6da34`, healthy public HTTPS and Seoul browser checks.
 Full results, precise verification limits, private backup and rollback details:
 `STUDIO-SEOUL-RELEASE.md`. Evidence: `deploy/evidence/studio-seoul/`.
+
+Follow-up upload incident: the global six-upload/minute cap rejected a normal
+eight-panorama batch, and manual retry resent already completed files. Correct
+the non-AI upload burst to 24/minute (same window, concurrency one, ledger retained),
+retain successful file progress in the current submission, and honor bounded
+Retry-After waits for upload 429 responses. No AI/narration caps or schema changes.
+Acceptance: real HTTP upload retry/browser regression, admission-limit tests,
+web gate and guarded production update with existing data preserved.

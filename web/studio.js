@@ -38,6 +38,8 @@ let session,
   busy = false,
   pendingRequest = null;
 const expandedActivities = new Map();
+// Keep successful files for a retry of the same idempotent project creation.
+const uploadedFiles = new Map();
 let editKey = "", editProposal = null, editRequest = null, applyRequest = null;
 setInterval(() => {
   const clock = document.querySelector('[data-model-clock]');
@@ -68,13 +70,34 @@ async function api(path, options = {}) {
   } catch {
     throw new Error("API chưa sẵn sàng. Kiểm tra kết nối backend của Studio.");
   }
-  if (!response.ok)
-    throw new Error(
+  if (!response.ok) {
+    const error = new Error(
       typeof data.detail === "string"
         ? data.detail
         : data.error || "Dữ liệu chưa hợp lệ. Kiểm tra lại các trường đã nhập.",
     );
+    error.status = response.status;
+    error.code = data.code;
+    error.retryAfter = Math.ceil(Number(data.retry_after ?? response.headers.get('Retry-After')));
+    throw error;
+  }
   return data;
+}
+async function uploadWithRetry(operation, saved, total) {
+  for (let attempt = 0; ; attempt++) {
+    try { return await operation(); }
+    catch (error) {
+      if (attempt >= 2 || error.status !== 429 ||
+          !['rate_limited', 'concurrency_limited'].includes(error.code) ||
+          !(error.retryAfter > 0 && error.retryAfter <= 120)) throw error;
+      const deadline = Date.now() + error.retryAfter * 1000 + 250;
+      while (Date.now() < deadline) {
+        const remaining = Math.ceil((deadline - Date.now()) / 1000);
+        notify(`Tạm dừng tải lên · tự tiếp tục sau ${remaining}s. Đã lưu ${saved}/${total} tệp.`);
+        await new Promise(resolve => setTimeout(resolve, Math.min(1000, deadline - Date.now())));
+      }
+    }
+  }
 }
 function post(path, data) {
   return api(path, {
@@ -209,6 +232,7 @@ function newProject() {
   activeAsset = null;
   reviewKey = "";
   pendingRequest = null;
+  uploadedFiles.clear();
   editKey = "";
   editProposal = editRequest = applyRequest = null;
   $("#create-view").hidden = false;
@@ -243,6 +267,8 @@ $("#create-form").onsubmit = async (e) => {
       panorama_confirmed: form.get("panorama_confirmed") === "on",
     };
     const result = await post("/projects", pendingRequest);
+    if (!uploadedFiles.has(result.id)) uploadedFiles.set(result.id, new Set());
+    const saved = uploadedFiles.get(result.id);
     let index = 0;
     const files = [
       ...selected.map((p) => ({ file: p.file, kind: "panorama" })),
@@ -253,8 +279,9 @@ $("#create-form").onsubmit = async (e) => {
       ...[...$("#music").files].map((file) => ({ file, kind: "music" })),
     ];
     for (const item of files) {
+      if (saved.has(item.file)) { index++; continue; }
       notify(`Đang lưu dữ liệu ${++index}/${files.length}…`);
-      await api(
+      await uploadWithRetry(() => api(
         `/projects/${result.id}/assets?` +
           new URLSearchParams({
             kind: item.kind,
@@ -268,11 +295,14 @@ $("#create-form").onsubmit = async (e) => {
           },
           body: item.file,
         },
-      );
+      ), index - 1, files.length);
+      saved.add(item.file);
     }
     if (!$("#music").files.length && $("#placeholder-music").checked) {
-      await post(`/projects/${result.id}/music/placeholder`, { request_id: requestId() });
+      const action = { request_id: requestId() };
+      await uploadWithRetry(() => post(`/projects/${result.id}/music/placeholder`, action), files.length, files.length);
     }
+    uploadedFiles.delete(result.id);
     pendingRequest = null;
     selected.forEach((p) => URL.revokeObjectURL(p.url));
     selected = [];

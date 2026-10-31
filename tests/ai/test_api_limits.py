@@ -208,6 +208,21 @@ def test_upload_has_separate_burst_and_concurrency_bounds(tmp_path):
         assert len(calls) == 2
 
 
+def test_upload_allowance_fits_maximum_studio_batch_and_retains_bounds(tmp_path):
+    app, calls = stub(tmp_path)
+    with TestClient(app) as client:
+        # 12 panoramas + a floorplan + music must fit a single submission.
+        for _ in range(14):
+            assert client.post('/api/studio/projects/project/assets').status_code == 200
+        for _ in range(10):
+            assert client.post('/api/tours/assets').status_code == 200
+        denied = client.post('/api/tours/assets')
+        assert denied.status_code == 429 and denied.json()['retry_after'] == 60
+        # Upload traffic still cannot spend or exhaust the independent AI bucket.
+        assert client.post('/api/assistant/turn').status_code == 200
+        assert len(calls) == 25
+
+
 @pytest.mark.parametrize('route', [
     '/api/studio/projects/project/generations',
     '/api/studio/generations/generation/review',

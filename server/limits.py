@@ -191,7 +191,7 @@ def install_limits(app, env, *, clock=time.time):
             Window('ai_allowance', _positive(env, 'API_LIMITS_AI_ATTEMPTS'),
                    _positive(env, 'API_LIMITS_AI_ATTEMPT_WINDOW_SECONDS')))),
         'upload': Group(_positive(env, 'API_LIMITS_UPLOAD_CONCURRENCY', '1'), (
-            Window('upload_burst', _positive(env, 'API_LIMITS_UPLOAD_REQUESTS', '6'),
+            Window('upload_burst', _positive(env, 'API_LIMITS_UPLOAD_REQUESTS', '24'),
                    _positive(env, 'API_LIMITS_UPLOAD_WINDOW_SECONDS', '60')),)),
     }
     if groups['ai'].windows[1].seconds < groups['ai'].windows[0].seconds:

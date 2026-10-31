@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "saved_assets": 14,
+  "panoramas": 12,
+  "provider_calls": 0,
+  "checks": [
+    "real upload 429 and Retry-After",
+    "visible countdown",
+    "automatic continuation",
+    "manual retry skips completed files",
+    "floorplan and placeholder music retained"
+  ],
+  "requests_by_synthetic_file": {
+    "Capture-00.png": 1,
+    "Capture-01.png": 1,
+    "Capture-02.png": 1,
+    "Capture-03.png": 1,
+    "Capture-04.png": 1,
+    "Capture-05.png": 1,
+    "Capture-06.png": 2,
+    "Capture-07.png": 1,
+    "Capture-08.png": 1,
+    "Capture-09.png": 1,
+    "Capture-10.png": 1,
+    "Capture-11.png": 1,
+    "Plan.png": 3
+  },
+  "page_errors": []
+}

@@ -4,7 +4,10 @@ Quyết định của Thái ngày 2026-10-31: Tatejo maintain `main` và deploy 
 
 ## Frontend
 
-- Vercel team/project: `meetmate/estagent`, liên kết repository hiện tại.
+- Vercel team/project: `meetmate/estagent`.
+- Origin mới: `https://github.com/PhuocDang2104/MLIoT_Estagent_Codex.git`; repo cũ giữ ở remote `previous-origin`.
+- Chuyển liên kết Vercel sang origin mới đang BLOCKED: API trả HTTP 400 yêu cầu cài GitHub integration. Chủ repo cần cấp quyền tại https://github.com/apps/vercel. Liên kết repo cũ đã gỡ, `project.link = null`; auto-deploy Git tạm ngắt, production hiện có vẫn hoạt động. Vẫn có thể deploy từ local qua CLI.
+- Sau khi cấp quyền: `vercel git connect https://github.com/PhuocDang2104/MLIoT_Estagent_Codex.git --yes --scope meetmate` rồi kiểm lại project link.
 - Production: https://estagent-weld.vercel.app (đã trả HTTP 200 ở `/` và `/experience.html`).
 - Deployment đầu: `https://estagent-exuaiy18m-meetmate.vercel.app`, app source tại `cc8587b` + cấu hình deploy mới.
 - Source: `web/`; cấu hình build tại `vercel.json`, output `web/dist/`.

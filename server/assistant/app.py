@@ -26,7 +26,7 @@ class Turn(BaseModel):
     text: str = Field(min_length=1, max_length=2000)
     request_id: str = Field(pattern=r'^[a-zA-Z0-9-]{8,80}$')
 
-def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None):
+def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, tour_interpreter=None):
     env = dict(os.environ if env is None else env)
     origin = env.get('ASSISTANT_ORIGIN', 'http://127.0.0.1:5180')
     required = tuple(x.strip() for x in env.get('ASSISTANT_REQUIRED_FIELDS','address,area,bedrooms').split(','))
@@ -135,12 +135,15 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None):
         except (httpx.HTTPError,ValueError):
             return JSONResponse({'error':'Kết nối giọng nói bị gián đoạn. Bạn vẫn có thể chat chữ.'},status_code=502)
 
+    from server.tours.api import install
+    install(app, env, path.parent / 'tours', interpreter=tour_interpreter)
+
     @app.get('/')
-    def home(): return FileResponse(WEB/'assistant.html')
+    def home(): return FileResponse(WEB/'index.html')
 
     @app.get('/{filename}')
     def static_file(filename:str):
-        allowed = {'assistant.html','assistant.css','assistant.js','index.html','experience.html','styles.css','app.js','i18n.js','intake.js','property.js'}
+        allowed = {'assistant.html','assistant.css','assistant.js','index.html','experience.html','styles.css','app.js','i18n.js','intake.js','property.js','motion.css','motion.js','creator.html','viewer.html','tour.css','tour-common.js','creator.js','viewer.js','panorama.js'}
         if filename not in allowed or not (WEB/filename).is_file(): raise HTTPException(404)
         return FileResponse(WEB/filename)
 

@@ -1,0 +1,42 @@
+{
+  "schema_version": "checkpoint-tour-v1",
+  "id": "00000000000000000000000000000003",
+  "revision": 1,
+  "status": "draft",
+  "title": "Synthetic schema fixture",
+  "locale": "en",
+  "scenes": [
+    {
+      "id": "00000000000000000000000000000001",
+      "asset_id": "00000000000000000000000000000001",
+      "name": "Synthetic checkpoint 1",
+      "description": "Schema fixture only; not a real property.",
+      "projection": "photo",
+      "coverage_degrees": null,
+      "coverage_source": "unknown",
+      "image_url": "/api/tours/assets/00000000000000000000000000000001",
+      "thumbnail_url": "/api/tours/assets/00000000000000000000000000000001?thumbnail=1"
+    },
+    {
+      "id": "00000000000000000000000000000002",
+      "asset_id": "00000000000000000000000000000002",
+      "name": "Synthetic checkpoint 2",
+      "description": "Schema fixture only; not a real property.",
+      "projection": "photo",
+      "coverage_degrees": null,
+      "coverage_source": "unknown",
+      "image_url": "/api/tours/assets/00000000000000000000000000000002",
+      "thumbnail_url": "/api/tours/assets/00000000000000000000000000000002?thumbnail=1"
+    }
+  ],
+  "start_scene_id": "00000000000000000000000000000001",
+  "audio": {
+    "status": "unavailable",
+    "source": "none",
+    "narration": null,
+    "music": null
+  },
+  "credits": [
+    "Generated synthetic schema fixture; no user assets. Image routes are placeholders until uploaded in runtime tests."
+  ]
+}

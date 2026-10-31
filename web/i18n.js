@@ -1,4 +1,23 @@
 const landingTranslations = {
+  "Create tour": "Tạo tour",
+  "Create tour ↗": "Tạo tour ↗",
+  "For rental seekers choosing which homes to visit, and listing agents presenting the evidence.": "Dành cho người tìm thuê chọn nhà đáng đi xem và người đăng tin cung cấp bằng chứng về không gian.",
+  "01 / EXPLORE": "01 / KHÁM PHÁ",
+  "Ask about the approved tour": "Hỏi về tour đã được duyệt",
+  "Ask about Creator-supplied descriptions. Missing facts stay unknown.": "Hỏi về mô tả do Creator cung cấp. Dữ kiện còn thiếu được nói rõ là chưa biết.",
+  "Create with photos": "Tạo tour từ ảnh",
+  "Upload your photos and a few words about the space. No account needed.": "Tải ảnh và vài lời mô tả không gian. Không cần tài khoản.",
+  "Review and publish": "Duyệt và xuất bản",
+  "Check scene names, order and coverage. Review the saved preview, then publish.": "Kiểm tra tên, thứ tự và góc phủ. Duyệt bản xem thử đã lưu rồi xuất bản.",
+  "Explore as a viewer": "Khám phá ở view Xem tour",
+  "Open the published tour, compare the evidence and note questions before arranging a visit.": "Mở tour đã xuất bản, xem bằng chứng và ghi lại câu hỏi trước khi hẹn đi xem nhà.",
+  "Explore the evidence before choosing which home to visit.": "Xem bằng chứng về không gian trước khi chọn nhà để đi xem.",
+  "Photo checkpoints and calibrated panorama previews, with an optional assistant. 3D reconstruction and recorded audio are not connected.": "Điểm xem ảnh và panorama được hiệu chỉnh, cùng trợ lý tuỳ chọn. Chưa kết nối tái dựng 3D hoặc lời thu âm.",
+  "Photo & panorama tours": "Tour ảnh & panorama",
+  "Explore separate viewpoints. Ordinary photos stay in a gallery; panorama coverage is reviewed by the creator.": "Khám phá từng điểm xem riêng. Ảnh thường ở dạng gallery; góc phủ panorama do người tạo kiểm tra.",
+  "Upload photos and describe the tour you want. Review the names and order of each viewpoint.": "Tải ảnh và mô tả tour bạn muốn. Kiểm tra tên và thứ tự từng điểm xem.",
+  "Preview and publish": "Xem thử và xuất bản",
+  "Open your draft preview, review it, then publish a separate view-only snapshot.": "Mở bản xem thử, kiểm tra rồi xuất bản một bản riêng chỉ để xem.",
   "Skip to content": "Đến nội dung chính",
   "Home": "Trang chủ",
   "About": "Giới thiệu",
@@ -88,7 +107,7 @@ const landingTranslations = {
     document.documentElement.lang = language;
     entries.forEach(entry => entry.set(entry[language]));
     document.querySelectorAll('[data-lang]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.lang === language)));
-    document.title = document.body.classList.contains('workspace') ? window.estagentI18n.t('Property workspace — Estagent', 'Thông tin căn hộ — Estagent') : window.estagentI18n.t('Estagent — Don’t just view. Explore.', 'Estagent — Không chỉ xem. Hãy khám phá.');
+    document.title = document.body.dataset.page === 'creator' ? window.estagentI18n.t('Create a tour — Estagent','Tạo tour — Estagent') : document.body.dataset.page === 'viewer' ? window.estagentI18n.t('View tours — Estagent','Xem tour — Estagent') : document.body.classList.contains('workspace') ? window.estagentI18n.t('Property workspace — Estagent', 'Thông tin căn hộ — Estagent') : window.estagentI18n.t('Estagent — Don’t just view. Explore.', 'Estagent — Không chỉ xem. Hãy khám phá.');
     if (persist) {
       try { localStorage.setItem(preferenceKey, language); } catch { /* Optional preference storage. */ }
     }

@@ -1,5 +1,5 @@
 Scope: actual HTTP/LangGraph/SQLite; finite model fixture; no paid API calls.
-Base commit: 9a1e40f89e2afa1a5e0ec2671a21187ff4efe723
+Base commit: da2105de1ada4ae865cd5d293553c28c219a4476
 local_browser_flow.js: {"pass":true,"realHTTP":true,"realLangGraph":true,"model":"finite fixture","reloadPreserved":["profile","history","deferred","confirmed","stage"],"modelFailure":502,"mobileWidths":[390,320],"pageErrors":0}
 
 local_browser_restart.js: {"pass":true,"backendProcessRestart":true,"sqliteRestored":true,"acceptedMessages":8}

@@ -1,0 +1,186 @@
+{
+  "$defs": {
+    "Audio": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "const": "unavailable",
+          "default": "unavailable",
+          "title": "Status",
+          "type": "string"
+        },
+        "narration": {
+          "default": null,
+          "title": "Narration",
+          "type": "null"
+        },
+        "music": {
+          "default": null,
+          "title": "Music",
+          "type": "null"
+        },
+        "source": {
+          "const": "none",
+          "default": "none",
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "title": "Audio",
+      "type": "object"
+    },
+    "SceneView": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-f0-9]{32}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "asset_id": {
+          "pattern": "^[a-f0-9]{32}$",
+          "title": "Asset Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Description",
+          "type": "string"
+        },
+        "projection": {
+          "default": "photo",
+          "enum": [
+            "photo",
+            "cylindrical"
+          ],
+          "title": "Projection",
+          "type": "string"
+        },
+        "coverage_degrees": {
+          "anyOf": [
+            {
+              "maximum": 360,
+              "minimum": 30,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Coverage Degrees"
+        },
+        "coverage_source": {
+          "default": "unknown",
+          "enum": [
+            "unknown",
+            "user_provisional",
+            "user_calibrated"
+          ],
+          "title": "Coverage Source",
+          "type": "string"
+        },
+        "image_url": {
+          "title": "Image Url",
+          "type": "string"
+        },
+        "thumbnail_url": {
+          "title": "Thumbnail Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "asset_id",
+        "name",
+        "image_url",
+        "thumbnail_url"
+      ],
+      "title": "SceneView",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "checkpoint-tour-v1",
+      "default": "checkpoint-tour-v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^[a-f0-9]{32}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "revision": {
+      "minimum": 1,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "published"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "title": {
+      "maxLength": 150,
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "locale": {
+      "enum": [
+        "en",
+        "vi"
+      ],
+      "title": "Locale",
+      "type": "string"
+    },
+    "scenes": {
+      "items": {
+        "$ref": "#/$defs/SceneView"
+      },
+      "maxItems": 20,
+      "minItems": 1,
+      "title": "Scenes",
+      "type": "array"
+    },
+    "start_scene_id": {
+      "title": "Start Scene Id",
+      "type": "string"
+    },
+    "audio": {
+      "$ref": "#/$defs/Audio"
+    },
+    "credits": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Credits",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "revision",
+    "status",
+    "title",
+    "locale",
+    "scenes",
+    "start_scene_id",
+    "credits"
+  ],
+  "title": "Manifest",
+  "type": "object"
+}

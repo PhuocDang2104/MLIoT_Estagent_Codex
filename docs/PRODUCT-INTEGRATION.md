@@ -16,7 +16,7 @@ Audio có controls/duy nhất một giọng phát, không chồng với chatbot;
 
 ## Phạm vi và ranh giới
 
-- Đọc root/server AGENTS, docs/CHAT-TO-TOUR.md, USER-VIEWS.md, TOUR-AUDIO.md, CONTRACTS.md, BACKEND-HANDOFF.md.
+- Đọc root/server AGENTS, docs/PRODUCT-CONTEXT.md (integrator cung cấp), CHAT-TO-TOUR.md, USER-VIEWS.md, TOUR-AUDIO.md, CONTRACTS.md, BACKEND-HANDOFF.md.
 - Ghi trong worktree: web/, server/, tests/, fixtures/, scripts/, docs/ và config root cần cho dev/build. Giữ compatibility API assistant.
 - Có thể bổ sung schema/fixture và route cho vertical slice theo yêu cầu đã giao; ghi rõ contract mới trong docs/CONTRACTS.md và báo thay đổi cho integrator.
 - Không thêm auth. Không paid API/model/GPU hoặc copy key; không tự mua asset, đổi provider, SSH/deploy hay chạm stack/DB hiện có.
@@ -37,3 +37,19 @@ Audio có controls/duy nhất một giọng phát, không chồng với chatbot;
 7. `docs/INTEGRATION-HANDOFF.md`: SHA, run command/URL, scope, migration/config, contract changes, evidence, mock/live, còn thiếu và declaration. Không ghi key/cookie/SDP.
 
 Sau handback, Tatejo review diff và tự chạy lại browser/gate trước merge. Hoàn thành lane không tự đồng nghĩa sản phẩm hoàn tất.
+
+## Implementation notes / OpenAI (owner record)
+
+- Mode: **local real HTTP/SQLite/WebGL**; provider disabled or injected finite test interpreter in QA.
+- Provider when explicitly configured: existing OpenAI Responses SDK, `OPENAI_MODEL_TEXT` (default from
+  existing assistant config: `gpt-6.1-sol`); no key/model/quota validation or paid call in this task.
+- Data: supplied text, scene IDs/names/descriptions and draft/published context. **No image bytes**,
+  base64, credentials or private PDF are sent to the model. No new external provider.
+- Live budget in this task: **0 calls / 0 paid generation**. Configured future chat has 30s timeout,
+  SDK retries=0, 1200 output tokens, store=false; owner must approve live data/model/budget separately.
+- Dependency: `Pillow==11.3.0` added to existing backend requirements for actual image decode,
+  EXIF orientation and derivative generation. This supports the explicitly authorized upload vertical
+  slice; no model download or GPU. See handoff declaration for installed package license metadata.
+- Context update: rental seeker shortlisting is the primary job. Creator supplies/approves evidence;
+  order is editorial, adjacency/measurements/furniture fit are unverified. The private deck is
+  problem/JTBD context, not competition rules or evidence of product impact. No PDF/demo photo committed.

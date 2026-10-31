@@ -114,3 +114,54 @@ Ví dụ đầy đủ: `../codex_hack/projects/1015-125257-d/tour.json`.
 - `fixtures/project-done/` — một project đủ file, `tour.json` hợp lệ, scene nhỏ (< 5 MB).
 - `fixtures/status-running.json`, `fixtures/status-error.json` — cho UI tiến trình.
 - `fixtures/tour.schema.json` — JSON Schema của `tour.json`; `scripts/gate.sh` kiểm mọi `tour.json` theo schema này.
+
+## 7. Implemented vertical slice: `checkpoint-tour-v1` (product-sync)
+
+Authority: explicit cross-lane PRODUCT INTEGRATION task, 2026-10-31. This is an additive,
+separate manifest from the unimplemented reconstruction v1 above; no `/api/projects` alias is claimed.
+Runtime schema: `server/tours/models.py`; checked-in JSON Schema + synthetic fixture:
+`fixtures/tour.schema.json`, `fixtures/checkpoint-tour/tour.json`.
+Existing `/api/assistant/*` request/response/cookie contracts remain unchanged. `/` now serves landing;
+`experience.html` redirects to Creator. `/creator.html`, `/viewer.html`, assets and APIs share one origin.
+
+- `schema_version=checkpoint-tour-v1`, `id`, `revision>=1`, `status=draft|published`, `title`,
+  `locale=en|vi`, ordered `scenes[1..20]`, `start_scene_id`, `audio`, `credits`.
+- Scene: server IDs `id`, `asset_id`; `name`, `description`; `projection=photo|cylindrical`,
+  `coverage_degrees=null|30..360`, `coverage_source=unknown|user_provisional|user_calibrated`;
+  server-owned `image_url` / `thumbnail_url`. Photo implies null/unknown coverage. Cylindrical
+  requires explicit labelled coverage. No spherical/3D claim and no inferred coverage from dimensions.
+- Audio truthfully reports `status=unavailable`, `source=none`, `narration=null`, `music=null`.
+  Browser device voice is an opt-in fallback for original-language descriptions, not an audio asset.
+- UI content is user supplied, not automatically translated. Locale switches control labels; content
+  language remains visible. No fabricated translations, image analysis, spatial pose or model output.
+
+| Endpoint | Contract |
+|---|---|
+| `GET /api/tours/session` | Sets HttpOnly/SameSite Strict cookie scoped `/api/tours/` (30 days); lists only own drafts and configured AI flag |
+| `POST /api/tours/assets` | Raw JPEG/PNG/WebP bytes, max 12 MiB; decode/verify/EXIF-orient, strip metadata, JPEG texture ≤8192 px and thumbnail ≤480×300; max 32M pixels, source side ≤16000; HEIC unsupported 415. Per-owner byte digest dedupe. ≤100 images/session. Returns asset ID/URLs/dimensions; projection unknown |
+| `GET /api/tours/assets/{asset}` | Private image, owned session only; `?thumbnail=1` for thumbnail |
+| `POST /api/tours/drafts` | `{asset_ids,title?,text?,locale,request_id}`; 1–20 distinct owned assets; IDs and default `Photo N` labels generated server-side; records same-turn text+asset references. Idempotent request ID, mismatch 409 |
+| `GET /api/tours/drafts/{id}` | Own manifest; unknown/other owner 404 |
+| `PUT /api/tours/drafts/{id}` | `{revision,title,locale,scenes,start_scene_id}`; scene fields exclude URL fields; exact existing scene→asset mapping required; name/order/calibration edit increments revision and invalidates review. Stale 409 |
+| `POST /api/tours/drafts/{id}/review` | `{revision}` marks explicit reviewed revision; stale 409 |
+| `POST /api/tours/drafts/{id}/publish` | `{revision}` requires matching saved+reviewed revision and readable images. Returns immutable snapshot with new ID and public asset URLs. Same draft+revision idempotent; later draft edits do not affect it |
+| `GET /api/tours/published` | Published snapshots only; shareable within this local server; no private drafts |
+| `GET /api/tours/published/{id}` | Immutable manifest, no cookie required |
+| `GET /api/tours/published/{id}/assets/{asset}` | Only assets referenced by that snapshot, no cookie required |
+| `POST /api/tours/drafts/{id}/chat` | `{text,request_id,revision,locale}`; text-only grounded assistant; can rename/describe/reorder/start only existing scene IDs. Revision checked after model response too. Returns `{reply,manifest,source}`; saved history, sequential request idempotency; no exactly-once promise for concurrent provider calls |
+| `GET /api/tours/drafts/{id}/messages` | Own text+attachment IDs and successful chat responses, never image base64 |
+| `POST /api/tours/published/{id}/chat` | Same chat body; only approved context, optional existing `scene_id` navigation; no draft write or publish tools |
+
+All writes require exact `Origin=ASSISTANT_ORIGIN` and a tour session; JSON bodies capped at 64 KiB.
+404 hides other owners' objects; 409 protects revisions; 415/413 report invalid/large images;
+422 validates fields, 503 reports missing OpenAI key, 502/429 sanitize upstream failures.
+FastAPI validation errors retain `detail`; UI accepts both legacy `error` and `detail`.
+No login/account authorization is claimed. Cookie loss loses draft access; published URLs intentionally
+remain accessible. Do not expose this unauthenticated local MVP to untrusted public traffic.
+
+Persistence: SQLite + normalized image files under `TOUR_DATA_DIR` (default next to ASSISTANT_DB in
+`projects/assistant/work/tours`). No production migration. Single local process/worker. Corrupt config
+or inaccessible storage fails visibly; no shared existing DB/storage is opened.
+OpenAI uses existing `OPENAI_API_KEY`/`OPENAI_MODEL_TEXT`, structured output, timeout 30s, retries=0,
+1200 output tokens, `store=false`. Calls only on explicit chat submit. Integration QA uses no key or
+injected test interpreters. No image analysis, TTS, GPU or paid live validation authorized/performed.

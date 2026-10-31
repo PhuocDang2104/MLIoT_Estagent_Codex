@@ -71,3 +71,27 @@ không tự chứng minh tác giả hoặc thời điểm viết code; đối ch
 > Bản kê nguồn và giấy phép: docs/DECLARATION.md.
 
 Đây là mẫu cần điền, không phải tuyên bố đã được xác nhận.
+
+## 7. Product integration preparation — 2026-10-31
+
+H0 remains unconfirmed; **do not claim this work was written during competition hours**.
+Owner branch: `integration/product-sync`, base `da2105d`; reviewed evidence and implementation SHA
+are recorded in `docs/INTEGRATION-HANDOFF.md`.
+
+- New, Codex-assisted: checkpoint-tour API/schema/SQLite storage, decoded uploads and normalized
+  derivatives, revision/review/publish snapshots, Creator/Viewer UI, backend text-only tour assistant,
+  source/unknowns copy, local-device voice fallback controls, synthetic API/browser integration checks.
+- Reused/adapted: repository landing/styles/fonts/favicon/i18n, assistant API and configured SDK;
+  `web/panorama.js` adapted from team-local `demo-cache/panorama-tour/renderer.js` under this task's
+  explicit renderer reuse permission. No reference images, ZIP or offline base64 copied. The demo
+  source has no standalone license declaration; keep this provenance/permission record in review.
+- Dependency: Pillow 11.3.0 for decode/orientation/derivatives; other pinned dependencies retained.
+  Package license comes from installed distribution metadata, recorded in handoff. No paid APIs used.
+- Test assets: solid-color/geometric synthetic PNGs generated only inside isolated test runtime;
+  committed screenshots show these synthetic fixtures. They are not rental property evidence.
+- Audio: no music or recorded narration assets; no TTS/model calls. Device speech is labelled fallback,
+  restricted to an available local voice in the original tour language; audible output not established
+  by screenshots or API tests. No music licensing claim.
+- Private `Codex-Hackathon.pdf` consulted through the supplied context note only; not copied/published.
+  Small interviews and unverified desk-research numbers are not used as product-effectiveness claims.
+- Existing hero image provenance/license uncertainty remains; integration does not clear the asset audit.

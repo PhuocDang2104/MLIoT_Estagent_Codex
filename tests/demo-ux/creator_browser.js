@@ -1,0 +1,55 @@
+async page => {
+  const base='__BASE_URL__',errors=[],chatRequests=[];
+  const check=(ok,message)=>{if(!ok)throw Error(message);};
+  page.on('pageerror',e=>errors.push(e.message));
+  page.on('request',r=>{if(r.url().endsWith('/chat'))chatRequests.push(r.url());});
+  await page.context().route('**/*',r=>r.request().url().startsWith(base+'/')?r.continue():r.abort());
+  await page.setViewportSize({width:1440,height:1000});
+  await page.goto(base+'/business/create');
+  await page.locator('#connection').filter({hasText:'Photo tour'}).waitFor();
+  await page.locator('[data-lang="vi"]').click();
+  check(!await page.locator('a').filter({hasText:'Open AI Generation Studio'}).count(),'Floating duplicate creator entry remains');
+  await page.locator('#message').fill('Căn hộ 2PN Quận 7, hướng Đông Nam. Có ban công.');
+  await page.locator('#photos').setInputFiles(['__IMAGE_ONE__','__IMAGE_TWO__']);
+  check((await page.locator('#photo-count').innerText()).includes('2 ảnh'),'Attachment count missing');
+  const creating=page.waitForResponse(r=>r.url().endsWith('/drafts')&&r.request().method()==='POST');
+  await page.locator('#send').click();const draft=await (await creating).json();
+  await page.locator('.scene-card').nth(1).waitFor();
+  await page.waitForFunction(()=>!document.querySelector('#save-draft').disabled);
+  check(draft.title==='Căn hộ 2PN Quận 7, hướng Đông Nam','Title not derived from description');
+  check(draft.locale==='vi','Vietnamese content mislabeled');
+  check(await page.locator('#message').inputValue()==='','Sent description retained in composer');
+  check(chatRequests.length===0,'Keyless creation attempted unavailable AI');
+  check(!await page.locator('#composer').isVisible(),'Unavailable chat still exposed');
+  check(!await page.locator('.creator-audio').evaluate(el=>el.open),'Audio upload not collapsed');
+  check(await page.locator('#publish').isDisabled(),'Publish enabled before review');
+  check((await page.locator('#publish-help').innerText()).includes('tích ô'),'Publish requirement unexplained');
+  await page.locator('[data-lang="en"]').click();
+  await page.locator('#tour-title').fill('Căn hộ 2PN Quận 7');
+  const saving=page.waitForResponse(r=>r.url().endsWith('/drafts/'+draft.id)&&r.request().method()==='PUT');
+  await page.locator('#save-draft').click();const saved=await (await saving).json();
+  check(saved.locale==='vi','Changing interface relabeled source content');
+  await page.waitForFunction(()=>!document.querySelector('#save-draft').disabled);
+  const previewPromise=page.waitForEvent('popup');await page.locator('#preview').click();const preview=await previewPromise;
+  await preview.locator('#scene-title').waitFor();check(await preview.locator('#photo').isVisible(),'Ordinary photo preview unavailable');await preview.close();
+  await page.locator('#reviewed').check();
+  const publishing=page.waitForResponse(r=>r.url().endsWith('/publish'));await page.locator('#publish').click();const published=await (await publishing).json();
+  await page.locator('#published-link a').waitFor();check(published.status==='published','Publish failed');
+  const draftURL=page.url();check(new URL(draftURL).pathname==='/business/create','Draft is not at canonical Studio entry');
+  await page.reload();await page.locator('.scene-card').nth(1).waitFor();
+  check(await page.locator('#tour-title').inputValue()==='Căn hộ 2PN Quận 7','Reload lost draft');
+  await page.locator('.creator-audio>summary').click();check(await page.locator('#audio-file').isVisible(),'Advanced audio no longer accessible');await page.locator('.creator-audio>summary').click();
+  const viewports=[];
+  for(const width of [1440,390,320]){
+    await page.setViewportSize({width,height:1000});
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth);check(!overflow,'Horizontal overflow at '+width);
+    await page.screenshot({path:`tests/demo-ux/creator-evidence/creator-${width}.png`,fullPage:true});viewports.push({width,noOverflow:true});
+  }
+  await page.setViewportSize({width:1440,height:1000});await page.evaluate(()=>scrollTo(0,600));
+  check(await page.locator('.conversation-panel').evaluate(el=>getComputedStyle(el).position==='sticky'&&el.getBoundingClientRect().top>=0),'Conversation is not sticky on desktop');
+  await page.goto(base+'/creator.html?draft='+draft.id);await page.locator('.scene-card').nth(1).waitFor();check(page.url().includes('/business/create?draft='+draft.id),'Legacy draft URL not preserved');
+  await page.goto(base+'/studio.html');await page.locator('#photos').waitFor();check(new URL(page.url()).pathname==='/business/create','Old Studio entry not consolidated');
+  const oldRoute=await page.request.get(base+'/business/projects/'+'a'.repeat(32)+'/generate');check((await oldRoute.text()).includes('workspace-view'),'Existing Studio project route lost');
+  check(!errors.length,'JS errors: '+errors.join('; '));
+  return {pass:true,keylessCreatePublish:true,descriptionTitle:true,sourceLocalePreserved:true,chatRequests:chatRequests.length,clearedInput:true,advancedAudio:true,canonicalAndLegacyRoutes:true,publishHelp:true,viewports,errors};
+}

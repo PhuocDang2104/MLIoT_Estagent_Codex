@@ -1,8 +1,14 @@
 import {$,t,language,api,node,notice,link,requestID} from './tour-common.js';
 let manifest=null, session=null, attachments=[], busy=false, dirty=false, pendingCreate=null, pendingTurn=null;
 let chatSceneID=null;
-function dirtyState(){dirty=true;$('#reviewed').checked=false;$('#publish').disabled=true;$('#preview').removeAttribute('href');$('#revision').textContent=t('Unsaved changes — save before preview.','Có thay đổi chưa lưu — lưu trước khi xem thử.');}
-function resetReview(){dirty=false;$('#reviewed').checked=false;$('#publish').disabled=true;}
+const creatorPath='/business/create';
+if(location.pathname!==creatorPath)history.replaceState(null,'',creatorPath+location.search);
+function publishHelp(){
+  $('#publish-help').textContent=dirty?t('Save your changes, open the preview, then confirm your review to publish.','Lưu thay đổi, mở xem thử rồi tích xác nhận để xuất bản.'):$('#reviewed').checked?t('Ready to publish this reviewed version.','Sẵn sàng xuất bản bản đã duyệt.'):t('Open the preview and tick the review checkbox to enable Publish.','Mở xem thử và tích ô xác nhận đã kiểm tra để bật Xuất bản.');
+}
+
+function dirtyState(){dirty=true;$('#reviewed').checked=false;$('#publish').disabled=true;$('#preview').removeAttribute('href');$('#revision').textContent=t('Unsaved changes — save before preview.','Có thay đổi chưa lưu — lưu trước khi xem thử.');publishHelp();}
+function resetReview(){dirty=false;$('#reviewed').checked=false;$('#publish').disabled=true;publishHelp();}
 function setBusy(value){
   busy=value;
   document.querySelectorAll('#composer button,#composer input,#composer textarea,#draft-editor input,#draft-editor textarea,#draft-editor select,#draft-editor button,#new-tour,#draft-list').forEach(el=>el.disabled=value);
@@ -11,6 +17,7 @@ function setBusy(value){
 }
 function bubble(role,text){const el=node('p',text,`chat-bubble ${role}`);$('#messages').append(el);}
 function drawAttachments(){
+  $('#photo-count').textContent=attachments.length?t(`${attachments.length} photos selected`,`${attachments.length} ảnh đã chọn`):t('Choose photos','Chọn ảnh');
   $('#attachments').replaceChildren();
   for(const item of attachments){const row=node('div',undefined,'attachment');const img=node('img');img.src=item.preview;img.alt=item.file.name;row.append(img,node('span',item.file.name));
     const remove=node('button','×','quiet');remove.type='button';remove.ariaLabel=t('Remove image','Bỏ ảnh');remove.disabled=busy;remove.onclick=()=>{URL.revokeObjectURL(item.preview);attachments=attachments.filter(a=>a!==item);pendingCreate=null;drawAttachments();};row.append(remove);$('#attachments').append(row);}
@@ -24,13 +31,16 @@ $('#photos').onchange=e=>{attach(e.target.files);e.target.value='';};
 $('#drop-zone').ondragover=e=>e.preventDefault();$('#drop-zone').ondrop=e=>{e.preventDefault();attach(e.dataTransfer.files);};
 function field(label,value,change,tag='input'){const wrap=node('label',label);const input=node(tag);input.value=value;input.oninput=()=>{change(input.value);dirtyState();};wrap.append(input);return wrap;}
 function render(){
+  $('#initial-fields').hidden=!!manifest;$('#composer').hidden=!!manifest&&!session?.configured;$('#keyless-help').hidden=!manifest||!!session?.configured;
+  $('#creation-help').textContent=manifest?(session?.configured?t('Ask the assistant to improve a description or arrange your stops.','Nhờ trợ lý sửa mô tả hoặc sắp xếp các điểm xem.'):t('Your draft is ready to review.','Bản nháp đã sẵn sàng để kiểm tra.')):t('Your words become the starting title and description. Review them before sharing.','Tên và mô tả sẽ được điền từ nội dung bạn cung cấp. Kiểm tra trước khi chia sẻ.');
   $('#empty-draft').hidden=!!manifest;$('#draft-editor').hidden=!manifest;$('#drop-zone').hidden=!!manifest;
-  $('#send').textContent=manifest?t('Send to assistant ↗','Gửi cho trợ lý ↗'):t('Send & create draft ↗','Gửi & tạo bản nháp ↗');
-  $('#connection').textContent=session?.configured?t('AI configured','AI đã cấu hình'):t('AI not connected','AI chưa kết nối');
+  $('#send').textContent=manifest?t('Send to assistant ↗','Gửi cho trợ lý ↗'):t('Create draft ↗','Tạo bản nháp ↗');
+  $('#connection').textContent=session?.configured?t('AI assistant available','Có trợ lý AI'):t('Photo tour','Tour từ ảnh');
   if($('#published-link a'))$('#published-link a').textContent=t('Open published tour ↗','Mở tour đã xuất bản ↗');
   if($('#published-link button'))$('#published-link button').textContent=t('Copy link','Sao chép link');
+  drawAttachments();
   if(!manifest)return;
-  $('#tour-title').value=manifest.title;$('#revision').textContent=t(`Saved revision ${manifest.revision} · Audio: ${manifest.audio.status}`,`Đã lưu bản ${manifest.revision} · Audio: ${manifest.audio.status==='ready'?'đủ lời theo điểm':manifest.audio.status==='partial'?'còn thiếu':'chưa có'}`);
+  $('#tour-title').value=manifest.title;$('#tour-locale').value=manifest.locale;publishHelp();$('#revision').textContent=t(`Saved revision ${manifest.revision} · Audio: ${manifest.audio.status}`,`Đã lưu bản ${manifest.revision} · Audio: ${manifest.audio.status==='ready'?'đủ lời theo điểm':manifest.audio.status==='partial'?'còn thiếu':'chưa có'}`);
   if(!dirty)$('#preview').href=`/viewer.html?draft=${manifest.id}`;
   $('#scene-cards').replaceChildren();
   manifest.scenes.forEach((scene,index)=>{
@@ -38,29 +48,30 @@ function render(){
     const img=node('img');img.src=scene.thumbnail_url;img.alt=scene.name;card.append(img);
     const body=node('div',undefined,'scene-fields');body.append(field(t('Name','Tên điểm xem'),scene.name,v=>scene.name=v));
     body.append(field(t('Description / subtitle','Mô tả / phụ đề'),scene.description,v=>scene.description=v,'textarea'));
-    const projection=node('label',t('Image type — choose explicitly','Loại ảnh — bạn xác định'));const select=node('select');
-    for(const [value,label] of [['photo',t('Ordinary photo / gallery','Ảnh thường / gallery')],['cylindrical',t('Panorama / provisional cylinder','Panorama / chiếu trụ tạm')]]){const opt=node('option',label);opt.value=value;select.append(opt);}select.value=scene.projection;
-    select.onchange=()=>{scene.projection=select.value;scene.coverage_degrees=select.value==='photo'?null:240;scene.coverage_source=select.value==='photo'?'unknown':'user_provisional';dirtyState();render();};projection.append(select);body.append(projection);
+    const imageOptions=node('details',undefined,'scene-image-options');imageOptions.append(node('summary',t('Panorama settings (optional)','Thiết lập panorama (tuỳ chọn)')));const projection=node('label',t('Image type','Loại ảnh'));const select=node('select');
+    for(const [value,label] of [['photo',t('Ordinary photo','Ảnh thường')],['cylindrical',t('Panorama / provisional cylinder','Panorama / chiếu trụ tạm')]]){const opt=node('option',label);opt.value=value;select.append(opt);}select.value=scene.projection;
+    select.onchange=()=>{scene.projection=select.value;scene.coverage_degrees=select.value==='photo'?null:240;scene.coverage_source=select.value==='photo'?'unknown':'user_provisional';dirtyState();render();};projection.append(select);imageOptions.append(projection);body.append(imageOptions);
     if(scene.projection==='cylindrical'){
-      const angle=field(t('Coverage ° (provisional, not inferred)','Góc phủ ° (tạm, không suy từ ảnh)'),scene.coverage_degrees,v=>{scene.coverage_degrees=Number(v);scene.coverage_source='user_provisional';});const input=angle.querySelector('input');input.type='number';input.min=30;input.max=360;body.append(angle);
-      const warning=node('p',t('Uncaptured space stays blank. This is not 3D.','Phần chưa chụp để trống. Đây không phải 3D.'),'hint');body.append(warning);
+      const angle=field(t('Coverage ° (provisional, not inferred)','Góc phủ ° (tạm, không suy từ ảnh)'),scene.coverage_degrees,v=>{scene.coverage_degrees=Number(v);scene.coverage_source='user_provisional';});const input=angle.querySelector('input');input.type='number';input.min=30;input.max=360;imageOptions.append(angle);imageOptions.open=true;
+      const warning=node('p',t('Choose panorama only when you know the captured coverage.','Chỉ chọn panorama khi bạn biết góc phủ của ảnh.'),'hint');imageOptions.append(warning);
     }
     const controls=node('div',undefined,'scene-actions');
-    const ask=node('button',scene.id===chatSceneID?t('Chat context ✓','Đang hỏi điểm này ✓'):t('Ask about this scene','Hỏi về điểm này'),'quiet');ask.type='button';ask.ariaPressed=String(scene.id===chatSceneID);ask.onclick=()=>{chatSceneID=chatSceneID===scene.id?null:scene.id;render();$('#message').focus();notice(chatSceneID?t(`Chat context: ${scene.name}`,`Ngữ cảnh chat: ${scene.name}`):t('Chat context: whole tour.','Ngữ cảnh chat: toàn tour.'));};controls.append(ask);
+    const ask=node('button',scene.id===chatSceneID?t('Chat context ✓','Đang hỏi điểm này ✓'):t('Ask about this scene','Hỏi về điểm này'),'quiet');ask.type='button';ask.ariaPressed=String(scene.id===chatSceneID);ask.onclick=()=>{chatSceneID=chatSceneID===scene.id?null:scene.id;render();$('#message').focus();notice(chatSceneID?t(`Chat context: ${scene.name}`,`Ngữ cảnh chat: ${scene.name}`):t('Chat context: whole tour.','Ngữ cảnh chat: toàn tour.'));};ask.hidden=!session?.configured;controls.append(ask);
     for(const [label,delta] of [['↑',-1],['↓',1]]){const button=node('button',label,'quiet');button.type='button';button.ariaLabel=delta<0?t('Move up','Đưa lên'):t('Move down','Đưa xuống');button.disabled=index+delta<0||index+delta>=manifest.scenes.length;button.onclick=()=>{[manifest.scenes[index],manifest.scenes[index+delta]]=[manifest.scenes[index+delta],manifest.scenes[index]];dirtyState();render();};controls.append(button);}
-    const start=node('button',scene.id===manifest.start_scene_id?t('Opening scene ✓','Điểm mở đầu ✓'):t('Start here','Bắt đầu ở đây'),'quiet');start.type='button';start.onclick=()=>{manifest.start_scene_id=scene.id;dirtyState();render();};controls.append(start);body.append(controls);card.append(body);$('#scene-cards').append(card);
+    const start=node('button',scene.id===manifest.start_scene_id?t('Opening scene ✓','Điểm mở đầu ✓'):t('Set opening scene','Chọn làm điểm mở đầu'),'quiet');start.type='button';start.onclick=()=>{manifest.start_scene_id=scene.id;dirtyState();render();};controls.append(start);body.append(controls);card.append(body);$('#scene-cards').append(card);
   });
   renderAudioAttachments();
   if(dirty){$('#preview').removeAttribute('href');$('#revision').textContent=t('Unsaved changes — save before preview.','Có thay đổi chưa lưu — lưu trước khi xem thử.');}
 }
 async function refreshList(){session=await api('/session');$('#draft-list').replaceChildren(node('option','—'));$('#draft-list').firstChild.value='';for(const d of session.drafts){const opt=node('option',d.title);opt.value=d.id;$('#draft-list').append(opt);}if(manifest)$('#draft-list').value=manifest.id;}
-async function load(id){if(manifest?.id!==id)chatSceneID=null;manifest=await api(`/drafts/${id}`);resetReview();$('#messages').replaceChildren();const messages=await api(`/drafts/${id}/messages`);for(const m of messages){if(m.text)bubble(m.role,m.text);}history.replaceState(null,'',`?draft=${id}`);$('#draft-list').value=id;render();}
+async function load(id){if(manifest?.id!==id)chatSceneID=null;manifest=await api(`/drafts/${id}`);resetReview();$('#messages').replaceChildren();const messages=await api(`/drafts/${id}/messages`);for(const m of messages){if(m.text)bubble(m.role,m.text);}history.replaceState(null,'',`${creatorPath}?draft=${id}`);$('#draft-list').value=id;render();}
 $('#draft-list').onchange=async e=>{if(!e.target.value)return;if(dirty&&!confirm(t('Discard unsaved edits?','Bỏ thay đổi chưa lưu?')))return;try{await load(e.target.value);}catch(e){notice(e.message,true);}};
-$('#new-tour').onclick=()=>{if(dirty&&!confirm(t('Discard unsaved edits?','Bỏ thay đổi chưa lưu?')))return;location.href='/creator.html?new=1';};
+$('#new-tour').onclick=()=>{if(dirty&&!confirm(t('Discard unsaved edits?','Bỏ thay đổi chưa lưu?')))return;location.href=creatorPath+'?new=1';};
 $('#tour-title').oninput=e=>{manifest.title=e.target.value;dirtyState();};
+$('#tour-locale').onchange=e=>{manifest.locale=e.target.value;dirtyState();};
 $('#save-draft').onclick=async()=>{if(busy)return;setBusy(true);try{
   const scenes=manifest.scenes.map(({image_url,thumbnail_url,...s})=>s);
-  manifest=await api(`/drafts/${manifest.id}`,{method:'PUT',body:{revision:manifest.revision,title:manifest.title,locale:language(),scenes,start_scene_id:manifest.start_scene_id}});
+  manifest=await api(`/drafts/${manifest.id}`,{method:'PUT',body:{revision:manifest.revision,title:manifest.title,locale:manifest.locale,scenes,start_scene_id:manifest.start_scene_id}});
   resetReview();await refreshList();render();notice(t('Changes saved. Open the preview to review.','Đã lưu. Mở xem thử để kiểm tra.'));
 }catch(e){notice(e.message,true);}finally{setBusy(false);}};
 $('#composer').onsubmit=async e=>{
@@ -70,22 +81,24 @@ $('#composer').onsubmit=async e=>{
     if(!manifest){
       for(const item of attachments){if(!item.asset){notice(t(`Uploading ${item.file.name}…`,`Đang tải ${item.file.name}…`));item.asset=await api('/assets',{method:'POST',body:item.file,binary:true});}}
       const ids=attachments.map(a=>a.asset.id);if(new Set(ids).size!==ids.length)throw new Error(t('The same photo is attached twice. Remove the duplicate.','Cùng một ảnh được thêm hai lần. Bỏ ảnh trùng rồi gửi lại.'));
-      pendingCreate??={request_id:requestID(),asset_ids:ids,text,locale:language(),title:t('My space','Không gian của tôi')};
-      manifest=await api('/drafts',{method:'POST',body:pendingCreate});pendingCreate=null;
+      const locale=$('#content-locale').value;
+      const title=$('#property-name').value.trim()||text.split(/[\n.!?]/)[0].trim().slice(0,150)||(locale==='vi'?'Tour từ ảnh':'Photo tour');
+      pendingCreate??={request_id:requestID(),asset_ids:ids,text,locale,title};
+      manifest=await api('/drafts',{method:'POST',body:pendingCreate});pendingCreate=null;$('#message').value='';
       for(const a of attachments)URL.revokeObjectURL(a.preview);attachments=[];drawAttachments();await refreshList();await load(manifest.id);
-      notice(t('Visual draft saved. Labels are placeholders; review each scene.','Đã lưu bản nháp hình ảnh. Tên đang là nhãn tạm; hãy kiểm tra từng điểm.'));
+      notice(t('Draft saved. Review the title, descriptions and opening scene, then preview your tour.','Đã lưu bản nháp. Kiểm tra tên, mô tả và điểm mở đầu rồi xem thử tour.'));
     }
-    if(text){
-      // Actual backend; no local fake NLP. Failure keeps the message for retry.
-      const fingerprint=JSON.stringify({id:manifest.id,text,revision:manifest.revision,locale:language(),scene_id:chatSceneID});
-      if(pendingTurn?.fingerprint!==fingerprint)pendingTurn={fingerprint,body:{text,request_id:requestID(),revision:manifest.revision,locale:language(),scene_id:chatSceneID}};
+    if(text&&session?.configured){
+      // AI uses the saved content language; the interface language never relabels content.
+      const fingerprint=JSON.stringify({id:manifest.id,text,revision:manifest.revision,locale:manifest.locale,scene_id:chatSceneID});
+      if(pendingTurn?.fingerprint!==fingerprint)pendingTurn={fingerprint,body:{text,request_id:requestID(),revision:manifest.revision,locale:manifest.locale,scene_id:chatSceneID}};
       const result=await api(`/drafts/${manifest.id}/chat`,{method:'POST',body:pendingTurn.body});
       pendingTurn=null;
       manifest=result.manifest;resetReview();await load(manifest.id);$('#message').value='';notice(t('Assistant response saved. Review any proposed edits.','Đã lưu phản hồi trợ lý. Kiểm tra các thay đổi được đề xuất.'));
     }
   }catch(error){notice(error.message,true);}finally{render();setBusy(false);}
 };
-$('#reviewed').onchange=()=>{$('#publish').disabled=!$('#reviewed').checked||dirty||busy;};
+$('#reviewed').onchange=()=>{$('#publish').disabled=!$('#reviewed').checked||dirty||busy;publishHelp();};
 $('#publish').onclick=async()=>{if(busy||dirty||!$('#reviewed').checked)return;setBusy(true);try{
   await api(`/drafts/${manifest.id}/review`,{method:'POST',body:{revision:manifest.revision}});
   const published=await api(`/drafts/${manifest.id}/publish`,{method:'POST',body:{revision:manifest.revision}});
@@ -94,7 +107,17 @@ $('#publish').onclick=async()=>{if(busy||dirty||!$('#reviewed').checked)return;s
   $('#published-link').replaceChildren(link(t('Open published tour ↗','Mở tour đã xuất bản ↗'),path),copy);notice(t('Published a separate snapshot. Audio availability is shown for each scene.','Đã xuất bản snapshot riêng. Tình trạng audio được hiển thị theo từng điểm.'));
 }catch(e){notice(e.message,true);}finally{setBusy(false);}};
 document.addEventListener('languagechange',()=>{notice('');render();});
+for(const selector of ['#property-name','#content-locale','#message'])$(selector).addEventListener('input',()=>{pendingCreate=null;});
 window.addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue='';}});
+async function loadStudioDrafts(){
+  try{
+    const response=await fetch('/api/studio/session');if(!response.ok)return;
+    const data=await response.json();
+    for(const project of data.projects||[]){if(!/^[a-f0-9]{32}$/.test(project.id))continue;$('#studio-projects').append(link(project.name,`/business/projects/${project.id}/generate`,'quiet'));}
+    $('#studio-drafts').hidden=!$('#studio-projects').children.length;
+  }catch{/* This optional list does not block photo drafts when Studio is unavailable. */}
+}
+loadStudioDrafts();
 try{await refreshList();const id=new URLSearchParams(location.search).get('draft');if(id)await load(id);else render();}catch(e){notice(e.message,true);}
 
 

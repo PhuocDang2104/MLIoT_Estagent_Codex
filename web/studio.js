@@ -197,25 +197,9 @@ async function loadSession() {
   renderProjects();
 }
 function newProject() {
-  stopStream();
-  disposePreview();
-  project = null;
-  generation = null;
-  activeAsset = null;
-  reviewKey = "";
-  pendingRequest = null;
-  $("#create-view").hidden = false;
-  $("#workspace-view").hidden = true;
-  $("#top-status").textContent = "Bản nháp";
-  $("#top-status").dataset.status = "draft";
-  history.pushState({}, "", "/business/create");
-  renderProjects();
-  notify(
-    session?.configured
-      ? ""
-      : "Chưa kết nối OpenAI. Bạn vẫn có thể lưu bản nháp.",
-  );
+  location.replace('/business/create');
 }
+
 $("#new-project").onclick = () => {
   if (!busy) newProject();
 };
@@ -1022,12 +1006,11 @@ window.addEventListener("pagehide", () => {
   selected.forEach((p) => URL.revokeObjectURL(p.url));
 });
 try {
-  await loadSession();
   const match = location.pathname.match(/\/projects\/([a-f0-9]{32})\/generate/);
-  if (match) await openProject(match[1]);
-  else newProject();
-  if (!session.configured)
-    notify("Chưa kết nối OpenAI. Bạn vẫn có thể lưu bản nháp.");
+  if (!match) { document.body.hidden=true; newProject(); }
+  else { await loadSession(); await openProject(match[1]); }
+  if (session && !session.configured)
+    notify("Trợ lý AI hiện chưa sẵn sàng. Bản nháp đã lưu vẫn được giữ lại.");
 } catch (e) {
   notify(e.message, true);
   $("#save-project").disabled = true;

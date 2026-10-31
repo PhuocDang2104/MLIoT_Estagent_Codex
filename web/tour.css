@@ -101,3 +101,22 @@
 [data-page=viewer].is-immersive{--viewer-glass:#243234}
 [data-page=viewer].is-immersive .panel-body{background:#243234;-webkit-backdrop-filter:none;backdrop-filter:none}
 }
+
+/* Studio photo Creator: self-contained layout, shared Viewer styles stay untouched. */
+[data-page=creator] .product-main{padding-top:32px}
+[data-page=creator] .product-main>h1{font-size:clamp(32px,4vw,52px);margin:18px 0}
+[data-page=creator] .product-columns{margin-top:28px;grid-template-columns:minmax(0,.9fr) minmax(0,1.2fr)}
+[data-page=creator] .conversation-panel{position:sticky;top:20px;max-height:calc(100dvh - 40px);overflow:auto}
+[data-page=creator] #initial-fields{display:grid;gap:7px;margin-bottom:18px}
+[data-page=creator] .attach-zone{position:relative;display:flex;min-height:150px;align-items:center;justify-content:center;flex-direction:column;gap:12px;text-align:center;border:1.5px dashed #a7b4ac;background:#f5f7f4;padding:24px}
+[data-page=creator] .attach-zone:focus-within{outline:2px solid #9c7d5a;outline-offset:3px}
+[data-page=creator] .attach-zone input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;margin:0}
+[data-page=creator] #photo-count{font-size:12px;font-weight:600;border:1px solid #cad2cc;border-radius:8px;padding:8px 12px;background:white}
+[data-page=creator] .creator-audio>summary,[data-page=creator] #studio-drafts>summary{font-size:13px;font-weight:600;cursor:pointer;padding:8px 0}
+[data-page=creator] .scene-image-options>summary{font-size:11px;color:#687470;cursor:pointer;padding:5px 0}
+[data-page=creator] .scene-image-options[open]{padding:8px;border-radius:8px;background:#f4f6f3}
+[data-page=creator] #studio-projects{display:flex;flex-wrap:wrap;gap:8px;padding:12px 0}
+[data-page=creator] #publish-help{margin-bottom:12px}
+[data-page=creator] .draft-panel .panel-heading{display:flex;align-items:center;justify-content:space-between}
+[data-page=creator] #messages{max-height:240px}
+@media(max-width:850px){[data-page=creator] .product-columns{grid-template-columns:1fr}[data-page=creator] .conversation-panel{position:static;max-height:none;overflow:visible}}

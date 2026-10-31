@@ -1,0 +1,11 @@
+{
+  "name": "estagent-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 5173 --bind 127.0.0.1",
+    "lint": "node --check app.js && node --check build.mjs",
+    "build": "node build.mjs"
+  }
+}

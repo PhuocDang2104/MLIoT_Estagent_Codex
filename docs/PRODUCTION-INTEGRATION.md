@@ -49,6 +49,6 @@ Build from a clean accepted SHA. Preserve old releases, volumes and MinIO object
 Do not alter unrelated VM services. Recheck remote main and running image before
 push/cutover to avoid overwriting concurrent teammate changes.
 
-Completed: deployed `80f477b`, healthy public HTTPS and Seoul browser checks.
+Completed: deployed `ee6da34`, healthy public HTTPS and Seoul browser checks.
 Full results, precise verification limits, private backup and rollback details:
 `STUDIO-SEOUL-RELEASE.md`. Evidence: `deploy/evidence/studio-seoul/`.

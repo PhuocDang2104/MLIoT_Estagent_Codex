@@ -1,0 +1,15 @@
+{
+  "source": "ee6da346abafeff28d71a4bb5b329cd4e07c2491",
+  "image_id": "sha256:fe6c4d9b711451542e53424a91e8bb039b42f39c878c1b662cec25c6e864a89a",
+  "health": "healthy",
+  "archive_sha256": "3a8187469dbfec2077f095b1a5fc377c28ab457c6c1839a6ab29725a846cf126",
+  "backup": "/opt/estagent/backups/studio-rollout/20261031T085135975582Z-before-studio-ee6da34",
+  "backup_files_verified": 24,
+  "previous_source": "80f477b36aa9886516fe8f5225af9ca54e132c0d",
+  "runtime_env": "/opt/estagent/runtime/studio-ee6da34.env",
+  "previous_env": "/opt/estagent/runtime/studio-80f477b.env",
+  "backend_unchanged_from_previous": true,
+  "public_catalog_and_tour_list_preserved": true,
+  "source_includes_all_remote_heads_at_build": true,
+  "cutover_lock_released": true
+}

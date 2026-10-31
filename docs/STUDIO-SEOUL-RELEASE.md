@@ -6,8 +6,8 @@ Production: https://estagent.duckdns.org
 - Secondary photo editor: `/business/photos`.
 - Library: `/viewer.html`, including existing published photo tours, Studio tours,
   ZInD sample and the new furnished `/demos/seoul-apartment`.
-- Source deployed: `80f477b36aa9886516fe8f5225af9ca54e132c0d`.
-- Image: `sha256:1123f15664ee4979ae6778a293a8616ac2a4c6af0ddcf96e94ad7745c6ccd45a`.
+- Source deployed: `ee6da346abafeff28d71a4bb5b329cd4e07c2491`.
+- Image: `sha256:fe6c4d9b711451542e53424a91e8bb039b42f39c878c1b662cec25c6e864a89a`.
 
 All remote feature heads were ancestors of the integrated main at release.
 Concurrent landing, building-preview and playback-control changes were retained.
@@ -30,7 +30,7 @@ published-row hashes, public browser checks, Linux tests and live provider usage
 - Live VM OpenAI checks: Astra High, Terra Low and Sol Low completed streamed
   Responses calls (61 total tokens), plus one 20-character speech check. These
   check provider connectivity, not an additional live full-house reconstruction.
-- Public HTTPS browser: landing 3D illustration, default Studio, photo editor,
+- Public HTTPS browser: landing actual demo dollhouse, default Studio, photo editor,
   library and Seoul sample passed with no page errors or failed responses.
 - Seoul: five markers, all eight original panorama images, floorplan, orbit and
   mobile layout passed. First public model load in this check took 9.24 seconds.
@@ -44,38 +44,49 @@ The service has 2 GiB / 1.5 CPU limits; private MinIO and FFmpeg remain enabled.
 
 ## Preservation and rollback
 
-The previous release was `975d91a130b1fc6adeae5e6fd6e678ad4841abcc` with
-`/opt/estagent/runtime/model-975d91a1.env`. Its image remains available. Current
-configuration is `/opt/estagent/runtime/studio-80f477b.env`, mode 0600. No secret
-values are included in Git or evidence.
+The initial Studio backend release was `80f477b`. A final frontend rollout at
+`ee6da34` includes teammate correction `c73c636`: the homepage previews the actual
+ZInD dollhouse. Backend, Blender, API configuration and Seoul assets are identical
+to the qualified `80f477b` release. Web strict gate and public entry/library/
+landing browser checks passed again. All remote branch heads at build time are
+ancestors of `ee6da34`. The shared deployment lock is released.
 
-Offline backup (24 files, hashes and SQLite integrity verified):
-`/opt/estagent/backups/studio-rollout/20261031T084652612107Z-before-studio-80f477b`.
-Existing photo and Studio published rows match the backup exactly. The original
-ZInD catalog entry remains identical; Seoul uses a separate immutable namespace.
-No data restore or object deletion was performed. Other applications, the edge
-proxy, storage service and another team's preview were left running.
+Current configuration: `/opt/estagent/runtime/studio-ee6da34.env`, mode 0600.
+Immediate previous configuration: `/opt/estagent/runtime/studio-80f477b.env`.
+No secret values are included in Git or evidence.
+
+Two complete offline backups (24 files each, hashes and SQLite integrity checked):
+
+- `/opt/estagent/backups/studio-rollout/20261031T084652612107Z-before-studio-80f477b`
+- `/opt/estagent/backups/studio-rollout/20261031T085135975582Z-before-studio-ee6da34`
+
+Existing published rows match the first backup exactly. Both public demo catalog
+and published-tour list match the second baseline exactly. The ZInD catalog was
+preserved; Seoul uses a separate immutable namespace. No restore or object deletion
+was performed. Other apps, edge proxy, storage and another team's preview remain.
 
 The first backup attempt failed because SQLite needed journal metadata on a
 read-only mount. The previous app was restarted immediately. The successful
-retry stopped the single writer, used the SQLite backup API on its dedicated
-volume with normal access, verified the complete backup, and switched the app
-under `/opt/estagent/runtime/deploy.lock`. The incomplete first backup has no
-completion manifest and is not an accepted restore point.
+retry stopped the writer, used SQLite's backup API with normal access to its
+dedicated volume, verified the complete backup, and switched under
+`/opt/estagent/runtime/deploy.lock`. The incomplete first attempt has no completion
+manifest and is not an accepted restore point.
 
-For rollback, acquire that lock, drain and stop the assistant, take a **fresh**
-offline backup, and rehearse the old image against a separate copy of current
-data. The old graph lacks new modeling/review states: do not blindly downgrade
-after new Studio generations have been created. Prefer a forward fix in that
-case. After a successful compatibility check, the previous configuration is:
+To roll back the final frontend update, acquire the shared lock, drain/stop the
+assistant, take a fresh offline backup, and use the preceding runtime (identical
+backend and schema) against the same data volume:
 
 ```sh
-docker compose --env-file /opt/estagent/runtime/model-975d91a1.env \
-  -f /opt/estagent/releases/975d91a130b1fc6adeae5e6fd6e678ad4841abcc/deploy/compose.yaml \
+docker compose --env-file /opt/estagent/runtime/studio-80f477b.env \
+  -f /opt/estagent/releases/80f477b36aa9886516fe8f5225af9ca54e132c0d/deploy/compose.yaml \
   up -d --no-deps --pull never assistant
 ```
 
-This previous configuration is keyless and disables new narration/Blender work.
-Never restore an older database over newer user work to make a rollback pass.
-Temporary candidate and QA servers were stopped; the user's existing local
-server on port 5180 was retained.
+The older `975d91a` / `model-975d91a1.env` release is still retained, but it is
+keyless and lacks the new modeling/review graph states. Do not downgrade to that
+release after new Studio work without rehearsing against a separate current-data
+copy. Prefer a forward fix. Never overwrite newer work with an older database.
+
+Temporary candidate/QA servers were stopped. The existing local server on port
+5180 remains running. Realtime voice and transcription were not re-tested in this
+rollout; the live checks listed above cover Responses and speech generation.

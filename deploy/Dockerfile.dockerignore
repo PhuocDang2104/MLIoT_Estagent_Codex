@@ -22,3 +22,10 @@
 !deploy/entrypoint.py
 !deploy/smoke.py
 !deploy/backup_data.py
+
+!server/demos/
+!server/demos/*.py
+!web/demos/
+!web/demos/*.html
+!web/demos/*.js
+!web/demos/*.css

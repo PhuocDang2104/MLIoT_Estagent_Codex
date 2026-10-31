@@ -8,3 +8,5 @@ for (const file of ['assistant.html', 'assistant.css', 'assistant.js', 'studio.h
   await copyFile(file, `dist/${file}`);
 }
 console.log('Built static site in web/dist');
+
+await cp('demos', 'dist/demos', { recursive: true });

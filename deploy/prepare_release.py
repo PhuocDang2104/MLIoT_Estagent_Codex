@@ -10,7 +10,7 @@ import tarfile
 
 ROOT = Path(__file__).resolve().parents[1]
 FILES = [
-    'server/assistant', 'server/tours', 'server/creator', 'server/limits.py', 'server/storage.py', 'server/object_storage.py', 'web/index.html', 'web/experience.html',
+    'server/assistant', 'server/demos', 'web/demos', 'server/tours', 'server/creator', 'server/limits.py', 'server/storage.py', 'server/object_storage.py', 'web/index.html', 'web/experience.html',
     'web/creator.html', 'web/viewer.html', 'web/assistant.html',
     'web/styles.css', 'web/motion.css', 'web/tour.css', 'web/assistant.css',
     'web/app.js', 'web/i18n.js', 'web/motion.js', 'web/creator.js',

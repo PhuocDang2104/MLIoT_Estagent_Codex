@@ -159,3 +159,18 @@ Studio's existing model adapters are retained; synthetic provider/triangle GLB/s
 demonstrate real property reconstruction or real speech generation. Uploaded narration and music
 remain uploader-provided, not bundled demo audio. Sources and prior asset-license caveats above remain.
 H0 is still unconfirmed; today's commits do not prove build during the competition window.
+
+## P0 cached Nhà Demo — supplied ZInD000 bundle
+
+User directly designated the complete bundle on the existing Estagent VM for
+in-app display, including reuse/adaptation of its portable Three.js renderer.
+Source bundle SHA734f7053604b67c24701acff3a044e2d33241272149e9596b0eefdca5fc592e3.
+Reuse:32original2048×1024equirectangular JPEGs,15room annotations,16selected real
+capture markers, authored cached GLB9682280bytes, supplied Three.js0.180 renderer.
+New work: read-only membership facade, private-MinIO importer/readback verification,
+app catalog/brand shell, packaging and browser QA. Not new reconstruction/inference;
+no audio generation, no cachedMP4 import, no other dataset. Runtime/data bundle and
+real screenshots remain outsideGit. License/public-export rights have NOT been
+independently verified; visible source/cache disclosure, no dataset/model download
+or export control is offered. No claim all source/model/assets were made today or
+inside unconfirmed competition hours. Integration/tooling assisted by Codex.

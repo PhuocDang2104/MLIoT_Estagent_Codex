@@ -270,3 +270,18 @@ recording is selected; starting it pauses both recorded tracks. It is never pres
 QA uses generated sine tones only, via actual upload/HTTP/media decode and clock/events. No test
 recording is described as human narration or licensed background music. No paid API, keys, TTS,
 asset download or production-data migration occurs in this task.
+
+## P0 cached-home facade — 2026-10-31
+
+Direct Thái scope: make the specifically supplied cached ZInD000 home visible in
+Xem tour without changing Creator12-image limits or existing tour schemas.
+Read-only `GET /api/demos` returns approved cached-demo cards (id/kind/title/href,
+thumbnail_url, rooms/captures/markers, source_mode, rights_status, audio_available).
+`GET /demos/zind-house-000` is the branded cached viewer; `GET|HEAD
+/api/demos/zind-house-000/assets/{name}` serves only catalog members from private
+MinIO, supports single Range206/416, returns404 for unknown IDs/paths and503 for
+storage/hash metadata mismatch. No client filesystem path, rawZIP, BLEND, arbitrary
+bucket key, dataset export or write API. Backend-only DEMO_CATALOG_PATH is optional;
+if explicitly configured, invalid/missing catalog fails startup. Catalog/data and
+renderer bundle remain outsideGit. Projection and room/capture/marker mapping
+come from the pinned supplied manifest; existing Hackathon snapshot unchanged.

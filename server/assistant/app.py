@@ -19,6 +19,7 @@ from .graph import build_graph, make_extractor, LABELS, QUESTIONS
 from server.limits import install_limits
 from server.storage import install_storage
 from server.object_storage import create_object_storage
+from server.demos import install_demos
 from server.creator.api import router as creator_router
 from server.creator.service import Creator
 from server.creator.provider import OpenAIProvider
@@ -66,6 +67,7 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
     app = FastAPI(lifespan=lifespan,docs_url=None,redoc_url=None,openapi_url=None)
     app.state.object_storage = object_storage
     app.include_router(creator_router(origin))
+    install_demos(app, env, WEB)
 
     @app.middleware('http')
     async def boundaries(request, call_next):

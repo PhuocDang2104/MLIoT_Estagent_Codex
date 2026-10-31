@@ -13,6 +13,7 @@ services:
       STUDIO_DATA_DIR: /data/studio
       STUDIO_GEOMETRY_URL: ${STUDIO_GEOMETRY_URL:-}
       STUDIO_GEOMETRY_TOKEN: ${STUDIO_GEOMETRY_TOKEN:-}
+      DEMO_CATALOG_PATH: ${DEMO_CATALOG_PATH:-}
       MEDIA_STORAGE_BACKEND: ${MEDIA_STORAGE_BACKEND:-local}
       MINIO_ENDPOINT: ${MINIO_ENDPOINT:-}
       MINIO_SECURE: ${MINIO_SECURE:-0}
@@ -43,6 +44,7 @@ services:
       - "127.0.0.1:18180:5180"
     volumes:
       - checkpoints:/data
+      - ${DEMO_CATALOG_DIR:-/opt/estagent/runtime/demo-cache}:/demo-catalog:ro
     networks:
       storage: {}
       edge:

@@ -9,3 +9,5 @@ OpenAI: fixture only; no model/provider calls.
 NOTES: existing panorama renderer/assets/font provenance retained. New viewer composition/controls built during this task; H0 classification remains integrator's declaration.
 
 Result: root accepted desktop/mobile direction. Strict web gate PASS; actual Chromium visual/touch, local backend WAV+restart, scene_id POST/keyless503 PASS. Public-demo screenshots moved outside Git to /private/tmp/estagent-immersive-evidence per Thái; only synthetic screenshots committed. Handoff: docs/IMMERSIVE-VIEWER-HANDOFF.md. No contract/dependency/build/server change or deployment.
+
+Follow-up authorized directly by Thái: Apple-style glass for viewer panels/controls. Paths unchanged; CSS-only product change, no new assets/deps/contracts. Browser1440/390/320 + strict gate PASS; evidence local in /private/tmp/estagent-immersive-evidence/glass-*; no demo screenshots committed.

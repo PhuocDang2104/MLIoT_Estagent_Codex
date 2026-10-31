@@ -1,0 +1,12 @@
+{
+  "source": "975d91a130b1fc6adeae5e6fd6e678ad4841abcc",
+  "image": "sha256:c82a5512ac655cf7e15a3d4722867dc3aaea3c5831f0e18feb820c052c8fe0bd",
+  "health": "healthy",
+  "previous_source": "f173106d110d270ad71fc06b3997f89c8757db8c",
+  "video_enabled": "1",
+  "narration_enabled": "0",
+  "provider_keys_empty": true,
+  "catalog_preserved": true,
+  "data_restored": false,
+  "cutover_lock": true
+}

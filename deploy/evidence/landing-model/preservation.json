@@ -1,0 +1,12 @@
+{
+  "canonical_manifest_unchanged": true,
+  "production_matches_files": [
+    "web/demos/house.js",
+    "web/demos/house.css",
+    "web/app.js",
+    "web/assets/models/building-preview.js",
+    "web/assets/models/sunrise-office.glb"
+  ],
+  "guide_v2_bindings": 32,
+  "glb_sha256": "47eedfc08f6f4e251c1e95f2c9c475bbe53b0aa4492a6bd5081d38a80d56c8c1"
+}

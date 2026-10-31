@@ -5,7 +5,7 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 from tests.ai.creator_fixtures import png, wav
 
-EVIDENCE=Path(__file__).resolve().parents[2]/'tests/ai/evidence/creator'
+EVIDENCE=Path(os.environ.get('CREATOR_QA_EVIDENCE_DIR', Path(__file__).resolve().parents[2]/'tests/ai/evidence/creator'))
 
 
 def main():
@@ -22,7 +22,7 @@ def main():
         page.locator('[name=name]').fill('Published synthetic tour')
         page.locator('[name=description]').fill('Synthetic end-to-end workflow test. Not an actual property.')
         page.locator('#panorama-confirmed').check()
-        page.locator('summary').click()
+        page.locator('.extras > summary').click()
         page.locator('#floorplan').set_input_files({'name':'Floorplan fixture.png','mimeType':'image/png','buffer':png(50)})
         page.locator('#music').set_input_files({'name':'Synthetic silence.wav','mimeType':'audio/wav','buffer':wav()})
         page.locator('[name=music_credit]').fill('Generated test silence, no external asset.')
@@ -30,18 +30,18 @@ def main():
         page.locator('#generate').wait_for(state='visible')
         page.locator('#generate').click()
         page.get_by_role('button',name='Xác nhận & tiếp tục ↗',exact=True).wait_for(timeout=15000)
-        page.get_by_role('button',name='＋ Thêm đường nối hai chiều').click()
+        page.get_by_role('button',name='＋ Nối hai khu').click()
         page.locator('[name=forward]').fill('90')
         page.locator('[name=back]').fill('-90')
         page.get_by_role('button',name='Xác nhận & tiếp tục ↗',exact=True).click()
-        page.get_by_role('button',name='Duyệt & tạo giọng AI ↗',exact=True).wait_for(timeout=15000)
+        page.get_by_role('button',name='Duyệt & tạo giọng ↗',exact=True).wait_for(timeout=15000)
         page.locator('#script-editor textarea').first.fill('Lời giới thiệu fixture do Business kiểm tra.')
-        page.get_by_role('button',name='Duyệt & tạo giọng AI ↗',exact=True).click()
+        page.get_by_role('button',name='Duyệt & tạo giọng ↗',exact=True).click()
         page.locator('#publish').wait_for(state='visible',timeout=15000)
         page.get_by_role('tab',name='Tour',exact=True).click()
         assert page.locator('#preview audio').count()==3
         page.locator('#publish').click()
-        link=page.get_by_role('link',name='Mở tour đã xuất bản ↗')
+        link=page.get_by_role('link',name='Mở tour ↗')
         link.wait_for()
         share=link.get_attribute('href')
         page.evaluate('window.scrollTo(0,0)')

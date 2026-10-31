@@ -2,10 +2,10 @@ import { panorama } from "./studio-panorama.js";
 const $ = (selector) => document.querySelector(selector);
 const states = {
   queued: "Đang chờ",
-  running: "Đang xử lý",
+  running: "Đang thực hiện",
   completed: "Hoàn tất",
   needs_review: "Cần duyệt",
-  waiting_integration: "Chờ kết nối dựng 3D",
+  waiting_integration: "Chờ dịch vụ 3D",
   failed: "Cần thử lại",
   rejected: "Đã từ chối",
 };
@@ -35,6 +35,7 @@ let session,
   reviewKey = "",
   busy = false,
   pendingRequest = null;
+const expandedActivities = new Map();
 function node(tag, text, attrs = {}) {
   const n = document.createElement(tag);
   if (text !== null && text !== undefined) n.textContent = text;
@@ -204,12 +205,13 @@ function newProject() {
   $("#create-view").hidden = false;
   $("#workspace-view").hidden = true;
   $("#top-status").textContent = "Bản nháp";
+  $("#top-status").dataset.status = "draft";
   history.pushState({}, "", "/business/create");
   renderProjects();
   notify(
     session?.configured
       ? ""
-      : "Chưa kết nối OpenAI. Bạn vẫn có thể lưu dữ liệu; cấu hình key ở backend để bắt đầu tạo tour.",
+      : "Chưa kết nối OpenAI. Bạn vẫn có thể lưu bản nháp.",
   );
 }
 $("#new-project").onclick = () => {
@@ -269,7 +271,11 @@ $("#create-form").onsubmit = async (e) => {
     e.target.reset();
     await loadSession();
     await openProject(result.id);
-    notify("Dữ liệu đã lưu. Bạn có thể bắt đầu tạo tour.");
+    notify(
+      session.configured
+        ? "Tư liệu đã lưu."
+        : "Đã lưu bản nháp. Cần kết nối OpenAI để tạo tour.",
+    );
   } catch (error) {
     notify(
       error.message +
@@ -309,7 +315,7 @@ async function openProject(id) {
 }
 function renderAssets() {
   $("#asset-count").textContent =
-    project.assets.filter((a) => a.kind === "panorama").length + " panorama";
+    project.assets.filter((a) => a.kind === "panorama").length + " ảnh";
   $("#assets").replaceChildren(
     ...project.assets
       .filter((a) => ["panorama", "floorplan"].includes(a.kind))
@@ -334,6 +340,7 @@ function renderAssets() {
   );
 }
 function renderHistory() {
+  $("#history-count").textContent = project.generations.length;
   $("#history").replaceChildren(
     ...project.generations.map((g, i) => {
       const div = node("div", null, { class: "history-item" }),
@@ -441,13 +448,18 @@ $("#publish").onclick = async () => {
     box.hidden = false;
     box.replaceChildren(
       node("h3", "Tour đã xuất bản"),
-      node("p", "Đây là phiên bản bất biến đã được phê duyệt."),
-      node("a", "Mở tour đã xuất bản ↗", {
+      node("p", "Sẵn sàng chia sẻ."),
+      node("a", "Mở tour ↗", {
         href: `/studio-tour.html?id=${result.id}`,
         target: "_blank",
         rel: "noopener",
       }),
     );
+    project.published = [
+      ...(project.published || []),
+      { id: result.id, generation: generation.id },
+    ];
+    renderStages();
     notify("Đã xuất bản phiên bản đã duyệt.");
   } catch (e) {
     notify(e.message, true);
@@ -456,6 +468,56 @@ $("#publish").onclick = async () => {
     $("#publish").disabled = false;
   }
 };
+function renderStages() {
+  const g = generation;
+  const published =
+    !!g && project.published?.some((p) => p.generation === g.id);
+  const completed = new Set(
+    (g?.events || [])
+      .filter(
+        (e) =>
+          e.status === "completed" &&
+          e.node_id in stepNames &&
+          e.node_id !== "workflow",
+      )
+      .map((e) => e.node_id),
+  );
+  if (
+    (g?.observations.length || 0) <
+    project.assets.filter((a) => a.kind === "panorama").length
+  )
+    completed.delete("scene");
+  // A completed TTS call is one segment, not the whole voice milestone.
+  if (!g?.package) completed.delete("voice");
+  const contentNodes = [
+    "semantic",
+    "navigation",
+    "narration",
+    "final_review",
+    "voice",
+  ];
+  const current =
+    published || g?.package
+      ? 3
+      : g?.events.some((e) => contentNodes.includes(e.node_id))
+        ? 2
+        : 1;
+  document.querySelectorAll("[data-stage]").forEach((item, index) => {
+    item.dataset.state =
+      index < current || published
+        ? "done"
+        : index === current
+          ? "current"
+          : "pending";
+    if (index === current && !published)
+      item.setAttribute("aria-current", "step");
+    else item.removeAttribute("aria-current");
+  });
+  $("#stage-summary").textContent = g
+    ? `${completed.size}/12 bước đã xong`
+    : "Đã lưu tư liệu";
+  if (published) $("#top-status").textContent = "Đã xuất bản";
+}
 function renderGeneration() {
   const g = generation;
   $("#generate").hidden = !!g;
@@ -465,36 +527,90 @@ function renderGeneration() {
     (g?.status === "waiting_integration" && session.geometry_configured)
   );
   $("#retry").textContent =
-    g?.status === "waiting_integration"
-      ? "Tiếp tục dựng 3D ↗"
-      : "Thử lại bước đang dở";
+    g?.status === "waiting_integration" ? "Tiếp tục dựng 3D ↗" : "Thử lại";
   $("#publish").hidden = g?.status !== "completed";
   $("#top-status").textContent = g ? states[g.status] : "Bản nháp";
+  $("#top-status").dataset.status = g?.status || "draft";
   $("#generation-status").textContent = g ? states[g.status] : "Chưa bắt đầu";
   $("#empty-stream").hidden = !!g;
   $("#share").hidden = true;
   const latest = new Map();
   for (const event of g?.events || []) latest.set(event.node_id, event);
   $("#activity").replaceChildren(
-    ...[...latest.values()].map((event) => {
-      const card = node("article", null, {
-          class: "activity-card",
-          "data-status": event.status,
-        }),
-        head = node("div", null, { class: "activity-head" });
-      head.append(
-        node("h3", stepNames[event.node_id] || "Cập nhật tour"),
-        node("span", states[event.status] || event.status, {
-          class: "state-label",
-        }),
-      );
-      card.append(head, node("p", event.message));
-      if (event.node_id === "scene" && g.observations.length)
-        for (const o of g.observations)
-          card.append(node("p", o.label + " — " + o.summary));
-      return card;
-    }),
+    ...[...latest.values()]
+      .filter(
+        (event) =>
+          event.node_id !== "workflow" ||
+          ["failed", "rejected"].includes(event.status),
+      )
+      .map((event) => {
+        const status =
+          event.node_id === "scene" &&
+          event.status === "completed" &&
+          g.observations.length <
+            project.assets.filter((a) => a.kind === "panorama").length
+            ? "running"
+            : event.status;
+        const key = `${g.id}:${event.node_id}`;
+        const card = node("details", null, {
+            class: "activity-card",
+            "data-status": status,
+            "data-node": event.node_id,
+          }),
+          summary = node("summary"),
+          head = node("div", null, { class: "activity-head" }),
+          body = node("div", null, { class: "activity-body" });
+        card.open = expandedActivities.has(key)
+          ? expandedActivities.get(key)
+          : ["running", "failed"].includes(status);
+        summary.addEventListener("click", () =>
+          expandedActivities.set(key, !card.open),
+        );
+        head.append(node("h3", stepNames[event.node_id] || "Cập nhật tour"));
+        summary.append(
+          node(
+            "span",
+            status === "completed"
+              ? "✓"
+              : ["needs_review", "waiting_integration"].includes(status)
+                ? "!"
+                : "·",
+            { class: "activity-icon", "aria-hidden": "true" },
+          ),
+          head,
+          node(
+            "span",
+            event.node_id === "scene" && status === "completed"
+              ? `${g.observations.length} ảnh`
+              : states[status] || status,
+            {
+              class: "state-label",
+            },
+          ),
+        );
+        body.append(
+          node(
+            "p",
+            status === "waiting_integration"
+              ? "Bố cục đã lưu. Dịch vụ dựng 3D chưa sẵn sàng."
+              : event.message,
+          ),
+        );
+        if (event.node_id === "scene" && g.observations.length) {
+          const observations = node("div", null, { class: "observation-list" });
+          for (const o of g.observations) {
+            const item = node("div", null, { class: "observation-item" });
+            item.append(node("strong", o.label), node("p", o.summary));
+            observations.append(item);
+          }
+          body.append(observations);
+        }
+        card.append(summary, body);
+        return card;
+      }),
   );
+  $("#brief-panel").hidden = !g?.brief;
+  $("#fact-count").textContent = g?.brief?.facts.length || "";
   if (g?.brief) {
     $("#brief").replaceChildren(
       node("p", g.brief.summary, { class: "muted" }),
@@ -504,10 +620,10 @@ function renderGeneration() {
           node(
             "small",
             {
-              verified: "Business cung cấp",
-              observed: "Quan sát từ ảnh",
-              inferred: "Suy luận, cần xác nhận",
-              unknown: "Chưa có bằng chứng",
+              verified: "Bạn cung cấp",
+              observed: "Từ ảnh",
+              inferred: "Cần xác nhận",
+              unknown: "Chưa rõ",
             }[f.provenance],
           ),
         );
@@ -521,6 +637,7 @@ function renderGeneration() {
       }),
     );
   if (g?.error) notify(g.error, true);
+  renderStages();
   renderReview();
 }
 function renderReview() {
@@ -541,40 +658,37 @@ function renderReview() {
     node(
       "h2",
       g.review.kind === "spatial"
-        ? "Cùng kiểm tra bố cục"
+        ? "Kiểm tra không gian"
         : g.review.kind === "final"
-          ? "Duyệt nội dung trước khi tạo giọng"
-          : "Đã sẵn sàng cho bước dựng 3D",
+          ? "Duyệt nội dung"
+          : "Chờ dựng 3D",
     ),
-    node("p", g.review.message, { class: "muted" }),
+    node(
+      "p",
+      g.review.kind === "spatial"
+        ? "Xác nhận khu vực và lối đi thực tế."
+        : g.review.kind === "final"
+          ? "Kiểm tra lời giới thiệu trước khi tạo giọng."
+          : "Bố cục đã lưu. Tiếp tục khi dịch vụ 3D sẵn sàng.",
+      { class: "muted" },
+    ),
   );
   if (g.review.kind === "integration") {
-    box.append(
-      node(
-        "p",
-        "Các phân tích và checkpoint đã được lưu. Bản nháp sẽ tiếp tục khi worker dựng mô hình được tích hợp.",
-        { class: "muted" },
-      ),
-    );
     return;
   }
   const form = node("form");
   box.append(form);
   if (g.review.kind === "spatial") {
     form.append(
-      node(
-        "p",
-        "Đây là danh sách checkpoint, chưa phải bản vẽ đo đạc. Chỉ thêm đường đi có thật và nhập hướng mũi tên đã kiểm tra trong panorama.",
-        { class: "muted" },
-      ),
+      node("span", "Ước lượng · Cần xác nhận", { class: "review-flag" }),
     );
     for (const room of g.rooms) {
       const row = node("div", null, {
           class: "room-edit",
           "data-checkpoint": room.checkpoint_id,
         }),
-        label = node("label", room.checkpoint_id + " · Tên khu"),
-        yawLabel = node("label", "Hướng nhìn °");
+        label = node("label", room.checkpoint_id + " · Khu vực"),
+        yawLabel = node("label", "Góc nhìn °");
       label.append(
         node("input", null, {
           name: "label",
@@ -598,8 +712,8 @@ function renderReview() {
     }
     const fieldset = node("fieldset"),
       links = node("div", null, { id: "connections" });
-    fieldset.append(node("legend", "Đường nối giữa các checkpoint"), links);
-    const add = node("button", "＋ Thêm đường nối hai chiều", {
+    fieldset.append(node("legend", "Lối đi hai chiều"), links);
+    const add = node("button", "＋ Nối hai khu", {
       type: "button",
     });
     add.onclick = () => {
@@ -624,7 +738,7 @@ function renderReview() {
             required: "",
             min: "-180",
             max: "180",
-            placeholder: "yaw °",
+            placeholder: name === "forward" ? "Đi °" : "Về °",
             "aria-label": name === "forward" ? "Hướng đi °" : "Hướng về °",
           }),
         );
@@ -642,7 +756,7 @@ function renderReview() {
   if (g.review.kind === "final" && g.script) {
     editor.hidden = false;
     editor.append(
-      node("h2", "Lời giới thiệu từng khu"),
+      node("h2", "Lời giới thiệu"),
       node("p", g.script.introduction, { class: "muted" }),
     );
     for (const segment of g.script.segments) {
@@ -666,10 +780,10 @@ function renderReview() {
       "button",
       g.review.kind === "spatial"
         ? "Xác nhận & tiếp tục ↗"
-        : "Duyệt & tạo giọng AI ↗",
+        : "Duyệt & tạo giọng ↗",
       { class: "primary", type: "submit" },
     ),
-    reject = node("button", "Từ chối bản nháp", { type: "button" });
+    reject = node("button", "Từ chối", { type: "button" });
   form.append(approve, reject);
   reject.onclick = () =>
     action(reject, `/generations/${g.id}/review`, {
@@ -746,8 +860,7 @@ function renderPreview() {
         box.append(
           node("img", null, { src: assetUrl(asset), alt: asset.name }),
         );
-        $("#preview-caption").textContent =
-          asset.name + " · Ảnh thường, chưa xác nhận góc phủ 360°.";
+        $("#preview-caption").textContent = asset.name + " · Ảnh thường";
       }
       return;
     }
@@ -761,15 +874,14 @@ function renderPreview() {
           alt: "Bản vẽ do Business cung cấp",
         }),
       );
-      $("#preview-caption").textContent =
-        "Bản vẽ nguồn do Business cung cấp. Chưa suy đoán kích thước từ ảnh.";
+      $("#preview-caption").textContent = "Mặt bằng bạn cung cấp.";
       return;
     }
   }
   if (mode === "model" && generation?.model) {
     const div = node("div");
     div.append(
-      node("p", "Mô hình đã được worker xuất thành GLB."),
+      node("p", "Mô hình 3D"),
       node("a", "Tải mô hình 3D ↗", {
         href: assetUrl(generation.model),
         download: "house.glb",
@@ -780,7 +892,7 @@ function renderPreview() {
   }
   if (mode === "tour" && generation?.package) {
     const div = node("div");
-    div.append(node("p", "Gói tour đã được kiểm tra. Giọng đọc do AI tạo."));
+    div.append(node("p", "Giọng giới thiệu do AI tạo."));
     for (const audio of generation.package.narration.audio) {
       const player = node("audio", null, {
         controls: "",
@@ -790,7 +902,17 @@ function renderPreview() {
         for (const other of div.querySelectorAll("audio"))
           if (other !== player) other.pause();
       };
-      div.append(node("p", audio.checkpoint_id), player);
+      div.append(
+        node(
+          "p",
+          audio.checkpoint_id === "introduction"
+            ? "Giới thiệu chung"
+            : generation.rooms.find(
+                (r) => r.checkpoint_id === audio.checkpoint_id,
+              )?.label || "Khu tham quan",
+        ),
+        player,
+      );
     }
     box.append(div);
     return;
@@ -799,11 +921,10 @@ function renderPreview() {
     node(
       "p",
       {
-        panorama: "Chưa có panorama.",
-        floorplan:
-          "Chưa có bản vẽ mặt bằng. Bố cục và kích thước cần được Business xác minh.",
-        model: "Mô hình 3D sẽ xuất hiện khi worker dựng nhà hoàn thành.",
-        tour: "Bản xem trước tour sẽ có sau khi tạo đủ asset và được duyệt.",
+        panorama: "Chọn ảnh để xem trước.",
+        floorplan: "Chưa có mặt bằng.",
+        model: "Mô hình chưa sẵn sàng.",
+        tour: "Tour sẽ xuất hiện sau khi hoàn tất.",
       }[mode],
     ),
   );
@@ -831,9 +952,7 @@ try {
   if (match) await openProject(match[1]);
   else newProject();
   if (!session.configured)
-    notify(
-      "Chưa kết nối OpenAI. Bạn vẫn có thể lưu dữ liệu; cấu hình key ở backend để bắt đầu tạo tour.",
-    );
+    notify("Chưa kết nối OpenAI. Bạn vẫn có thể lưu bản nháp.");
 } catch (e) {
   notify(e.message, true);
   $("#save-project").disabled = true;

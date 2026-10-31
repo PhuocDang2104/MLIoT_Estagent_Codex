@@ -2,6 +2,13 @@
 
 ## AI Generation Studio — 2026-10-31
 
+Vòng tài liệu/giao diện: đối chiếu Mermaid do user cung cấp với khai báo StateGraph,
+giữ bản gốc `.reference.mmd`, thêm exporter và render QA local. Studio tái sử dụng
+palette/brand/font và ảnh `apartment-living.jpg` đã có (SOURCES.md), không tạo asset
+3D giả. Mermaid 11.12.1 chỉ là công cụ QA ngoài repo; không thêm runtime dependency.
+Chỉnh path_map để xuất đúng nhánh điều kiện, giữ nguyên schema/API/provider và
+logic duyệt. Codex hỗ trợ viết tài liệu/UI/test; không gọi model/Blender có phí.
+
 Viết mới với Codex: `server/creator/`, `web/studio*`, tests và schema Studio.
 Tích hợp additive trên `533c3be`, giữ nguyên Creator/Viewer, schema và hướng
 deploy VM hiện có. Tái sử dụng pinned FastAPI/LangGraph/OpenAI/Pillow 11.3.0 và

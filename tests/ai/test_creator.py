@@ -180,3 +180,17 @@ def test_ratio_does_not_automatically_claim_panorama(tmp_path):
         pid=post(client,'/projects',{'name':'Ordinary photo','description':'Synthetic image with unknown projection.','request_id':'photo-project'}).json()['id']
         result=client.post(f'/api/studio/projects/{pid}/assets',content=png(),headers=HEADERS)
         assert result.status_code==201 and result.json()['projection']=='photo'
+
+
+def test_final_reject_ends_without_tts_or_publish(tmp_path):
+    provider=Provider()
+    with TestClient(app(tmp_path,provider,Worker())) as client:
+        pid=draft(client,music=True)
+        gid=post(client,f'/projects/{pid}/generations',{'request_id':'start-project'}).json()['id']
+        g=settled(client,gid)
+        post(client,f'/generations/{gid}/review',spatial(g))
+        assert settled(client,gid)['review']['kind']=='final'
+        response=post(client,f'/generations/{gid}/review',{'kind':'final','decision':'reject','request_id':'reject-final'})
+        assert response.status_code==202 and settled(client,gid)['status']=='rejected'
+        assert 'speech' not in provider.calls
+        assert post(client,f'/generations/{gid}/publish',{'request_id':'reject-no-publish'}).status_code==409

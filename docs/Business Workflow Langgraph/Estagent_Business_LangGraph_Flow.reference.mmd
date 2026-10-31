@@ -1,0 +1,86 @@
+%%{init: {"theme":"base", "themeVariables": {"background":"#FFFFFF", "fontFamily":"Inter, Arial, sans-serif", "fontSize":"15px", "lineColor":"#94A3B8", "primaryTextColor":"#172033"}, "flowchart": {"curve":"basis", "nodeSpacing":36, "rankSpacing":46, "htmlLabels":true}}}%%
+flowchart TB
+    %% ======== INPUT ========
+    INPUT(["360° PANORAMAS + PROPERTY DESCRIPTION<br/>Optional metadata · floorplan · camera information"]):::input
+
+    %% ======== LANGGRAPH WORKFLOW ========
+    subgraph LG["LANGGRAPH STATEGRAPH  /  BUSINESS TOUR BUILDER"]
+        direction TB
+        PRE["01  Input Processing<br/>Validation · checkpoint IDs · normalized data"]:::core
+
+        subgraph PARALLEL_1["02  PARALLEL UNDERSTANDING"]
+            direction LR
+            VISION["GPT Vision<br/>Scene & room understanding"]:::ai
+            LAYOUT["Layout Estimation<br/>Floorplan parsing / AI-estimated layout"]:::ai
+        end
+
+        GRAPH["03  Spatial Property Graph<br/>Floors · rooms · connections · camera anchors"]:::data
+        CONFIRM{"Spatial layout<br/>reliable?"}:::decision
+        SPATIAL_REVIEW["Business Spatial Review<br/>Correct room layout & connections"]:::human
+
+        BLENDER["04  Blender MCP 3D Builder<br/>Dollhouse geometry · materials · GLB export"]:::spatial
+        REGISTER["05  Checkpoint Registration<br/>Map each panorama to a 3D room & pose"]:::spatial
+        SEMANTIC["06  Semantic Grounding<br/>Metadata enrichment · provenance · room context"]:::ai
+
+        subgraph PARALLEL_2["07  PARALLEL TOUR GENERATION"]
+            direction LR
+            NAV["Navigation Builder<br/>360° arrows · hotspots · view transitions"]:::core
+            NARR["Narration Builder<br/>GPT scripts · OpenAI TTS · timeline"]:::ai
+        end
+
+        PACKAGE["08  Unified Tour Package<br/>house.glb · panoramas · spatial graph · audio · manifest"]:::data
+        QA["09  Quality Validation<br/>Spatial · semantic · navigation · media checks"]:::core
+        APPROVAL{"Business<br/>approved?"}:::decision
+        EDIT["Business Tour Editor<br/>Fix geometry, checkpoints, content or voice"]:::human
+        PUBLISH["10  Publish / Export<br/>Approved, versioned tour package"]:::success
+    end
+
+    %% ======== OUTPUT VIEWS ========
+    subgraph OUTPUT["DUAL-VIEW PROPERTY EXPERIENCE"]
+        direction LR
+        HOUSE["3D DOLLHOUSE VIEW<br/>Orbit · select room · zoom to checkpoint"]:::view
+        PANORAMA["360° PANORAMA TOUR<br/>Look around · navigation arrows · AI narrator"]:::view
+    end
+    VIDEO["Optional MP4 Export<br/>3D/panorama camera sequence + voice"]:::optional
+
+    %% ======== EDGES ========
+    INPUT --> PRE
+    PRE --> VISION
+    PRE --> LAYOUT
+    VISION --> GRAPH
+    LAYOUT --> GRAPH
+    GRAPH --> CONFIRM
+    CONFIRM -->|Yes| BLENDER
+    CONFIRM -->|Needs verification| SPATIAL_REVIEW
+    SPATIAL_REVIEW -->|Confirmed layout| BLENDER
+    BLENDER --> REGISTER --> SEMANTIC
+    SEMANTIC --> NAV
+    SEMANTIC --> NARR
+    NAV --> PACKAGE
+    NARR --> PACKAGE
+    PACKAGE --> QA --> APPROVAL
+    APPROVAL -->|Approve| PUBLISH
+    APPROVAL -->|Revise| EDIT
+    EDIT -.->|Spatial changes| GRAPH
+    EDIT -.->|Content changes| SEMANTIC
+    EDIT -.->|Hotspot changes| NAV
+    PUBLISH --> HOUSE
+    PUBLISH --> PANORAMA
+    HOUSE <-->|Shared room + checkpoint state| PANORAMA
+    PUBLISH -.-> VIDEO
+
+    %% ======== VISUAL STYLES ========
+    classDef input fill:#E9F7F4,stroke:#169B89,color:#064E48,stroke-width:2px;
+    classDef core fill:#EFF6FF,stroke:#80ACDC,color:#16375A,stroke-width:1.4px;
+    classDef ai fill:#EEF0FF,stroke:#8689D5,color:#302F75,stroke-width:1.5px;
+    classDef spatial fill:#E6F5EF,stroke:#59A991,color:#145849,stroke-width:1.5px;
+    classDef data fill:#F0F8F7,stroke:#55A6A0,color:#145E5D,stroke-width:2px;
+    classDef human fill:#FFF6E9,stroke:#D8A451,color:#794B0D,stroke-width:1.6px;
+    classDef decision fill:#FFF8EC,stroke:#D8A451,color:#794B0D,stroke-width:1.8px;
+    classDef success fill:#DAF5E7,stroke:#299B69,color:#145638,stroke-width:2px;
+    classDef view fill:#F0F0FF,stroke:#8880CC,color:#34316D,stroke-width:2px;
+    classDef optional fill:#F7F8FA,stroke:#AEB7C2,color:#475569,stroke-width:1.2px,stroke-dasharray:4 4;
+    style LG fill:#FFFFFF,stroke:#B7C6D6,stroke-width:1.4px,color:#243449
+    style PARALLEL_1 fill:#FAFBFF,stroke:#C9CBEC,stroke-width:1.1px,color:#3D3A7E
+    style PARALLEL_2 fill:#FAFBFF,stroke:#C9CBEC,stroke-width:1.1px,color:#3D3A7E
+    style OUTPUT fill:#FAF9FF,stroke:#BFC0E6,stroke-width:1.4px,color:#34316D

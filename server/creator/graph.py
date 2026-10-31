@@ -199,14 +199,18 @@ def build_graph(provider, saver, emit, read_asset, write_audio, write_model, wor
     builder.add_edge(START, 'understand')
     builder.add_edge('understand', 'scene')
     builder.add_conditional_edges('scene', lambda s: 'scene' if len(s['observations']) <
-        len([a for a in s['assets'] if a['kind'] == 'panorama']) else 'spatial')
+        len([a for a in s['assets'] if a['kind'] == 'panorama']) else 'spatial',
+        {'scene': 'scene', 'spatial': 'spatial'})
     builder.add_edge('spatial', 'spatial_review')
-    builder.add_conditional_edges('spatial_review', lambda s: END if s.get('rejected') else 'build_model')
+    builder.add_conditional_edges('spatial_review', lambda s: END if s.get('rejected') else 'build_model',
+        {END: END, 'build_model': 'build_model'})
     chain = ['build_model', 'mapping', 'semantic', 'navigation', 'narration', 'final_review']
     for left, right in zip(chain, chain[1:]):
         builder.add_edge(left, right)
-    builder.add_conditional_edges('final_review', lambda s: END if s.get('rejected') else 'voice')
+    builder.add_conditional_edges('final_review', lambda s: END if s.get('rejected') else 'voice',
+        {END: END, 'voice': 'voice'})
     builder.add_conditional_edges('voice', lambda s: 'voice' if len(s['audio']) <
-        len(s['script']['segments']) + 1 else 'assemble')
+        len(s['script']['segments']) + 1 else 'assemble',
+        {'voice': 'voice', 'assemble': 'assemble'})
     builder.add_edge('assemble', END)
     return builder.compile(checkpointer=saver)

@@ -1,5 +1,29 @@
 # Creator / Business AI Generation Studio
 
+## Refinement card — flow documentation and visual design
+
+User requests: compare the supplied Downloads Mermaid diagram with actual
+LangGraph execution, write a detailed Markdown description and accurate Mermaid,
+refresh Studio with the main site's charcoal/gray/orange theme and less copy,
+then push the existing feature branch. No paid API calls or deployment.
+
+Paths: `docs/Business Workflow Langgraph/Estagent_Business_LangGraph_*`,
+`docs/CREATOR-STUDIO.md`, `docs/DECLARATION.md`, `web/studio.html`,
+`web/studio.css`, `web/studio.js`, `web/studio-tour.html`,
+`server/creator/graph.py` (explicit conditional visualization paths only),
+Studio browser QA scripts/evidence and a diagram export/validation helper.
+Helpers: `scripts/export_studio_graph.py`, `tests/ai/validate_studio_diagrams.py`;
+`tests/ai/test_creator.py` may verify final rejection does not call TTS.
+External requested output: Downloads/Estagent_Business_LangGraph_Flow.mmd;
+preserve the original as a reference and copy the Markdown/native graph beside it.
+
+Acceptance: compare all real graph nodes/edges, parse/render diagrams locally,
+web/AI strict gates, browser create/review/reload/publish/Viewer/no-key/mobile.
+No runtime dependencies; Mermaid/Playwright are QA tools installed outside repo.
+OpenAI: fixture mode, USD 0, zero live calls; model/provider/config unchanged.
+Declaration: reuse existing site palette, Manrope, brand and licensed apartment
+photo; supplied diagram is a reference. New docs/UI assisted by Codex; H0 unknown.
+
 Date: 2026-10-31. Integration base: `533c3be` (fetched during implementation).
 The user authorizes implementation, testing and Git integration. This card owns
 `server/creator/`, additive changes to `server/assistant/app.py`, `web/studio*`,

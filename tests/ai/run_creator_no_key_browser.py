@@ -7,7 +7,7 @@ from tests.ai.creator_fixtures import png
 
 
 def main():
-    directory=Path(__file__).resolve().parents[2]/'tests/ai/evidence/creator'
+    directory=Path(os.environ.get('CREATOR_QA_EVIDENCE_DIR', Path(__file__).resolve().parents[2]/'tests/ai/evidence/creator'))
     errors=[]
     with sync_playwright() as p:
         browser=p.chromium.launch(headless=True,**({'executable_path':os.environ['CREATOR_QA_BROWSER']} if os.environ.get('CREATOR_QA_BROWSER') else {}))
@@ -22,7 +22,7 @@ def main():
         page.locator('#save-project').click()
         page.locator('#generate').wait_for(state='visible')
         assert page.locator('#generate').is_disabled()
-        assert page.locator('#activity article').count()==0
+        assert page.locator('#activity .activity-card').count()==0
         page.reload()
         page.locator('#generate').wait_for(state='visible')
         assert page.locator('#generate').is_disabled()

@@ -49,3 +49,8 @@ and real localhost create→publish→fullviewport browser/audio checks PASS.
 See `DEMO-UX-HANDOFF.md` and `deploy/evidence/demo-ux-release/`. Before this release,
 actual VM source is bad806c, not the historical e0002f4 entry above. Final deployed
 SHA belongs in the new release manifest after read-only production acceptance.
+
+Demo UX completed: production codefc3fdd3 preserves concurrent279da1a, clean main
+artifact and existing guide-v2 runtime config. Root reviewed source and independently
+accepted actual production. Subsequent commits only record evidence/QA selector
+correction. See `deploy/evidence/demo-ux-release/release.json`; root user edits untouched.

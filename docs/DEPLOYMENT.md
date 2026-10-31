@@ -278,3 +278,22 @@ and take a stopped-instance backup before cutover. Production browser tests are
 GET-only; the upload/review/publish golden path runs with synthetic assets in
 isolated localhost SQLite. New public manifest+8image hashes must match the
 pre-release baseline. Final cutover metadata: `deploy/evidence/demo-ux-release/release.json`.
+
+## Demo UX deployed — 2026-10-31
+
+Production source `fc3fdd301a30d72d3de554b7d4894a27124c08f9`, image
+`fc63867e0a1dadad41212f8796fe9d4e443f53d8eb22685918e47cf5766689d2`, healthy.
+This supersedes the preparation baseline above: concurrent main279da1a and its
+production guide-v2 catalog were preserved before release. Rollback baseline is
+`/opt/estagent/releases/279da1a07cab0eb7fcd301a84cbccefd66ca9c79/deploy/compose.yaml`
+with `/opt/estagent/runtime/preview-279da1a0.env`; never restore old volumes blindly.
+Current compose lives under `/opt/estagent/releases/fc3fdd301a30d72d3de554b7d4894a27124c08f9/deploy/compose.yaml`,
+current env `/opt/estagent/runtime/demo-ux-fc3fdd301a30d72d3de554b7d4894a27124c08f9.env`.
+Keyless1/narration0/video1/MinIO/API+storageguards1 unchanged, no provider keys;
+guide-v2 catalog bind retained. Dedicated checkpoints+MinIO stopped backups and
+12SQLite integrity checks PASS; archives/private paths in
+`deploy/evidence/demo-ux-release/release.json`. Deployment lock + image/env baseline
+preconditions guarded cutover; edge/other projects untouched. GET-only production
+browser and independent root review PASS; original manifest/8images unchanged.
+No production QA drafts or paid calls. Later evidence-only main commits do not
+change this deployed application SHA. Core strict remains known SKIP.

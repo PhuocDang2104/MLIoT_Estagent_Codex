@@ -51,11 +51,19 @@ replaced by hidden/noPOST; backend503 behavior is separately covered by API test
 
 ## Release state
 
-Before this release, actual production was bad806c, image a5399bf0102a08f9a3c78ec78e78b3cf419c9c983ba7a803a9b0bb20cb196443,
-healthy. Runtime flags: keyless1, narration0, video export1, MinIO, API/storage
-guards1. Preserve them. No production uploads/chat/publish are part of acceptance.
-Public immutable manifest and8asset hashes must match the root's before baseline.
-Final accepted SHA, rollout and after-hash evidence will be recorded in release.json.
+Production now runs accepted clean source `fc3fdd301a30d72d3de554b7d4894a27124c08f9`,
+healthy image `fc63867e0a1dadad41212f8796fe9d4e443f53d8eb22685918e47cf5766689d2`.
+Main also contains subsequent evidence-only documentation; these do not require
+another runtime rollout. The actual rollback baseline is279da1a (not initialbad806c),
+with its own env and guide-v2 catalog. Keyless1, narration0, video export1, private
+MinIO and API/storage guards1 are retained; both provider keys remain empty.
+Stopped-instance SQLite/MinIO archives were created;12SQLite integrity checks passed.
+No production uploads/chat/publish occurred. Actual TLS browser checks PASS for
+landing, canonical Creator/legacy aliases, Viewer at1440/390/320, and recorded guide.
+Root independently accepted actual390px Viewer, opening1/4,30right-arrow boundary
+with zero missing-region pixels, hidden unavailable controls and zeroJS/writes.
+Public manifest and8asset hashes are unchanged;6frontend source hashes match.
+Full metadata is in `deploy/evidence/demo-ux-release/release.json`.
 
 No claims of live OpenAI/vision, new speech synthesis, reconstruction or physical
 iOS testing. Scene defaults are grounded text/neutral labels, not detected rooms.
@@ -65,7 +73,16 @@ iOS testing. Scene defaults are grounded text/neutral labels, not detected rooms
 Before push, the ancestry guard caught new main2b6a332 (stale audio-ended guard
 for the cached house guide). It was merged as c430680; no commit was discarded.
 Strict web passed again. The changed guide browser passed against actual decoded
-production WAVs with only candidate house.js overridden: natural transitions,
+production WAVs on the then-current production frontend: natural transitions,
 stale-ended rejection while playing/paused, all16views to finish at8x QA speed,
 VI script, pause/resume/manual navigation, rotation/reduced-motion and no JS errors.
 Evidence: `guide-before-deploy.json`; screenshots remain local.
+
+The guard caught another concurrent commit279da1a before push. Its description/
+recording separation and guide-v2 importer were preserved in mergefc3fdd3; only
+appended declaration text conflicted. Strict web and targeted guide checks passed.
+QA provenance correction: an attempted `/demos/house.js` override did not match
+actual `/demos/static/house.js`; predeploy guide evidence is actual prior-production,
+not a candidate override. Postdeploy checks use no overrides and compare exact
+source hashes. Viewer smoke also changed its summary selector to a direct child
+after nested source disclosure made the old selector ambiguous. No app change.

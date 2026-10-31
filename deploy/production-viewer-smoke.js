@@ -30,9 +30,9 @@ async page => {
   await canvas.focus();const keyBefore=await pixels();await page.keyboard.press('ArrowLeft');check(keyBefore!==await pixels(),'Keyboard camera navigation');
   check(!await page.locator('#viewer-chat').isVisible(),'Keyless production hides AI chat');
   check(!await page.locator('#viewer-audio').isVisible(),'Empty audio panel hidden');
-  await page.locator('#viewer-info summary').click();
+  await page.locator('#viewer-info > summary').click();
   await page.keyboard.press('Escape');check(!await page.locator('#viewer-info').evaluate(e=>e.open),'Escape closes panel');
-  check(await page.evaluate(()=>document.activeElement===document.querySelector('#viewer-info summary')),'Escape restores focus');
+  check(await page.evaluate(()=>document.activeElement===document.querySelector('#viewer-info > summary')),'Escape restores focus');
   await page.locator('#reset-view').click();await page.locator('#fullscreen').click();await checkedWait(()=>!!document.fullscreenElement);
   check(await page.evaluate(()=>document.fullscreenElement.id==='tour-view'),'Gesture fullscreen includes controls');
   await page.keyboard.press('Escape');await checkedWait(()=>!document.fullscreenElement);check(true,'Escape exits fullscreen');
@@ -48,11 +48,11 @@ async page => {
     check(await page.evaluate(()=>document.elementFromPoint(innerWidth/2,innerHeight*.45).id==='panorama'),'Center remains draggable '+width);
     await page.screenshot({path:'/private/tmp/estagent-demo-ux-production/after-'+width+'.png'});
     for(const id of ['viewer-info','viewer-stops']){
-      await page.locator('#'+id+' summary').click();
+      await page.locator('#'+id+' > summary').click();
       const box=await page.locator('#'+id+' .panel-body').boundingBox();check(box.x>=0&&box.y>=0&&box.x+box.width<=width+.5&&box.y+box.height<=height,'Panel fits '+id+' '+width);
       await page.locator('#'+id+' .panel-close').click();
     }
-    if(width===390){await page.locator('[data-lang="vi"]').click();await page.locator('#viewer-info summary').click();await page.screenshot({path:'/private/tmp/estagent-demo-ux-production/details-vi-390.png'});await page.locator('#viewer-info .panel-close').click();await page.locator('[data-lang="en"]').click();}
+    if(width===390){await page.locator('[data-lang="vi"]').click();await page.locator('#viewer-info > summary').click();await page.screenshot({path:'/private/tmp/estagent-demo-ux-production/details-vi-390.png'});await page.locator('#viewer-info .panel-close').click();await page.locator('[data-lang="en"]').click();}
   }
   await page.emulateMedia({reducedMotion:'reduce'});await page.locator('#previous').click();await checkedWait(()=>!document.querySelector('#panorama').hidden);check(await page.evaluate(()=>document.getAnimations().length===0),'Reduced motion disables scene transition');
   await page.locator('.viewer-back').click();await page.locator('.library-card').first().waitFor();check(!await page.locator('body').evaluate(b=>b.classList.contains('is-immersive')),'Library keeps document layout');

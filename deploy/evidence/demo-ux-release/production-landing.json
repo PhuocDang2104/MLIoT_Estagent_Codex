@@ -1,0 +1,33 @@
+{
+  "pass": true,
+  "checks": [
+    {
+      "width": 1440,
+      "locale": "en"
+    },
+    {
+      "width": 1440,
+      "locale": "vi"
+    },
+    {
+      "width": 390,
+      "locale": "en"
+    },
+    {
+      "width": 390,
+      "locale": "vi"
+    },
+    {
+      "width": 320,
+      "locale": "en"
+    },
+    {
+      "width": 320,
+      "locale": "vi"
+    }
+  ],
+  "canonicalCreator": true,
+  "viewerLibrary": true,
+  "productionWrites": 0,
+  "errors": []
+}

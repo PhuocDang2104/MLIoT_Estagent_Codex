@@ -1,0 +1,16 @@
+{
+  "pass": true,
+  "sha256": {
+    "/viewer.js": "0b66c604574cdec64ff9cb72e40fdd2824fe0c9810d90a3234079a4a3cbc3091",
+    "/creator.js": "fa6f16e87b3c2e76362fa21dc4fc615780523b200521d57e14d188add224bcb4",
+    "/panorama.js": "96bdd9d25edd2eecface91f8956052dce47acd98af9ec0a64982f5cd0762553c",
+    "/tour-common.js": "5b9478df4cdf36fffc4fe2ce86c9f57dc20c116966d9db58af113f65af6596c7",
+    "/tour.css": "a8ad19bb716314546faf48dea1c1df0941d0c1f40de834d9162c52268021dde8",
+    "/demos/static/house.js": "397642f3d8bb0e5af874e7894784bc9734c85b415ab6167b91ca7e1202705106"
+  },
+  "studio_health": {
+    "ready": true,
+    "mode": "single-host-sqlite",
+    "geometry_configured": false
+  }
+}

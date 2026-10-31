@@ -11,5 +11,6 @@
   "vi_script": true,
   "rotation_drag_reduced_motion": true,
   "errors": [],
-  "source": "GET-only production demo assets/API with candidate local house.js override after preserving origin/main 2b6a332"
+  "source": "GET-only production demo assets/API with candidate local house.js override after preserving origin/main 2b6a332",
+  "source_correction": "Actual prior-production frontend and WAVs: attempted /demos/house.js override did not match /demos/static/house.js. Do not treat as local candidate override. Postdeploy actual source hashes and guide browser independently pass."
 }

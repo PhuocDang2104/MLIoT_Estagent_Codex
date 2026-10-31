@@ -51,8 +51,17 @@ def main():
         app = Minio(env['MINIO_ENDPOINT'], access_key=env['MINIO_ACCESS_KEY'],
                     secret_key=env['MINIO_SECRET_KEY'], secure=False,
                     http_client=urllib3.PoolManager(timeout=urllib3.Timeout(connect=5, read=20), retries=False))
+        existing = 'studio/assets/' + uuid.uuid4().hex
+        app.put_object(bucket, existing, io.BytesIO(b'existing fixture'), 16)
         try:
             admin.bucket_quota_set(bucket, 1)
+            response = app.get_object(bucket, existing)
+            try:
+                if response.read() != b'existing fixture':
+                    raise ValueError('Existing object unreadable at full quota')
+            finally:
+                response.close()
+                response.release_conn()
             try:
                 app.put_object(bucket, key, io.BytesIO(b'quota probe'), 11)
             except S3Error as error:
@@ -63,7 +72,8 @@ def main():
                 raise ValueError('Hard quota did not reject new write')
         finally:
             admin.bucket_quota_set(bucket, 536870912)
-        print('PASS hard quota rejects a real app write; restored 536870912')
+            app.remove_object(bucket, existing)  # Only the disposable fixture created above.
+        print('PASS hard quota rejects new app write while existing media stays readable; restored 536870912')
     print('PASS dedicated bucket, separate app policy, hard quota 536870912')
 
 

@@ -13,7 +13,7 @@ from fastapi import HTTPException, Request
 from fastapi.responses import FileResponse
 from pydantic import ValidationError
 from server.storage import upload_reservation
-from .models import AudioProvenance, AudioUpdate
+from .models import AudioProvenance, AudioUpdate, AudioTrack
 
 MAX_AUDIO_BYTES = 20 * 1024 * 1024
 MAX_AUDIO_SECONDS = 180
@@ -67,7 +67,9 @@ def summarize_audio(doc):
     has_audio=bool(audio.get('music') or narrations)
     complete=all(any(n['scene_id']==s['id'] and n['locale']==doc['locale'] for n in narrations) for s in doc['scenes'])
     audio['status']='ready' if complete else 'partial' if has_audio else 'unavailable'
-    audio['source']='user_uploaded' if has_audio else 'none'
+    tracks=([audio['music']] if audio.get('music') else [])+[n['track'] for n in narrations]
+    generated=sum(bool(t.get('generation')) for t in tracks)
+    audio['source']='none' if not tracks else 'openai_generated' if generated==len(tracks) else 'mixed' if generated else 'user_uploaded'
     doc['audio']=audio
     return doc
 
@@ -153,10 +155,17 @@ def install_audio(router,db,owner,draft,check_revision,validate_doc,published,da
             row,doc=draft(conn,id,who);check_revision(doc,data.revision)
             ids={s['id'] for s in doc['scenes']}
             pairs=[(n.scene_id,n.locale) for n in data.narration]
-            if len(set(pairs))!=len(pairs) or any(n.scene_id not in ids or n.locale!=doc['locale'] for n in data.narration):
-                raise HTTPException(422,'Narration requires a unique existing scene and the tour source locale / Lời phải thuộc điểm xem và ngôn ngữ gốc của tour.')
+            if len(set(pairs))!=len(pairs) or any(n.scene_id not in ids for n in data.narration):
+                raise HTTPException(422,'Narration requires unique existing scene/language pairs / Lời phải thuộc cặp điểm xem và ngôn ngữ duy nhất.')
             music=get_track(conn,data.music_asset_id,who) if data.music_asset_id else None
             narrations=[{'scene_id':n.scene_id,'locale':n.locale,'transcript':n.transcript,'track':get_track(conn,n.asset_id,who)} for n in data.narration]
+            for n in narrations:
+                generation=n['track'].get('generation')
+                if generation:
+                    if generation['locale']!=n['locale'] or generation['script_sha256']!=hashlib.sha256(n['transcript'].encode()).hexdigest():
+                        raise HTTPException(422,'Generated speech must keep its approved script and language.')
+                elif n['locale']!=doc['locale']:
+                    raise HTTPException(422,'Uploaded narration requires the tour source locale.')
             doc['audio']={'music':music,'narration':narrations or None,'status':'unavailable','source':'none'}
             for track in audio_tracks(doc):audio_file(track['asset_id'],verify_only=True)
             doc['revision']+=1
@@ -173,6 +182,6 @@ def install_audio(router,db,owner,draft,check_revision,validate_doc,published,da
     def verify_publish(conn,doc,who):
         for track in audio_tracks(doc):
             stored=get_track(conn,track['asset_id'],who)
-            if track!=stored:raise HTTPException(409,'Audio metadata changed; reattach before publishing / Hãy gắn lại audio trước khi xuất bản.')
+            if AudioTrack.model_validate(track)!=AudioTrack.model_validate(stored):raise HTTPException(409,'Audio metadata changed; reattach before publishing / Hãy gắn lại audio trước khi xuất bản.')
             audio_file(track['asset_id'],verify_only=True)
     return verify_publish

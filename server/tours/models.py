@@ -30,6 +30,13 @@ class AudioProvenance(Strict):
     rights: Literal['owned','licensed']
     rights_note: str = Field(min_length=3,max_length=500)
 
+class SpeechGeneration(Strict):
+    provider: Literal['openai'] = 'openai'
+    model: str = Field(min_length=1,max_length=100)
+    voice: str = Field(min_length=1,max_length=40)
+    locale: Literal['en','vi']
+    script_sha256: str = Field(pattern=r'^[a-f0-9]{64}$')
+
 class AudioTrack(AudioProvenance):
     asset_id: str = Field(pattern=r'^[a-f0-9]{32}$')
     url: str
@@ -38,6 +45,7 @@ class AudioTrack(AudioProvenance):
     channels: Literal[1,2]
     sample_rate: int = Field(ge=8000,le=48000)
     sample_width: Literal[2] = 2
+    generation: SpeechGeneration | None = None
 
 class SceneNarration(Strict):
     scene_id: str = Field(pattern=r'^[a-f0-9]{32}$')
@@ -47,9 +55,9 @@ class SceneNarration(Strict):
 
 class Audio(Strict):
     status: Literal['unavailable','partial','ready'] = 'unavailable'
-    narration: list[SceneNarration] | None = Field(default=None,max_length=20)
+    narration: list[SceneNarration] | None = Field(default=None,max_length=40)
     music: AudioTrack | None = None
-    source: Literal['none','user_uploaded'] = 'none'
+    source: Literal['none','user_uploaded','openai_generated','mixed'] = 'none'
 
 
 class Manifest(Strict):
@@ -75,7 +83,10 @@ class Manifest(Strict):
         has_audio = bool(narrations or self.audio.music)
         complete = all(any(n.scene_id==id and n.locale==self.locale for n in narrations) for id in ids)
         expected = 'ready' if complete else 'partial' if has_audio else 'unavailable'
-        if self.audio.status != expected or self.audio.source != ('user_uploaded' if has_audio else 'none'):
+        tracks = ([self.audio.music] if self.audio.music else []) + [n.track for n in narrations]
+        generated = sum(t.generation is not None for t in tracks)
+        source = 'none' if not tracks else 'openai_generated' if generated == len(tracks) else 'mixed' if generated else 'user_uploaded'
+        if self.audio.status != expected or self.audio.source != source:
             raise ValueError('Audio availability/source must match actual referenced tracks.')
         return self
 
@@ -121,4 +132,4 @@ class NarrationBinding(Strict):
 
 class AudioUpdate(Revision):
     music_asset_id: str | None = Field(default=None,pattern=r'^[a-f0-9]{32}$')
-    narration: list[NarrationBinding] = Field(default_factory=list,max_length=20)
+    narration: list[NarrationBinding] = Field(default_factory=list,max_length=40)

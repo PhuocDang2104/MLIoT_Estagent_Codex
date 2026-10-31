@@ -1,0 +1,28 @@
+{
+  "source": "5200bca18ef65f017228609a1c382062510959ba",
+  "image_id": "sha256:10e53ee320c5674bb88bb61e22f625fa3ee98fc8a5f0b1cec97c641b3628a110",
+  "health": "healthy",
+  "studio_health": {
+    "ready": true,
+    "mode": "single-host-sqlite",
+    "geometry_configured": true
+  },
+  "backup": "/opt/estagent/backups/studio-rollout/20261031T092419469349Z-before-seoul-media-5200bca",
+  "backup_files_verified": 24,
+  "existing_uploaded_assets_preserved": 8,
+  "upload_cap": 24,
+  "studio_call_cap": 40,
+  "ai_hourly_cap": 50,
+  "public_files_match_release": true,
+  "seoul_locale": "en",
+  "duration_seconds": 133.56,
+  "media_checks": [
+    "video HEAD, attachment, first/last byte ranges",
+    "audio HEAD, attachment, first/last byte ranges",
+    "transcript HEAD, attachment, first/last byte ranges",
+    "captions HEAD, attachment, first/last byte ranges"
+  ],
+  "zind_export_status": 404,
+  "previous_env": "/opt/estagent/runtime/studio-5200bca.env",
+  "runtime_env": "/opt/estagent/runtime/studio-5200bca-seoul-media.env"
+}

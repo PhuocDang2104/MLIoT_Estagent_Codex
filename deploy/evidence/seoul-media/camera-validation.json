@@ -1,0 +1,42 @@
+[
+  {
+    "capture": "00000000",
+    "midpoint_yaw": 0.0,
+    "mean_pixel_error": 0.745
+  },
+  {
+    "capture": "00000030",
+    "midpoint_yaw": -55.0,
+    "mean_pixel_error": 0.529
+  },
+  {
+    "capture": "00000070",
+    "midpoint_yaw": 7.65,
+    "mean_pixel_error": 0.785
+  },
+  {
+    "capture": "00000110",
+    "midpoint_yaw": 0.03,
+    "mean_pixel_error": 0.684
+  },
+  {
+    "capture": "00000150",
+    "midpoint_yaw": 75.06,
+    "mean_pixel_error": 0.558
+  },
+  {
+    "capture": "00000180",
+    "midpoint_yaw": 50.08,
+    "mean_pixel_error": 0.457
+  },
+  {
+    "capture": "00000250",
+    "midpoint_yaw": 40.1,
+    "mean_pixel_error": 0.669
+  },
+  {
+    "capture": "00000310",
+    "midpoint_yaw": 22.5,
+    "mean_pixel_error": 0.57
+  }
+]

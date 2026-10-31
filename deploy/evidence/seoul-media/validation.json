@@ -1,0 +1,45 @@
+{
+  "duration_seconds": 133.56,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "codecs": [
+    "h264",
+    "aac"
+  ],
+  "voice": "PCM mono 24kHz",
+  "chapters": 8,
+  "provider_events": {
+    "started": 8,
+    "completed": 8
+  },
+  "source_and_export_hashes_verified": 16,
+  "full_video_decode": "PASS",
+  "exports": {
+    "video": {
+      "key": "demos/seoul-apartment/7a8009db344f6e7da68ca5311bbee064c79fd4391bc72645274031e0a6885fce/house/exports/seoul-tour-en.mp4",
+      "sha256": "7a8009db344f6e7da68ca5311bbee064c79fd4391bc72645274031e0a6885fce",
+      "bytes": 30500512,
+      "content_type": "video/mp4"
+    },
+    "audio": {
+      "key": "demos/seoul-apartment/6b78ff6aad51c21e5c00f9a9a6581309fdc7dd3dc12680c64626b50be8507cb8/house/exports/seoul-tour-en.wav",
+      "sha256": "6b78ff6aad51c21e5c00f9a9a6581309fdc7dd3dc12680c64626b50be8507cb8",
+      "bytes": 6410924,
+      "content_type": "audio/wav"
+    },
+    "transcript": {
+      "key": "demos/seoul-apartment/44606aef12bfb8f4347aa8c38226e2603ad1d62084b7c4e6d192d74e19c7a8d7/house/exports/seoul-tour-en.txt",
+      "sha256": "44606aef12bfb8f4347aa8c38226e2603ad1d62084b7c4e6d192d74e19c7a8d7",
+      "bytes": 2391,
+      "content_type": "text/plain"
+    },
+    "captions": {
+      "key": "demos/seoul-apartment/5f660762b0299f5295a4544e280137a4b8b73ca3ba2559c3135bb781cfa334ec/house/exports/seoul-tour-en.vtt",
+      "sha256": "5f660762b0299f5295a4544e280137a4b8b73ca3ba2559c3135bb781cfa334ec",
+      "bytes": 2846,
+      "content_type": "text/vtt"
+    }
+  }
+}

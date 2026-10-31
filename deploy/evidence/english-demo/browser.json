@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "provider_calls": 0,
+  "sample_images": 8,
+  "saved_assets": 9,
+  "checks": [
+    "stock source SHA-256 matches",
+    "no automatic writes",
+    "English locale and old preference",
+    "remove and clear",
+    "custom images replace stock",
+    "sample load cancellation",
+    "sample failure fallback",
+    "real draft upload",
+    "existing draft preserved",
+    "English product shells"
+  ],
+  "page_errors": []
+}

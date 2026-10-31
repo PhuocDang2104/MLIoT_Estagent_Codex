@@ -10,13 +10,13 @@ export function houseModel(host, url, rooms, onCapture, options = {}) {
   stage.className = 'house-stage';
   const status = document.createElement('p');
   status.className = 'house-status';
-  status.textContent = 'Đang tải mô hình…';
+  status.textContent = 'Loading model…';
   status.setAttribute('role','status');
   stage.append(status);
   host.replaceChildren(stage);
   let renderer;
   try { renderer = new THREE.WebGLRenderer({antialias:true,alpha:true}); }
-  catch { status.textContent = 'Thiết bị chưa hỗ trợ WebGL. Bạn vẫn có thể tải GLB.'; return () => {}; }
+  catch { status.textContent = 'This device does not support WebGL. You can still download the GLB.'; return () => {}; }
   renderer.setPixelRatio(Math.min(devicePixelRatio,2));
   renderer.setClearColor(0xf0efeb,1);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -24,7 +24,7 @@ export function houseModel(host, url, rooms, onCapture, options = {}) {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.domElement.tabIndex = 0;
-  renderer.domElement.setAttribute('aria-label','Mô hình nhà 3D. Kéo để xoay, cuộn để phóng to.');
+  renderer.domElement.setAttribute('aria-label','3D house model. Drag to orbit; scroll to zoom.');
   stage.prepend(renderer.domElement);
   const scene = new THREE.Scene();
   scene.add(new THREE.HemisphereLight(0xffffff,0x9b9589,2.3));
@@ -41,13 +41,13 @@ export function houseModel(host, url, rooms, onCapture, options = {}) {
   controls.maxPolarAngle = Math.PI*.48;
   const markers = [], wallObjects = [];
   const toolbar = document.createElement('div'); toolbar.className = 'house-toolbar';
-  const reset = document.createElement('button'); reset.textContent = 'Đặt lại góc nhìn';
-  const walls = document.createElement('button'); walls.textContent = 'Ẩn tường';
+  const reset = document.createElement('button'); reset.textContent = 'Reset view';
+  const walls = document.createElement('button'); walls.textContent = 'Hide walls';
   let wallsVisible = true;
   walls.onclick = () => {
     wallsVisible = !wallsVisible;
     wallObjects.forEach(o => { o.visible = wallsVisible; });
-    walls.textContent = wallsVisible ? 'Ẩn tường' : 'Hiện tường';
+    walls.textContent = wallsVisible ? 'Hide walls' : 'Show walls';
   };
   toolbar.append(reset,walls); stage.append(toolbar);
   let initialPosition, initialTarget;
@@ -104,15 +104,15 @@ export function houseModel(host, url, rooms, onCapture, options = {}) {
       const button = document.createElement('button'); button.className='house-marker';
       button.textContent=room.checkpoint_id.replace('cp','');
       button.title=`${room.label} · ${room.checkpoint_id}`;
-      button.setAttribute('aria-label',`Mở panorama ${room.label} ${room.checkpoint_id}`);
+      button.setAttribute('aria-label',`Open panorama ${room.label} ${room.checkpoint_id}`);
       button.dataset.checkpoint=room.checkpoint_id;
       button.onclick = () => onCapture(room.checkpoint_id);
       stage.append(button);
       markers.push({button,position:new THREE.Vector3(...room.anchor.position)});
     }
-    status.textContent=(rooms.some(r=>r.anchor?.accuracy!=='measured')?'Mô hình ước lượng · ':'')+'Chọn điểm để vào panorama';
+    status.textContent=(rooms.some(r=>r.anchor?.accuracy!=='measured')?'Estimated model · ':'')+'Select a checkpoint to enter its panorama';
     stage.dataset.loaded='true';
-  },undefined,() => { if(!stopped) status.textContent='Không tải được mô hình. Hãy tải lại hoặc tải GLB.'; });
+  },undefined,() => { if(!stopped) status.textContent='Could not load the model. Reload or download the GLB.'; });
   const projected = new THREE.Vector3();
   function animate() {
     if(stopped) return;
@@ -132,9 +132,9 @@ export function houseModel(host, url, rooms, onCapture, options = {}) {
 
 export function planPreview(host, plan) {
   const ns='http://www.w3.org/2000/svg', svg=document.createElementNS(ns,'svg');
-  svg.classList.add('plan-preview'); svg.setAttribute('role','img'); svg.setAttribute('aria-label','Bố cục nhà dự kiến');
+  svg.classList.add('plan-preview'); svg.setAttribute('role','img'); svg.setAttribute('aria-label','Proposed house layout');
   const points=plan.spaces.flatMap(s=>s.polygon);
-  if(!points.length) { const p=document.createElement('p'); p.textContent='Cần làm rõ bố cục trước khi vẽ mặt bằng.'; host.append(p); return; }
+  if(!points.length) { const p=document.createElement('p'); p.textContent='Clarify the layout before drawing a floorplan.'; host.append(p); return; }
   const xs=points.map(p=>p.x),zs=points.map(p=>p.z),minX=Math.min(...xs)-.5,minZ=Math.min(...zs)-.5;
   svg.setAttribute('viewBox',`${minX} ${minZ} ${Math.max(...xs)-minX+.5} ${Math.max(...zs)-minZ+.5}`);
   plan.spaces.forEach(space => {

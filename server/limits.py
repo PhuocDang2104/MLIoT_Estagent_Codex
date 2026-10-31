@@ -150,8 +150,8 @@ class LimitsMiddleware:
 
     @staticmethod
     async def reject(scope, receive, send, code, retry, status=429):
-        message = ('Bộ giới hạn yêu cầu chưa sẵn sàng. Hãy thử lại sau.' if status == 503 else
-                   'Đã đạt giới hạn yêu cầu. Hãy thử lại sau.')
+        message = ('The request limiter is unavailable. Please try again later.' if status == 503 else
+                   'The request limit has been reached. Please try again later.')
         response = JSONResponse({'error': message, 'code': code, 'retry_after': retry},
                                 status_code=status, headers={'Retry-After': str(retry),
                                 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'})

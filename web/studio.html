@@ -1,41 +1,41 @@
 <!doctype html>
-<html lang="vi">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link rel="icon" href="/assets/favicon.svg" />
-    <title>Tạo tour — Estagent Studio</title>
+    <title>Create a tour — Estagent Studio</title>
     <link rel="stylesheet" href="/assets/fonts.css" />
     <link rel="stylesheet" href="/studio.css" />
     <script type="module" src="/studio.js"></script>
   </head>
   <body>
-    <a class="skip" href="#main">Đến nội dung chính</a>
+    <a class="skip" href="#main">Skip to main content</a>
     <header class="topbar">
-      <a href="/index.html" class="brand" aria-label="Estagent — Trang chủ"
+      <a href="/index.html" class="brand" aria-label="Estagent — Home"
         ><span class="brand-symbol" aria-hidden="true"></span
         ><span>Estagent<span class="brand-dot">.</span></span
         ><span class="studio-label">STUDIO</span></a
       >
       <div class="header-actions">
-        <span class="draft-pill" id="top-status">Bản nháp</span
-        ><a href="/business/create" class="subtle">Tạo tour mới ↗</a>
-        <a href="/business/photos" class="subtle">Tour ảnh đơn giản ↗</a>
-        <a href="/viewer.html" class="subtle">Xem tour ↗</a>
+        <span class="draft-pill" id="top-status">Draft</span
+        ><a href="/business/create" class="subtle">Create a new tour ↗</a>
+        <a href="/business/photos" class="subtle">Simple photo tour ↗</a>
+        <a href="/viewer.html" class="subtle">View tours ↗</a>
       </div>
     </header>
     <div class="shell">
       <aside class="sidebar">
         <button id="new-project" class="primary">
-          <span aria-hidden="true">＋</span> Tour mới
+          <span aria-hidden="true">＋</span> New tour
         </button>
-        <p class="eyebrow">BẤT ĐỘNG SẢN CỦA BẠN</p>
-        <nav id="projects" aria-label="Danh sách bất động sản"></nav>
+        <p class="eyebrow">YOUR PROPERTIES</p>
+        <nav id="projects" aria-label="Property list"></nav>
         <div
           class="sidebar-note"
-          title="Bản nháp được lưu ở máy chủ theo cookie của phiên này."
+          title="Drafts are saved on the server using this session cookie."
         >
-          <span class="live-dot"></span> Lưu theo phiên
+          <span class="live-dot"></span> Saved to this session
           <span aria-hidden="true">↗</span>
         </div>
       </aside>
@@ -50,114 +50,116 @@
         <section id="create-view">
           <div class="intro">
             <p class="eyebrow">ESTAGENT / AI GENERATION</p>
-            <h1>Từ ảnh, đến một hành trình<span class="brand-dot">.</span></h1>
-            <p>Thêm không gian của bạn. Cùng AI tạo tour.</p>
+            <h1>Turn images into a journey<span class="brand-dot">.</span></h1>
+            <p>Add your space. Build a tour with AI.</p>
           </div>
           <div class="create-layout">
             <form id="create-form" class="create-card">
               <div class="section-heading">
-                <h2><span class="step-number">01</span> Ảnh không gian</h2>
-                <span class="muted">1–12 ảnh</span>
+                <h2><span class="step-number">01</span> Images of your space</h2>
+                <span class="muted">1–12 images</span>
               </div>
               <label class="dropzone" id="dropzone"
                 ><span class="upload-symbol" aria-hidden="true">↥</span
-                ><strong>Thả ảnh vào đây</strong
+                ><strong>Drop images here</strong
                 ><span
-                  >hoặc chọn từ thiết bị
+                  >or choose from your device
                   <span aria-hidden="true">↗</span></span
-                ><small>JPG, PNG, WebP · 20 MB/ảnh · 80 MB/tour</small
+                ><small>JPG, PNG, WebP · 20 MB/image · 80 MB/tour</small
                 ><input
                   id="panoramas"
                   type="file"
                   multiple
                   accept="image/jpeg,image/png,image/webp"
-                  aria-label="Chọn ảnh panorama"
+                  aria-label="Choose panorama images"
               /></label>
+              <div class="sample-actions">
+                <button id="load-sample" type="button">Use Seoul sample (8)</button>
+                <button id="clear-images" type="button">Clear images</button>
+              </div>
+              <p id="sample-status" class="muted" role="status" aria-live="polite"></p>
               <div id="selected-images" class="image-grid"></div>
               <label class="checkbox-label"
                 ><input
                   type="checkbox"
                   name="panorama_confirmed"
                   id="panorama-confirmed"
-                /><span>Đây là ảnh panorama 360° × 180°.</span></label
+                /><span>These are full 360° × 180° panoramas.</span></label
               >
               <details class="field-help">
-                <summary>Ảnh nào có thể xoay 360°?</summary>
+                <summary>Which images support a 360° view?</summary>
                 <p>
-                  Chỉ xác nhận với ảnh equirectangular có góc phủ đầy đủ. Ảnh
-                  chưa xác nhận sẽ hiển thị như ảnh thường; tỷ lệ 2:1 chưa đủ để
-                  xác định.
+                  Confirm only equirectangular images with full coverage. Unconfirmed images are shown as ordinary photos; a 2:1 aspect ratio alone is not enough.
                 </p>
               </details>
               <div class="section-heading second-section">
                 <h2>
-                  <span class="step-number">02</span> Câu chuyện của không gian
+                  <span class="step-number">02</span> The story of your space
                 </h2>
               </div>
               <label
-                >Tên bất động sản<input
+                >Property name<input
                   name="name"
                   required
                   maxlength="150"
-                  placeholder="Ví dụ: Căn hộ ven sông"
+                  placeholder="For example: Riverside apartment"
               /></label>
               <label
-                >Mô tả<textarea
+                >Description<textarea
                   name="description"
                   required
                   minlength="10"
                   maxlength="6000"
                   rows="4"
-                  placeholder="Các phòng, điểm nổi bật và phong cách giới thiệu bạn muốn…"
+                  placeholder="Rooms, highlights and the introduction style you would like…"
                 ></textarea>
               </label>
               <details class="extras">
                 <summary>
-                  Tùy chọn tour <span>Ngôn ngữ, giọng đọc & tư liệu</span>
+                  Tour options <span>Language, voice & source files</span>
                 </summary>
                 <div class="form-grid">
                   <label
-                    >Ngôn ngữ<select name="locale">
-                      <option value="vi">Tiếng Việt</option>
-                      <option value="en">English</option>
+                    >Language<select name="locale">
+                      <option value="vi">Vietnamese</option>
+                      <option value="en" selected>English</option>
                     </select></label
                   >
                   <label
-                    >Giọng AI<select name="voice">
+                    >AI voice<select name="voice">
                       <option value="coral">Coral</option>
                       <option value="alloy">Alloy</option>
                       <option value="onyx">Onyx</option>
                     </select></label
                   >
                   <label class="wide"
-                    >Mặt bằng<input
+                    >Floorplan<input
                       id="floorplan"
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
                   /></label>
                   <label class="wide"
-                    >Nhạc nền WAV riêng
-                    <span class="label-note">Tùy chọn · thay được trước khi xuất bản</span
+                    >Your own background music (WAV)
+                    <span class="label-note">Optional · change it before publishing</span
                     ><input id="music" type="file" accept="audio/wav,.wav"
                   /></label>
-                  <label class="checkbox-label wide"><input id="placeholder-music" type="checkbox" checked /><span>Dùng nhạc mẫu Dream Culture nếu không tải nhạc riêng.</span></label>
-                  <div class="wide"><audio controls preload="none" src="/assets/music/dream-culture-placeholder.wav" aria-label="Nghe nhạc mẫu"></audio><p class="muted">Kevin MacLeod · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> · trích đoạn 75 giây có fade.</p></div>
+                  <label class="checkbox-label wide"><input id="placeholder-music" type="checkbox" checked /><span>Use the Dream Culture sample track if no music is uploaded.</span></label>
+                  <div class="wide"><audio controls preload="none" src="/assets/music/dream-culture-placeholder.wav" aria-label="Preview sample music"></audio><p class="muted">Kevin MacLeod · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> · 75-second excerpt with fades.</p></div>
                   <label class="wide"
-                    >Nguồn & quyền sử dụng nhạc<input
+                    >Music source & usage rights<input
                       name="music_credit"
                       maxlength="300"
-                      placeholder="Tác giả, nguồn và giấy phép sử dụng"
+                      placeholder="Artist, source and license"
                   /></label>
                 </div>
                 <p class="muted">
-                  Giọng giới thiệu do AI tạo. Chỉ sử dụng nhạc bạn có quyền phát
-                  hành.
+                  Narration is AI-generated. Only use music you have permission to distribute.
                 </p>
               </details>
               <div class="form-footer">
-                <span>Bạn duyệt trước khi xuất bản.</span
+                <span>You review before publishing.</span
                 ><button class="primary" type="submit" id="save-project">
-                  Lưu & mở Studio <span aria-hidden="true">↗</span>
+                  Save & open Studio <span aria-hidden="true">↗</span>
                 </button>
               </div>
             </form>
@@ -170,58 +172,58 @@
               <p class="eyebrow">ESTAGENT / GENERATION STUDIO</p>
               <h1 id="project-name"></h1>
               <details class="project-notes">
-                <summary>Mô tả bất động sản</summary>
+                <summary>Property description</summary>
                 <p id="project-description"></p>
               </details>
             </div>
             <div class="workspace-actions">
-              <button id="generate" class="primary">Tạo tour bằng AI ↗</button
-              ><button id="retry" hidden>Thử lại</button
+              <button id="generate" class="primary">Generate tour with AI ↗</button
+              ><button id="retry" hidden>Retry</button
               ><button id="publish" class="primary" hidden>
-                Xuất bản tour ↗
+                Publish tour ↗
               </button>
             </div>
           </div>
           <div class="stage-bar">
-            <ol class="stage-nav" aria-label="Giai đoạn tạo tour">
-              <li data-stage="input"><span>01</span> Tư liệu</li>
-              <li data-stage="space"><span>02</span> Không gian</li>
-              <li data-stage="content"><span>03</span> Nội dung</li>
-              <li data-stage="publish"><span>04</span> Xuất bản</li>
+            <ol class="stage-nav" aria-label="Tour creation stages">
+              <li data-stage="input"><span>01</span> Source files</li>
+              <li data-stage="space"><span>02</span> Spaces</li>
+              <li data-stage="content"><span>03</span> Content</li>
+              <li data-stage="publish"><span>04</span> Publish</li>
             </ol>
-            <span id="stage-summary" class="muted">Đã lưu tư liệu</span>
+            <span id="stage-summary" class="muted">Source files saved</span>
           </div>
           <div class="workspace-grid">
             <div class="activity-column">
               <details class="panel asset-strip" open>
                 <summary>
-                  <h2>Ảnh nguồn</h2>
+                  <h2>Source images</h2>
                   <span id="asset-count" class="muted"></span>
                 </summary>
                 <div id="assets" class="image-grid"></div>
               </details>
               <div class="stream-heading">
-                <h2>Hoạt động</h2>
-                <span class="muted" id="generation-status">Chưa bắt đầu</span>
+                <h2>Activity</h2>
+                <span class="muted" id="generation-status">Not started</span>
               </div>
               <p class="muted empty-state" id="empty-stream">
-                Tư liệu đã lưu. Bắt đầu khi bạn sẵn sàng.
+                Source files saved. Start when you are ready.
               </p>
               <div
                 id="activity"
                 class="activity"
                 role="log"
                 aria-live="polite"
-                aria-label="Tiến trình tạo tour"
+                aria-label="Tour generation progress"
               ></div>
               <section id="review" class="panel review" hidden></section>
               <section id="script-editor" class="panel" hidden></section>
               <section id="edit-panel" class="panel" hidden>
-                <h2>Chỉnh sửa với AI</h2>
+                <h2>Edit with AI</h2>
                 <form id="edit-form">
-                  <label for="edit-text">Bạn muốn chỉnh gì?</label>
-                  <textarea id="edit-text" rows="3" maxlength="2000" required placeholder="Đổi tên khu đầu thành Phòng khách, giới thiệu ngắn hơn…"></textarea>
-                  <button id="propose-edit" class="primary" type="submit">Đề xuất thay đổi</button>
+                  <label for="edit-text">What would you like to change?</label>
+                  <textarea id="edit-text" rows="3" maxlength="2000" required placeholder="Rename the first space to Living room, shorten the introduction…"></textarea>
+                  <button id="propose-edit" class="primary" type="submit">Propose changes</button>
                 </form>
                 <div id="edit-proposal" aria-live="polite" hidden></div>
               </section>
@@ -230,16 +232,16 @@
             <aside class="preview-column">
               <section class="panel preview-panel">
                 <div class="panel-title">
-                  <h2>Xem trước</h2>
+                  <h2>Preview</h2>
                   <button
                     id="fullscreen"
                     class="icon-button"
-                    aria-label="Mở rộng bản xem trước"
+                    aria-label="Expand preview"
                   >
                     ⤢
                   </button>
                 </div>
-                <div class="tabs" role="tablist" aria-label="Chế độ xem trước">
+                <div class="tabs" role="tablist" aria-label="Preview mode">
                   <button role="tab" data-mode="panorama" aria-selected="true">
                     Panorama</button
                   ><button
@@ -247,39 +249,39 @@
                     data-mode="floorplan"
                     aria-selected="false"
                   >
-                    Mặt bằng</button
+                    Floorplan</button
                   ><button role="tab" data-mode="model" aria-selected="false">
-                    Nhà 3D</button
+                    3D house</button
                   ><button role="tab" data-mode="tour" aria-selected="false">
                     Tour
                   </button>
                 </div>
                 <div id="preview" class="preview">
-                  <p>Chọn ảnh để xem trước.</p>
+                  <p>Select an image to preview.</p>
                 </div>
                 <p id="preview-caption" class="muted"></p>
               </section>
               <section class="panel music-panel">
-                <h2>Nhạc nền</h2>
+                <h2>Background music</h2>
                 <div id="current-music"></div>
                 <div id="music-options">
-                  <p class="muted">Đổi nhạc trước khi xuất bản mà không tạo lại tour.</p>
-                  <button id="use-placeholder" type="button">Dùng Dream Culture · CC BY 4.0</button>
-                  <label>Hoặc tải WAV riêng<input id="replacement-music" type="file" accept="audio/wav,.wav" /></label>
-                  <label>Nguồn & quyền sử dụng<input id="replacement-credit" maxlength="300" /></label>
-                  <button id="save-music" type="button">Lưu nhạc riêng</button>
+                  <p class="muted">Change music before publishing without regenerating the tour.</p>
+                  <button id="use-placeholder" type="button">Use Dream Culture · CC BY 4.0</button>
+                  <label>Or upload your own WAV<input id="replacement-music" type="file" accept="audio/wav,.wav" /></label>
+                  <label>Source & usage rights<input id="replacement-credit" maxlength="300" /></label>
+                  <button id="save-music" type="button">Save uploaded music</button>
                 </div>
               </section>
               <details class="panel info-panel" id="brief-panel" hidden>
                 <summary>
-                  <h2>Thông tin đã nhận diện</h2>
+                  <h2>Identified information</h2>
                   <span id="fact-count" class="muted"></span>
                 </summary>
                 <div id="brief"></div>
               </details>
               <details class="panel history-panel">
                 <summary>
-                  <h2>Lịch sử</h2>
+                  <h2>History</h2>
                   <span id="history-count" class="muted"></span>
                 </summary>
                 <div id="history"></div>
@@ -290,7 +292,7 @@
       </main>
     </div>
     <dialog id="image-dialog">
-      <button id="close-dialog" aria-label="Đóng ảnh">×</button><img alt="" />
+      <button id="close-dialog" aria-label="Close image">×</button><img alt="" />
       <p></p>
     </dialog>
   </body>

@@ -9,7 +9,7 @@ class Model(BaseModel):
 class ProjectInput(Model):
     name: str = Field(min_length=1, max_length=150)
     description: str = Field(min_length=10, max_length=6000)
-    locale: Literal['vi', 'en'] = 'vi'
+    locale: Literal['vi', 'en'] = 'en'
     voice: Literal['coral', 'alloy', 'onyx'] = 'coral'
     panorama_confirmed: bool = False
     request_id: str = Field(pattern=r'^[a-zA-Z0-9-]{8,80}$')

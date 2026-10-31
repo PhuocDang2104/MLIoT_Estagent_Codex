@@ -1772,3 +1772,4 @@ dialog p {
 .model-thinking {border-top:1px solid var(--line,#dde1e2);margin-top:16px;padding-top:16px;}
 .thinking-summary {white-space:pre-wrap;overflow-wrap:anywhere;max-height:360px;overflow:auto;line-height:1.65;padding:14px;background:#f4f5f6;border-radius:10px;font-size:13px;}
 .plan-summary {border-left:2px solid #ea4a30;padding-left:12px;line-height:1.6;}
+.sample-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }

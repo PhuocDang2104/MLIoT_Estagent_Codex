@@ -62,12 +62,12 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
     async def tour_boundary(request, call_next):
         if request.url.path.startswith('/api/tours/') and request.method in {'POST','PUT','PATCH','DELETE'}:
             if request.headers.get('origin') != origin:
-                return JSONResponse({'error':'Invalid request origin / Nguồn yêu cầu không hợp lệ.'},status_code=403)
+                return JSONResponse({'error':'Invalid request origin.'},status_code=403)
             size=0; parts=[]
             cap = MAX_AUDIO_BYTES if request.url.path == '/api/tours/audio-assets' else MAX_UPLOAD if request.url.path == '/api/tours/assets' else 65536
             async for part in request.stream():
                 size += len(part)
-                if size > cap: return JSONResponse({'error':'Upload too large (12 MiB/image, 20 MiB/WAV) / Dữ liệu quá lớn.'},status_code=413)
+                if size > cap: return JSONResponse({'error':'Upload too large (12 MiB/image, 20 MiB/WAV).'},status_code=413)
                 parts.append(part)
             request._body=b''.join(parts)
         return await call_next(request)
@@ -75,22 +75,22 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
     def owner(request,response=None):
         token=request.cookies.get(COOKIE,'')
         if not re.fullmatch(r'[a-f0-9]{64}',token):
-            if response is None: raise HTTPException(401,'Reload Creator to start a session / Hãy tải lại trang Tạo tour.')
+            if response is None: raise HTTPException(401,'Reload Creator to start a session.')
             token=secrets.token_hex(32)
             response.set_cookie(COOKIE,token,httponly=True,samesite='strict',secure=origin.startswith('https:'),max_age=30*86400,path='/api/tours/')
         return hashlib.sha256(token.encode()).hexdigest()
 
     def draft(conn,id,who):
         row=conn.execute('SELECT * FROM drafts WHERE id=? AND owner=?',(id,who)).fetchone()
-        if not row: raise HTTPException(404,'Draft not found / Không tìm thấy bản nháp.')
+        if not row: raise HTTPException(404,'Draft not found.')
         return row,json.loads(row['doc'])
 
     def check_revision(doc,revision):
-        if doc['revision']!=revision: raise HTTPException(409,'Draft changed. Reload before retrying / Bản nháp đã đổi; tải lại trước khi thử tiếp.')
+        if doc['revision']!=revision: raise HTTPException(409,'Draft changed. Reload before retrying.')
 
     def validate_doc(doc):
         try: return Manifest.model_validate(doc).model_dump()
-        except ValidationError: raise HTTPException(422,'Invalid scene/order/calibration / Điểm xem, thứ tự hoặc góc phủ chưa hợp lệ.') from None
+        except ValidationError: raise HTTPException(422,'Invalid scene/order/calibration.') from None
 
     def asset_urls(doc,prefix):
         for scene in doc['scenes']:
@@ -108,7 +108,7 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
             if verify_only:object_storage.stat(key);return None
             return object_storage.response(key)
         path=data_root/'assets'/f'{id}{"-thumb" if thumb else ""}.jpg'
-        if not path.is_file(): raise HTTPException(404,'Image unavailable / Ảnh không còn sẵn sàng.')
+        if not path.is_file(): raise HTTPException(404,'Image unavailable.')
         if verify_only:return None
         return FileResponse(path,media_type='image/jpeg')
 
@@ -127,14 +127,14 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
             with warnings.catch_warnings():
                 warnings.simplefilter('error',Image.DecompressionBombWarning)
                 with Image.open(io.BytesIO(body)) as source:
-                    if source.format not in {'JPEG','PNG','WEBP'}: raise HTTPException(415,'Use JPEG, PNG or WebP. HEIC is not supported / Hãy đổi HEIC sang JPEG.')
+                    if source.format not in {'JPEG','PNG','WEBP'}: raise HTTPException(415,'Use JPEG, PNG or WebP. HEIC is not supported.')
                     source.verify()
                 with Image.open(io.BytesIO(body)) as source:
                     source.load()
                     image=ImageOps.exif_transpose(source).convert('RGB')
-                    if min(image.size)<16 or max(image.size)>16000: raise HTTPException(422,'Image dimensions unsupported / Kích thước ảnh không phù hợp.')
+                    if min(image.size)<16 or max(image.size)>16000: raise HTTPException(422,'Image dimensions unsupported.')
         except (UnidentifiedImageError,OSError,ValueError,SyntaxError,Image.DecompressionBombError,Image.DecompressionBombWarning):
-            raise HTTPException(415,'Invalid or unsupported image. Use JPEG, PNG or WebP / Ảnh lỗi hoặc định dạng chưa hỗ trợ.') from None
+            raise HTTPException(415,'Invalid or unsupported image. Use JPEG, PNG or WebP.') from None
         digest=hashlib.sha256(body).hexdigest()
         with db() as conn:
             previous=conn.execute('SELECT * FROM assets WHERE owner=? AND digest=?',(who,digest)).fetchone()
@@ -188,7 +188,7 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
             if existing:
                 if existing['request_body']!=data.model_dump_json(): raise HTTPException(409,'Request ID already used for different input.')
                 return json.loads(existing['doc'])
-            if len(set(data.asset_ids))!=len(data.asset_ids): raise HTTPException(422,'Duplicate images / Ảnh bị trùng.')
+            if len(set(data.asset_ids))!=len(data.asset_ids): raise HTTPException(422,'Duplicate images.')
             for id in data.asset_ids:
                 if not conn.execute('SELECT 1 FROM assets WHERE id=? AND owner=?',(id,who)).fetchone(): raise HTTPException(404,'Image not found in this session.')
             id=secrets.token_hex(16)
@@ -197,7 +197,7 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
             for i,asset in enumerate(data.asset_ids):
                 name,description=scene_defaults(i,data.text,locale)
                 scenes.append({'id':secrets.token_hex(16),'asset_id':asset,'name':name,'description':description,'projection':'photo','coverage_degrees':None,'coverage_source':'unknown'})
-            doc=validate_doc(asset_urls({'id':id,'revision':1,'status':'draft','title':title,'locale':locale,'scenes':scenes,'start_scene_id':scenes[0]['id'],'credits':['Ảnh do người đăng cung cấp; cần có quyền chia sẻ trước khi xuất bản.' if locale=='vi' else 'User supplied images; publishing requires permission.']},'/api/tours/assets'))
+            doc=validate_doc(asset_urls({'id':id,'revision':1,'status':'draft','title':title,'locale':locale,'scenes':scenes,'start_scene_id':scenes[0]['id'],'credits':['Images supplied by the uploader; sharing rights are required before publishing.' if locale=='vi' else 'User supplied images; publishing requires permission.']},'/api/tours/assets'))
             conn.execute('INSERT INTO drafts VALUES(?,?,?,?,?,?)',(id,who,json.dumps(doc),None,data.request_id,data.model_dump_json()))
         return doc
 
@@ -228,7 +228,7 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
     def publish(id:str,data:Revision,request:Request):
         with db() as conn:
             row,doc=draft(conn,id,owner(request)); check_revision(doc,data.revision)
-            if row['reviewed']!=data.revision: raise HTTPException(409,'Review this revision before publishing / Cần duyệt đúng bản xem thử trước khi xuất bản.')
+            if row['reviewed']!=data.revision: raise HTTPException(409,'Review this revision before publishing.')
             existing=conn.execute('SELECT doc FROM published WHERE draft=? AND revision=?',(id,data.revision)).fetchone()
             if existing:return json.loads(existing['doc'])
             for s in doc['scenes']:
@@ -250,7 +250,7 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
     def published(id:str):
         with db() as conn:
             row=conn.execute('SELECT doc FROM published WHERE id=?',(id,)).fetchone()
-            if not row: raise HTTPException(404,'Published tour not found / Không tìm thấy tour đã xuất bản.')
+            if not row: raise HTTPException(404,'Published tour not found.')
             return json.loads(row['doc'])
 
     @router.get('/published/{id}/assets/{asset_id}')
@@ -262,7 +262,7 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
     def current_scene(data,doc):
         scene=next((s for s in doc['scenes'] if s['id']==data.scene_id),None)
         if data.scene_id is not None and scene is None:
-            raise HTTPException(422,'Current scene is not in this tour / Điểm đang hỏi không thuộc tour này.')
+            raise HTTPException(422,'Current scene is not in this tour.')
         return scene
 
     def previous_turn(conn,scope,data):
@@ -289,7 +289,7 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
                  'scene_id':data.scene_id,'current_scene':current_scene(data,doc),'history':history}
         if not key and not interpreter:
             if data.locale=='vi':
-                message='Trợ lý hiện chưa sẵn sàng. '+('Bạn vẫn có thể khám phá tour.' if viewer else 'Bạn vẫn có thể sửa và xuất bản tour.')
+                message='The assistant is currently unavailable. '+('You can still explore the tour.' if viewer else 'You can still edit and publish the tour.')
             else:
                 message='The assistant is currently unavailable. '+('You can still explore the tour.' if viewer else 'You can still edit and publish your tour.')
             raise HTTPException(503,message)
@@ -304,12 +304,12 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
         except APIError as exc:
             limited=getattr(exc,'status_code',None)==429
             if data.locale=='vi':
-                message='Trợ lý đang bận. Hãy thử lại sau.' if limited else 'Trợ lý chưa thể trả lời lúc này. Hãy thử lại sau.'
+                message='The assistant is busy. Please try again later.' if limited else 'The assistant cannot answer right now. Please try again later.'
             else:
                 message='The assistant is busy. Please try again shortly.' if limited else 'The assistant could not answer right now. Please try again later.'
             raise HTTPException(429 if limited else 502,message) from None
         except (ValueError,ValidationError):
-            raise HTTPException(502,'Trợ lý chưa thể hoàn thành yêu cầu. Nội dung tour được giữ nguyên.' if data.locale=='vi' else 'The assistant could not complete that request. Your tour is unchanged.') from None
+            raise HTTPException(502,'The assistant could not complete the request. Tour content is preserved.' if data.locale=='vi' else 'The assistant could not complete that request. Your tour is unchanged.') from None
 
     @router.post('/drafts/{id}/chat')
     def chat(id:str,data:Chat,request:Request):
@@ -324,7 +324,7 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
         reply=ask(data,doc,history)  # Network outside write transaction; revision checked again below.
         ids=[s['id'] for s in doc['scenes']]
         if any(c.scene_id not in ids for c in reply.changes) or (reply.order is not None and (len(reply.order)!=len(ids) or set(reply.order)!=set(ids))) or (reply.start_scene_id is not None and reply.start_scene_id not in ids):
-            raise HTTPException(502,'Trợ lý chưa thể áp dụng thay đổi. Bản nháp được giữ nguyên.' if data.locale=='vi' else 'The assistant could not apply those changes. Your draft is unchanged.')
+            raise HTTPException(502,'The assistant could not apply the changes. Your draft is preserved.' if data.locale=='vi' else 'The assistant could not apply those changes. Your draft is unchanged.')
         changed=bool(reply.changes or reply.order is not None or reply.start_scene_id is not None)
         for c in reply.changes:
             for s in doc['scenes']:
@@ -365,8 +365,8 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
             if previous is not None:return previous
             history=chat_history(conn,scope)
         reply=ask(data,doc,history,viewer=True)
-        if reply.changes or reply.order is not None: raise HTTPException(502,'Trợ lý chưa thể hoàn thành yêu cầu. Tour được giữ nguyên.' if data.locale=='vi' else 'The assistant could not complete that request. The tour is unchanged.')
-        if reply.start_scene_id is not None and reply.start_scene_id not in [s['id'] for s in doc['scenes']]: raise HTTPException(502,'Trợ lý chưa tìm được điểm xem phù hợp.' if data.locale=='vi' else 'The assistant could not find a matching viewpoint.')
+        if reply.changes or reply.order is not None: raise HTTPException(502,'The assistant could not complete the request. The tour is preserved.' if data.locale=='vi' else 'The assistant could not complete that request. The tour is unchanged.')
+        if reply.start_scene_id is not None and reply.start_scene_id not in [s['id'] for s in doc['scenes']]: raise HTTPException(502,'The assistant could not find a suitable scene.' if data.locale=='vi' else 'The assistant could not find a matching viewpoint.')
         result={'reply':reply.reply,'scene_id':reply.start_scene_id,'source':'configured_interpreter' if interpreter else 'openai'}
         with db() as conn:
             previous=previous_turn(conn,scope,data)

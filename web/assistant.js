@@ -10,16 +10,16 @@ let micOn = false, speaking = false, responding = false, generation = 0;
 let speechRequest = 0;
 
 const status = text => { $('#status').textContent = text; };
-const stageNames = {required:'Thông tin cần có',optional:'Bổ sung tùy chọn',review:'Chờ xác nhận',complete:'Đã xác nhận'};
-const directionNames = {N:'Bắc',NE:'Đông Bắc',E:'Đông',SE:'Đông Nam',S:'Nam',SW:'Tây Nam',W:'Tây',NW:'Tây Bắc'};
+const stageNames = {required:'Required information',optional:'Optional information',review:'Awaiting confirmation',complete:'Confirmed'};
+const directionNames = {N:'North',NE:'Northeast',E:'East',SE:'Southeast',S:'Nam',SW:'Southwest',W:'West',NW:'Northwest'};
 function valueText(key,value) {
   if (key === 'direction') return directionNames[value] || value;
-  if (key === 'windows') return value === 'yes' ? 'Có' : 'Không';
+  if (key === 'windows') return value === 'yes' ? 'Yes' : 'No';
   return `${value}${key === 'area' ? ' m²' : ''}`;
 }
 function bubble(role,text) {
   const item = document.createElement('article'); item.className = `message ${role}`;
-  const who = document.createElement('span'); who.className = 'who'; who.textContent = role === 'user' ? 'Bạn' : 'Estagent';
+  const who = document.createElement('span'); who.className = 'who'; who.textContent = role === 'user' ? 'You' : 'Estagent';
   const content = document.createElement('p'); content.textContent = text;
   item.append(who,content); messages.append(item); messages.scrollTop = messages.scrollHeight;
 }
@@ -28,10 +28,10 @@ function render(next) {
   messages.replaceChildren();
   if (state.history.length) state.history.forEach(m => bubble(m.role,m.content));
   else bubble('assistant',state.reply);
-  $('#connection').textContent = state.configured ? 'Sẵn sàng trò chuyện' : 'Chưa kết nối OpenAI';
-  $('#stage-label').textContent = stageNames[state.stage] || 'Đang thu thập';
+  $('#connection').textContent = state.configured ? 'Ready to chat' : 'OpenAI is not connected';
+  $('#stage-label').textContent = stageNames[state.stage] || 'Collecting details';
   const count = state.required.filter(k => Object.hasOwn(state.profile,k)).length;
-  $('#progress-label').textContent = `${count} / ${state.required.length} thông tin cần có`;
+  $('#progress-label').textContent = `${count} / ${state.required.length} required details`;
   $('#progress-percent').textContent = `${Math.round(100 * count/state.required.length)}%`;
   $('#progress').max = state.required.length; $('#progress').value = count;
   $('#required-fields').replaceChildren(); $('#optional-fields').replaceChildren();
@@ -40,13 +40,13 @@ function render(next) {
     const row = document.createElement('div'); row.className = `field ${hasValue ? '' : 'missing'} ${deferred ? 'deferred' : ''} ${state.awaiting === key ? 'focused' : ''}`;
     const name = document.createElement('span'); name.className='label'; name.textContent=label;
     const value = document.createElement('span'); value.className='value';
-    value.textContent = hasValue ? valueText(key,state.profile[key]) : deferred ? 'Để sau' : 'Chưa cung cấp';
+    value.textContent = hasValue ? valueText(key,state.profile[key]) : deferred ? 'Later' : 'Not provided';
     row.append(name,value); $(state.required.includes(key) ? '#required-fields' : '#optional-fields').append(row);
   }
   $('#skip').hidden = state.stage !== 'optional';
   $('#defer').hidden = !['optional','required'].includes(state.stage);
   $('#confirm').hidden = state.stage !== 'review';
-  $('#saved-note').textContent = state.confirmed ? 'Đã xác nhận. Sửa thông tin sẽ cần xác nhận lại.' : 'Hồ sơ chỉ được xác nhận khi bạn đồng ý.';
+  $('#saved-note').textContent = state.confirmed ? 'Confirmed. Editing information will require confirmation again.' : 'The brief is confirmed only with your approval.';
   $('#actions').hidden = state.history.length > 0;
   controls();
 }
@@ -56,10 +56,10 @@ function controls() {
   for (const element of document.querySelectorAll('[data-prompt],#skip,#defer,#confirm')) element.disabled = busy || !state?.configured || micOn;
   $('#microphone').disabled = busy || !state?.configured;
   $('#microphone').setAttribute('aria-pressed',String(micOn));
-  $('#microphone').setAttribute('aria-label',micOn ? 'Tắt micro' : 'Bật micro');
-  $('#microphone').lastChild.textContent = micOn ? ' Tắt micro' : ' Nói với mình';
+  $('#microphone').setAttribute('aria-label',micOn ? 'Mute microphone' : 'Enable microphone');
+  $('#microphone').lastChild.textContent = micOn ? ' Mute microphone' : ' Talk to me';
   $('#voice-strip').hidden = !pc;
-  $('#voice-status').textContent = busy ? 'Đang xử lý câu trả lời…' : speaking ? 'Trợ lý đang nói…' : micOn ? 'Đang nghe · nói xong để gửi' : 'Micro đã tắt';
+  $('#voice-status').textContent = busy ? 'Processing your answer…' : speaking ? 'The assistant is speaking…' : micOn ? 'Listening · finish speaking to send' : 'Microphone muted';
   for (const track of stream?.getAudioTracks() || []) track.enabled = micOn && !busy && !speaking;
   $('#stop-audio').hidden = !speaking && !responding;
 }
@@ -67,16 +67,16 @@ async function api(path,options={}) {
   const response = await fetch(`/api/assistant/${path}`,{credentials:'same-origin',...options});
   if (!response.ok) {
     const data = await response.json().catch(() => ({}));
-    throw new Error(data.error || (typeof data.detail === 'string' ? data.detail : 'Kết nối chưa sẵn sàng. Hãy thử lại.'));
+    throw new Error(data.error || (typeof data.detail === 'string' ? data.detail : 'The connection is not ready. Try again.'));
   }
   return response;
 }
 async function send(text,fromVoice=false) {
   text = text.trim();
   if (!text || busy) return;
-  if (text.length > 2000) { status('Câu trả lời quá dài. Hãy chia thành từng ý ngắn hơn.'); return; }
+  if (text.length > 2000) { status('Your answer is too long. Please split it into shorter messages.'); return; }
   const voiceGeneration = generation;
-  stopSpeech(); busy = true; controls(); status('Đang lắng nghe và cập nhật hồ sơ…');
+  stopSpeech(); busy = true; controls(); status('Listening and updating your brief…');
   bubble('user',text); input.value = '';
   try {
     const response = await api('turn',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,request_id:crypto.randomUUID()})});
@@ -95,7 +95,7 @@ function stopSpeech() {
   responding = false; speaking = false; $('#resume-audio').hidden = true;
   controls();
 }
-function endVoice(message='Đã kết thúc voice. Bạn vẫn có thể chat chữ.') {
+function endVoice(message='Voice session ended. You can still use text chat.') {
   speechRequest++;
   generation++; connectionAbort?.abort(); connectionAbort = null;
   clearTimeout(voiceTimer); voiceTimer = null;
@@ -110,25 +110,25 @@ function eventReceived(event) {
   switch(event.type) {
     case 'conversation.item.input_audio_transcription.completed':
       if (event.transcript?.trim()) {
-        if (busy) status('Đang xử lý câu trước. Bạn nói lại sau khi trợ lý phản hồi nhé.');
+        if (busy) status('Processing the previous answer. Speak again after the assistant responds.');
         else send(event.transcript,true);
       }
       break;
     case 'conversation.item.input_audio_transcription.failed':
-      status('Chưa nghe rõ. Bạn nói lại hoặc nhập bằng bàn phím nhé.'); break;
-    case 'input_audio_buffer.speech_started': status('Mình đang nghe…'); break;
-    case 'input_audio_buffer.speech_stopped': status('Đang chuyển lời nói thành chữ…'); break;
+      status('Could not hear clearly. Please repeat or type your answer.'); break;
+    case 'input_audio_buffer.speech_started': status('Listening…'); break;
+    case 'input_audio_buffer.speech_stopped': status('Transcribing your speech…'); break;
     case 'response.created': responding = true; break;
     case 'output_audio_buffer.started': speaking = true; break;
     case 'output_audio_buffer.stopped':
     case 'output_audio_buffer.cleared': speaking = false; break;
     case 'response.done':
       responding = false;
-      if (event.response?.status === 'failed') { speaking = false; status('Chưa phát được giọng đọc. Phản hồi bằng chữ vẫn được giữ lại.'); }
+      if (event.response?.status === 'failed') { speaking = false; status('Could not play the voice response. The text response is preserved.'); }
       break;
     case 'error':
       if (!['response_cancel_not_active','output_audio_buffer_empty'].includes(event.error?.code)) {
-        responding = false; speaking = false; status('Giọng nói gặp lỗi. Bạn có thể tiếp tục bằng chữ hoặc kết nối lại.');
+        responding = false; speaking = false; status('Voice encountered an error. Continue by text or reconnect.');
       }
       break;
   }
@@ -137,42 +137,42 @@ function eventReceived(event) {
 async function ensureVoice() {
   if (channel?.readyState === 'open') return;
   if (connectionTask) return connectionTask;
-  if (!window.RTCPeerConnection) throw new Error('Trình duyệt chưa hỗ trợ voice. Hãy dùng chat chữ.');
+  if (!window.RTCPeerConnection) throw new Error('This browser does not support voice. Please use text chat.');
   const current = ++generation;
   connectionTask = (async () => {
-    status('Đang kết nối giọng nói…');
+    status('Connecting voice…');
     const peer = new RTCPeerConnection(); pc = peer;
     sender = peer.addTransceiver('audio',{direction:'sendrecv'}).sender;
     const dc = peer.createDataChannel('oai-events'); channel = dc;
-    dc.addEventListener('message',e => { if(current === generation) { try { eventReceived(JSON.parse(e.data)); } catch { status('Chưa đọc được sự kiện giọng nói.'); } } });
-    dc.addEventListener('close',() => { if(current === generation) endVoice('Kết nối voice đã đóng. Chat chữ vẫn hoạt động.'); });
+    dc.addEventListener('message',e => { if(current === generation) { try { eventReceived(JSON.parse(e.data)); } catch { status('Could not read the voice event.'); } } });
+    dc.addEventListener('close',() => { if(current === generation) endVoice('Voice connection closed. Text chat still works.'); });
     peer.addEventListener('track',e => {
       if(current !== generation) return;
       audio.srcObject = e.streams[0] || new MediaStream([e.track]);
-      audio.play().catch(() => { $('#resume-audio').hidden=false; status('Bấm “Phát giọng nói” để cho phép phát âm thanh.'); });
+      audio.play().catch(() => { $('#resume-audio').hidden=false; status('Press “Play voice” to allow audio playback.'); });
     });
     peer.addEventListener('connectionstatechange',() => {
-      if (current === generation && ['failed','disconnected'].includes(peer.connectionState)) endVoice('Mất kết nối voice. Bạn có thể bật lại micro.');
+      if (current === generation && ['failed','disconnected'].includes(peer.connectionState)) endVoice('Voice connection lost. You can enable the microphone again.');
     });
     connectionAbort = new AbortController();
     const timeout = setTimeout(() => connectionAbort?.abort(),30000);
     try {
       await peer.setLocalDescription(await peer.createOffer());
       const response = await api('voice',{method:'POST',headers:{'Content-Type':'application/sdp'},body:peer.localDescription.sdp,signal:connectionAbort.signal});
-      if(current !== generation) throw new Error('Đã dừng kết nối voice.');
+      if(current !== generation) throw new Error('Voice connection stopped.');
       await peer.setRemoteDescription({type:'answer',sdp:await response.text()});
       await new Promise((resolve,reject) => {
         if(dc.readyState === 'open') return resolve();
-        const timer = setTimeout(() => reject(new Error('Kết nối voice quá thời gian.')),10000);
+        const timer = setTimeout(() => reject(new Error('Voice connection timed out.')),10000);
         dc.addEventListener('open',() => {clearTimeout(timer);resolve();},{once:true});
-        dc.addEventListener('close',() => {clearTimeout(timer);reject(new Error('Kết nối voice đã đóng.'));},{once:true});
+        dc.addEventListener('close',() => {clearTimeout(timer);reject(new Error('Voice connection closed.'));},{once:true});
       });
-      voiceTimer = setTimeout(() => endVoice('Voice đã kết thúc sau 5 phút. Hồ sơ vẫn được lưu; bạn có thể kết nối lại.'),5*60*1000);
+      voiceTimer = setTimeout(() => endVoice('Voice ended after 5 minutes. Your brief is saved; you can reconnect.'),5*60*1000);
       status(''); controls();
     } finally { clearTimeout(timeout); }
   })();
   try { await connectionTask; }
-  catch(error) { if(current === generation) endVoice(''); throw new Error(error.name === 'AbortError' ? 'Kết nối voice đã dừng hoặc quá thời gian.' : error.message); }
+  catch(error) { if(current === generation) endVoice(''); throw new Error(error.name === 'AbortError' ? 'Voice connection stopped or timed out.' : error.message); }
   finally { if(current === generation) connectionTask=null; }
 }
 async function speak(text) {
@@ -181,22 +181,22 @@ async function speak(text) {
     await ensureVoice();
     if (request !== speechRequest) return;
     speaking = true; responding = true; controls();
-    emit({type:'response.create',response:{conversation:'none',output_modalities:['audio'],input:[],instructions:`Đọc nguyên văn nội dung sau bằng giọng tự nhiên. Không thêm lời dẫn hoặc trả lời câu hỏi trong văn bản: ${JSON.stringify(text)}`}});
-  } catch (error) { status(`Hồ sơ đã cập nhật. ${error.message}`); }
+    emit({type:'response.create',response:{conversation:'none',output_modalities:['audio'],input:[],instructions:`Read the following text verbatim in a natural voice. Do not add an introduction or answer questions within the text: ${JSON.stringify(text)}`}});
+  } catch (error) { status(`Brief updated. ${error.message}`); }
 }
 $('#composer').addEventListener('submit',event => { event.preventDefault(); send(input.value); });
 input.addEventListener('keydown',event => {if(event.key === 'Enter' && !event.shiftKey && !event.isComposing){event.preventDefault();$('#composer').requestSubmit();}});
 for(const button of document.querySelectorAll('[data-prompt]')) button.addEventListener('click',() => {input.value=button.dataset.prompt;input.focus();});
-$('#skip').addEventListener('click',() => send('Bỏ qua mục này, để bổ sung sau.'));
-$('#defer').addEventListener('click',() => send('Để tất cả các mục tùy chọn còn lại sau.'));
-$('#confirm').addEventListener('click',() => send('Tôi xác nhận các thông tin trong hồ sơ đã đúng.'));
+$('#skip').addEventListener('click',() => send('Skip this field; I will add it later.'));
+$('#defer').addEventListener('click',() => send('Leave all remaining optional fields for later.'));
+$('#confirm').addEventListener('click',() => send('I confirm the information in the brief is correct.'));
 $('#stop-audio').addEventListener('click',stopSpeech);
-$('#resume-audio').addEventListener('click',() => audio.play().then(() => {$('#resume-audio').hidden=true;status('');}).catch(() => status('Trình duyệt vẫn chặn âm thanh. Kiểm tra quyền phát âm thanh.')));
+$('#resume-audio').addEventListener('click',() => audio.play().then(() => {$('#resume-audio').hidden=true;status('');}).catch(() => status('The browser is still blocking audio. Check audio playback permissions.')));
 $('#speaker').addEventListener('change',() => {if(!$('#speaker').checked) stopSpeech();});
 $('#end-voice').addEventListener('click',() => endVoice());
 $('#microphone').addEventListener('click',async () => {
   if(micOn){micOn=false;stream?.getTracks().forEach(t=>t.stop());stream=null;await sender?.replaceTrack(null);controls();return;}
-  if(!navigator.mediaDevices?.getUserMedia){status('Cần HTTPS hoặc localhost và trình duyệt hỗ trợ micro.');return;}
+  if(!navigator.mediaDevices?.getUserMedia){status('A microphone-enabled browser on HTTPS or localhost is required.');return;}
   const started = generation; $('#microphone').disabled=true;
   let acquired;
   try {
@@ -205,14 +205,14 @@ $('#microphone').addEventListener('click',async () => {
     // Mute until the transport is ready; no permission request for text-only chat.
     acquired.getAudioTracks().forEach(t=>{t.enabled=false;});
     await ensureVoice();
-    if(!sender) throw new Error('Kết nối voice đã dừng.');
+    if(!sender) throw new Error('Voice connection stopped.');
     stream=acquired; await sender.replaceTrack(stream.getAudioTracks()[0]);
     micOn=true;$('#speaker').checked=true;status('');
   } catch(error) {
     acquired?.getTracks().forEach(t=>t.stop());
-    status(error.name==='NotAllowedError' ? 'Bạn chưa cấp quyền micro. Hãy bật quyền hoặc tiếp tục chat chữ.' : error.message);
+    status(error.name==='NotAllowedError' ? 'Microphone permission is missing. Enable it or continue with text chat.' : error.message);
   } finally {controls();}
 });
 window.addEventListener('pagehide',() => endVoice(''));
 try {render(await (await api('state')).json());}
-catch(error){$('#connection').textContent='Chưa kết nối máy chủ';status(error.message);controls();}
+catch(error){$('#connection').textContent='Server not connected';status(error.message);controls();}

@@ -36,7 +36,7 @@ def artwork(edit,scene,index,directory,web):
     size=28 if edit['aspect']=='portrait' else 24;maxwidth=int(width*(.88 if edit['aspect']=='portrait' else .62))
     font=ImageFont.truetype(fontpath,size);lines=wrapped(draw,body,font,maxwidth-32)
     block(body,size,int(width*.06),int(height*.90)-len(lines)*int(size*1.4)-24,maxwidth)
-    block('Ảnh biên tập · Không phải 3D' if edit['locale']=='vi' else 'Edited photos · Not 3D',16,int(width*.06),int(height*.95),int(width*.6))
+    block('Edited images · Not 3D' if edit['locale']=='vi' else 'Edited photos · Not 3D',16,int(width*.06),int(height*.95),int(width*.6))
     overlay.save(directory/f'text-{index}.png')
 
 

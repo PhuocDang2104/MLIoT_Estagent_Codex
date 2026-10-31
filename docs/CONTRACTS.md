@@ -358,6 +358,19 @@ No published schema or existing snapshot is converted. Placeholder music is
 covered by upload admission limits. The existing 20 MiB self-contained GLB limit
 also applies to local Blender output.
 
+## English demo defaults — 2026-10-31
+
+New AI/Blender Studio tours preselect the eight original Seoul panoramas from
+the existing same-origin demo catalog. This is a client-side selection only:
+no project, upload or model call occurs until the user saves or generates.
+Images can be removed, cleared or replaced by custom uploads. Existing drafts
+never receive stock images automatically. No floorplan is silently attached.
+
+The demo interface and application-owned errors/progress are English, including
+sessions with an old Vietnamese UI preference. New content defaults to English;
+explicit content-language choices and stored source content remain supported.
+No schema, endpoint, asset identity or spending limit changes.
+
 ## Seoul sample media exception — 2026-10-31
 
 Explicit user authorization adds `GET /api/demos/seoul-apartment/exports` for

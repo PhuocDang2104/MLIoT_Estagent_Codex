@@ -84,10 +84,8 @@ const landingTranslations = {
 };
 (() => {
   const preferenceKey = 'estagent-language';
-  function readPreference(fallback = 'en') {
-    try { return localStorage.getItem(preferenceKey) === 'vi' ? 'vi' : 'en'; }
-    catch { return fallback; /* Storage may be disabled. */ }
-  }
+  // The demo uses English even for sessions with an older saved preference.
+  function readPreference() { return 'en'; }
   let language = readPreference();
   const entries = [];
   document.querySelectorAll('[data-vi]').forEach(el => entries.push({ set: value => { el.textContent = value; }, en: el.textContent, vi: el.dataset.vi }));
@@ -103,7 +101,7 @@ const landingTranslations = {
   }
   window.estagentI18n = { get language() { return language; }, t: (en, vi) => language === 'vi' ? vi : en };
   function apply(next, persist = false) {
-    language = next;
+    language = 'en';
     document.documentElement.lang = language;
     entries.forEach(entry => entry.set(entry[language]));
     document.querySelectorAll('[data-lang]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.lang === language)));
@@ -118,7 +116,10 @@ const landingTranslations = {
     // Do not reset draft notices or rerender user input if nothing changed.
     if (saved !== language) apply(saved);
   }
-  document.querySelectorAll('[data-lang]').forEach(button => button.addEventListener('click', () => apply(button.dataset.lang, true)));
+  document.querySelectorAll('[data-lang]').forEach(button => {
+    button.hidden = true;
+    button.closest('.language-switch, .lang-switch')?.setAttribute('hidden', '');
+  });
   // A page restored from BFCache does not rerun initialization. Other tabs also
   // need to reflect the shared preference without writing it back in a loop.
   window.addEventListener('pageshow', syncPreference);
@@ -128,5 +129,5 @@ const landingTranslations = {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') syncPreference();
   });
-  apply(language);
+  apply(language, true);
 })();

@@ -71,4 +71,4 @@ class DurableQueue:
     def ensure_ready(self):
         if self.stop.is_set() or not self.thread.is_alive():
             from fastapi import HTTPException
-            raise HTTPException(503, 'Runtime đang dừng hoặc cần khởi động lại. Job đã lưu được giữ nguyên.')
+            raise HTTPException(503, 'The runtime is stopping or needs a restart. Saved jobs are preserved.')

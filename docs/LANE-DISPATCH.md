@@ -1,5 +1,24 @@
 # Điều phối lane — 2026-10-31
 
+## Wave 2 — current dispatch
+
+Base code: main `1abd9b6` (prod app source `346a0ba`; demo data đã publish riêng).
+Hai writer mới, mỗi người một worktree; không dùng lại worktree integration cũ để tránh kéo stale base.
+
+| Lane | Task / worktree | Acceptance chính | Trạng thái |
+|---|---|---|---|
+| Product Integration `w6G:p1` | `docs/work-items/W2-AUDIO.md`; `.worktrees/tour-audio` | User-uploaded WAV nhạc/lời theo khu, snapshot audio, player ducking + browser/API tests | Wave 2 active |
+| Chatbot `w6E:p1` | `docs/work-items/W2-API-GUARDS.md`; `.worktrees/live-api-guards` | Rate/concurrency/persisted request allowance, tests; không bật paid API | Wave 2 active |
+| Frontend `w6D:p1` | Wave 3: activity/progress UI theo events/artifacts thật | Chờ audio ownership trả lại; không thêm fake progress hoặc đoán Figma | Queued, chưa khởi chạy |
+| Demo/Core `w6H:p1` | Wave 3: input/HEIC/panorama calibration và khả thi core | Chờ slot; không tải model/GPU trả phí hoặc sửa demo đang dùng | Queued, chưa khởi chạy |
+| Deploy `w6F:p1` | Regression/rollout từ SHA được nghiệm thu | Không tự deploy nhánh đang làm hoặc đổi prod keyless | Chờ handback |
+| Tatejo `w6B:p1` | Contract/root wiring/review/merge/conflict/prod | Tự chạy test/browser; giữ commit teammate; không force main | Owner |
+
+Claude/agy review panes đã đóng theo yêu cầu Thái; không tự mở lại chỉ để lấp chỗ trống.
+Reviewer/checklist Grok hiện có được dùng lại khi nghiệm thu; cần review mới thì giao scope riêng sau handback.
+
+Các mục dưới là lịch sử vòng 1, không cấp quyền ghi main checkout trong Wave 2.
+
 Owner: Tatejo, phiên herdr `w6B:p1`. Repo chính: PhuocDang2104/MLIoT_Estagent_Codex.
 Đây là phân công thực thi, không tuyên bố proposal đã được duyệt toàn bộ.
 Chỉ đạo mới nhất của Thái: MVP chưa cần auth. Không tự mua dịch vụ/GPU hoặc thay đổi stack dùng chung.

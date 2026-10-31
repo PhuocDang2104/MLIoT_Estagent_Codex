@@ -22,3 +22,11 @@ Cursor/Grok build checklist trong worktree riêng; Tatejo đọc lại trước 
 
 Bản tích hợp được kiểm riêng bằng gate, browser flow/restart/dynamic counts và documented dev-command.
 Giới hạn core/audio/OpenAI live phải giữ trong handoff và release notes. Không thay author/co-author để che AI hỗ trợ; khai báo nguồn vẫn giữ.
+
+## Đóng vòng review
+
+Thái yêu cầu đọc và gỡ pane review: đã thu câu trả lời cuối của Claude và đủ 5 findings/5 Acceptance của agy trước khi đóng.
+Hai review đều trên baseline cũ; bản tích hợp đã chỉnh renter copy, tách entry Creator/Viewer,
+ghi đúng panorama và lưu server, giữ keyless503, rồi được kiểm browser và deploy preview riêng.
+Nhạc/narration thật, core và OpenAI live vẫn mở; không coi việc đóng reviewer là các hạng mục đó đã xong.
+Không ai trong hai reviewer ghi source/commit/co-author metadata. Chỉ đóng pane Claude/agy do Tatejo mở, không đóng pane build hoặc pane người dùng.

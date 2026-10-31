@@ -6,9 +6,9 @@ Không biến việc có nhiều provider thành nhiều writer cho cùng một 
 | Provider | Vai | Trạng thái thiết lập |
 |---|---|---|
 | Codex | Implement/integrate main product | Lane `product-integration`, worktree riêng |
-| Claude | Review nội dung/claims/JTBD độc lập | `estagent-claude-review`, read-only tools; không Bash/Edit/Write |
-| Cursor/Grok | Build nhỏ hoặc review nội dung | `grok-4.7-high` đã thấy trong Cursor catalog; checklist tại worktree `.worktrees/grok-content`, branch `review/grok-content` |
-| agy | Review nội dung độc lập, không thấy review Claude trước khi nộp | User đã trust folder qua UI; `estagent-agy-review` đã nộp review baseline, chỉ đọc |
+| Claude | Review nội dung/claims/JTBD độc lập | Đã thu handback vào CONTENT-REVIEW; đóng pane reviewer theo yêu cầu Thái sau khi đọc kết quả cuối |
+| Cursor/Grok | Build nhỏ hoặc review nội dung | Headless task đã xong; checklist đã được Tatejo kiểm/sửa nhận xét sai rồi tích hợp thành docs/PRODUCT-ACCEPTANCE.md. Không đóng pane Cursor do người dùng mở |
+| agy | Review nội dung độc lập, không thấy review Claude trước khi nộp | Đã đọc đủ 5 findings + 5 Acceptance, lưu tổng hợp vào CONTENT-REVIEW; đóng pane reviewer theo yêu cầu Thái |
 
 ## Guardrails
 

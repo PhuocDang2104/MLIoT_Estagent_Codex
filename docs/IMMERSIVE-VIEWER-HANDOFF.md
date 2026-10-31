@@ -53,3 +53,9 @@ Tái sử dụng viewer/player và renderer đã có trên299c2c7 (renderer có 
 NEED Deploy w6F:p1: review/cherry-pick SHA bàn giao, gate integration và rollout theo quyền của Deploy; không cần thay asset allowlist/build/server.
 CONTRACT_CHANGE: none.
 Blocker implementation: none. Chưa deploy; QA mobile là Chrome emulation, không phải iPhone thật.
+
+## Follow-up trực tiếp của Thái — Apple-style glass
+
+Thái yêu cầu đổi chất liệu panel/nút theo screenshot. Chỉ sửa CSS viewer trong `web/tour.css`: nền kính trong có tint, blur28px/saturate160%, phản sáng gradient/viền/inset shadow, nút chọn trắng kính, ô nguồn bo mềm. Giữ nguyên layout, nội dung, API, camera/audio/chat; không thêm asset/dependency. Có prefix WebKit và nền đục fallback khi không hỗ trợ blur hoặc giảm transparency.
+
+Đã chạy lại strict web gate PASS và Chrome mở/đóng cả4 panel ở1440/390/320, không overflow/JS errors. Bằng chứng **chỉ local**: `/private/tmp/estagent-immersive-evidence/glass-gate.log`, `glass-browser.log`, `glass-1440.png`, `glass-390.png`, `glass-320.png`. Không stage ảnh chứa demo thật. Commit follow-up có parent `b0849df`; Deploy nhận riêng patch CSS/docs này theo quyền hiện có.

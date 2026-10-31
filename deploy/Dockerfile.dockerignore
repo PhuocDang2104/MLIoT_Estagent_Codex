@@ -1,0 +1,14 @@
+**
+!server/
+!server/assistant/
+!server/assistant/*.py
+!server/assistant/requirements.txt
+!web/
+!web/assistant.html
+!web/assistant.css
+!web/assistant.js
+!web/assets/
+!web/assets/**
+!deploy/
+!deploy/entrypoint.py
+!deploy/smoke.py

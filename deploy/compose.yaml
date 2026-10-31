@@ -1,0 +1,45 @@
+name: estagent-assistant
+services:
+  assistant:
+    image: ${ASSISTANT_IMAGE:?Set an accepted commit-specific ASSISTANT_IMAGE}
+    pull_policy: never
+    init: true
+    restart: unless-stopped
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:?Set OPENAI_API_KEY in the private runtime env file}
+      OPENAI_MODEL_TEXT: ${OPENAI_MODEL_TEXT:?Set OPENAI_MODEL_TEXT}
+      OPENAI_MODEL_REALTIME: ${OPENAI_MODEL_REALTIME:?Set OPENAI_MODEL_REALTIME}
+      OPENAI_MODEL_TRANSCRIBE: ${OPENAI_MODEL_TRANSCRIBE:?Set OPENAI_MODEL_TRANSCRIBE}
+      ASSISTANT_ORIGIN: ${ASSISTANT_ORIGIN:?Set the exact HTTPS frontend origin}
+      ASSISTANT_REQUIRED_FIELDS: ${ASSISTANT_REQUIRED_FIELDS:?Set the accepted required-fields policy}
+      ASSISTANT_DB: /data/checkpoints.sqlite
+    ports:
+      - "127.0.0.1:18180:5180"
+    volumes:
+      - checkpoints:/data
+    networks:
+      edge:
+        aliases:
+          - estagent-assistant-api
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 1g
+    cpus: 1.0
+    pids_limit: 128
+    stop_grace_period: 45s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  checkpoints:
+    name: estagent-assistant-checkpoints
+networks:
+  edge:
+    name: estagent-assistant-edge

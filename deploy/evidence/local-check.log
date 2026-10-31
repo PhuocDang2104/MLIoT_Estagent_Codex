@@ -1,0 +1,19 @@
+Application snapshot: 9a1e40f89e2afa1a5e0ec2671a21187ff4efe723; deploy tooling: current uncommitted files
+PASS config: missing key rejected without starting runtime
+CONFIG OK (presence/format only; model access and quota not verified)
+PASS config: blank key, non-HTTPS origin, unknown field rejected
+unconfigured: SMOKE PASS: state/cookie, wrong origin, invalid turn, body limit, unconfigured=503; static HTML; no valid model request or profile mutation sent
+HEALTH PASS (HTTP + checkpoint read; no model/quota check)
+PASS health: unconfigured server fails production health
+configured-fixture: SMOKE PASS: state/cookie, wrong origin, invalid turn, body limit; static HTML; no valid model request or profile mutation sent
+HEALTH PASS (HTTP + checkpoint read; no model/quota check)
+PASS native restart: SQLite reopens and passes quick_check
+.........                                                                [100%]
+=============================== warnings summary ===============================
+../../../../../../../Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/langgraph/checkpoint/base/__init__.py:18
+  /Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+    from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+9 passed, 1 warning in 0.66s
+LOCAL QA PASS; Docker build/volume/TLS/live OpenAI NOT verified

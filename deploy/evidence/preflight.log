@@ -1,0 +1,8 @@
+PASS Python syntax: deploy/*.py
+PASS rewrite snippet JSON; placeholder destination is not deployable until owner supplies API hostname
+PASS docker compose config --quiet with synthetic environment (no values logged)
+PASS Compose rejects missing OPENAI_API_KEY
+PASS release guard: dirty checkout rejected, no production artifact created
+BLOCKED Docker image build/runtime: local Docker daemon is not running (read-only docker info failed)
+Vercel read-only API: project estagent; git link=null; no reconnect attempted
+NOT RUN: production deployment, VM changes, database migration/restore, live OpenAI, TLS/proxy e2e, Git mutations

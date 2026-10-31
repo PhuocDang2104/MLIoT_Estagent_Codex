@@ -4,9 +4,10 @@ from pathlib import Path
 from minio import Minio
 import urllib3
 PIN='0a7ca8a00bbc836bc56b55bc4f77f92d7a98a4a0c9ea87b83a64750e326de7b1'
+V2='8d22cafbeff7c02ea685bf5f7080233d286079ab73b03537c2a220203af9f3b5'
 def main():
- p=argparse.ArgumentParser();p.add_argument('--source',type=Path,required=True);p.add_argument('--catalog',type=Path,required=True);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
- raw=(a.source/'manifest.json').read_bytes();assert hashlib.sha256(raw).hexdigest()==PIN
+ p=argparse.ArgumentParser();p.add_argument('--source',type=Path,required=True);p.add_argument('--catalog',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--manifest-sha',choices=[PIN,V2],default=PIN);a=p.parse_args()
+ raw=(a.source/'manifest.json').read_bytes();assert hashlib.sha256(raw).hexdigest()==a.manifest_sha
  batch=json.loads(raw);doc=json.loads(a.catalog.read_text());env=os.environ;assert env['MINIO_BUCKET']=='estagent-media'
  c=Minio(env['MINIO_ENDPOINT'],access_key=env['MINIO_ACCESS_KEY'],secret_key=env['MINIO_SECRET_KEY'],secure=env['MINIO_SECURE']=='1',http_client=urllib3.PoolManager(timeout=urllib3.Timeout(connect=5,read=30),retries=False));bucket=env['MINIO_BUCKET']
  response=c.get_object(bucket,doc['assets']['house/manifest.json']['key'])
@@ -27,16 +28,19 @@ def main():
   try:assert hashlib.sha256(response.read()).hexdigest()==sha
   finally:response.close();response.release_conn()
   doc['assets'][name]={'key':key,'sha256':sha,'bytes':len(data),'content_type':'audio/wav'};clips[item['id']]=item|{'asset':name}
- assert len(clips)==16
+ assert len(clips)==(22 if a.manifest_sha==V2 else 16)
  rooms={r['room_id']:r for r in batch['rooms']};guide=[]
+ for room in batch['rooms']:
+  for visual in room.get('visual_sources',[]):
+   capture=next(x for x in house['captures'] if x['id']==visual['capture_id']);assert capture['roomId']==room['room_id'] and capture['sha256']==visual['sha256']
  for marker in batch['markers']:
   room=rooms[marker['room_id']];source_room=next(r for r in house['rooms'] if r['id']==marker['room_id']);assert room['source_label']==source_room['label']
   for locale in ['en','vi']:
-   clip=clips[marker['tracks'][locale]];assert clip['locale']==locale and clip['text']==room['description'][locale]
-   guide.append({k:clip[k] for k in ['locale','sha256','duration_seconds','source','provider','model','voice','script_sha256','asset']}|{'capture_id':marker['capture_id'],'room_id':marker['room_id'],'script':clip['text'],'description':room['description'][locale],'source_id':room['source_id']})
- doc['guide']=guide;doc['guide_manifest_sha256']=PIN;doc['total_bytes']=sum(x['bytes'] for x in doc['assets'].values())
+   clip=clips[marker['tracks'][locale]];assert clip['locale']==locale and clip['text']==room.get('narration',{}).get(locale,{}).get('transcript',room['description'][locale])
+   guide.append({k:clip[k] for k in ['locale','sha256','duration_seconds','source','provider','model','voice','script_sha256','asset']}|{'capture_id':marker['capture_id'],'room_id':marker['room_id'],'script':clip['text'],'description':room['description'][locale],'source_id':room['source_id'],'description_version':room.get('description_version',1),'narration_version':room.get('narration_version',1)})
+ doc['guide']=guide;doc['guide_manifest_sha256']=a.manifest_sha;doc['total_bytes']=sum(x['bytes'] for x in doc['assets'].values())
  a.output.parent.mkdir(mode=0o700,parents=True,exist_ok=True)
  fd=os.open(a.output,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
  with os.fdopen(fd,'w') as f:json.dump(doc,f,ensure_ascii=False)
- print(json.dumps({'unique_wavs':len(clips),'capture_locale_bindings':len(guide),'selected_markers':len(expected),'source_and_minio_readback_sha_verified':True,'new_paid_calls':0,'guide_manifest_sha256':PIN}))
+ print(json.dumps({'unique_wavs':len(clips),'capture_locale_bindings':len(guide),'selected_markers':len(expected),'source_and_minio_readback_sha_verified':True,'new_paid_calls':0,'guide_manifest_sha256':a.manifest_sha}))
 if __name__=='__main__':main()

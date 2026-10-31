@@ -191,3 +191,4 @@ PCM sine tones test browser/media behavior; they are not property imagery or
 human narration. Production public photos were only read for regression checks;
 real-media screenshots remain local. H0 remains unverified; reused source is not
 claimed as newly written during competition hours.
+Guide v2: E visually inspected16 source panoramas;15descriptions EN/VI are grounded in visible facts, with no area/price/location/material-certainty claims.8main rooms use16new authorizedOpenAIWAVs;7auxiliary rooms retain exactv1transcripts/audio. Description is shown separately from the actual recording script; batchmanifest8d22cafb… pinned. Release validates source pixels/WAV/readbackSHA and makes zero new paidcalls.

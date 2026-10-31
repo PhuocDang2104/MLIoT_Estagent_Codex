@@ -64,7 +64,7 @@ async function mountGuidedTour(){
  if(!tracks.length)return; // Missing guide is explicit; neutral intro is never substituted.
  const selected=manifest.rooms.flatMap(room=>room.dollhouseCaptureIds.map(id=>({id,room_id:room.id})));
  const panel=document.createElement('details');panel.id='demo-guide';panel.open=true;
- panel.innerHTML='<summary>Tour có lời dẫn · AI</summary><div><label>Ngôn ngữ <select aria-label="Ngôn ngữ tour"><option value="vi">Tiếng Việt</option><option value="en">English</option></select></label><div class="guide-buttons"><button type="button" data-action="play">Play tour</button><button type="button" data-action="pause" disabled>Pause</button></div><p class="guide-description"></p><audio controls preload="none"></audio><p role="status">Nhấn Play tour để bắt đầu.</p><small>AI-generated · Nội dung theo metadata nguồn. Hết lời sẽ chuyển điểm xem kế tiếp.</small></div>';
+ panel.innerHTML='<summary>Tour có lời dẫn · AI</summary><div><label>Ngôn ngữ <select aria-label="Ngôn ngữ tour"><option value="vi">Tiếng Việt</option><option value="en">English</option></select></label><div class="guide-buttons"><button type="button" data-action="play">Play tour</button><button type="button" data-action="pause" disabled>Pause</button></div><strong>Mô tả khu</strong><p class="guide-description"></p><details class="guide-transcript"><summary>Lời bản thu</summary><p class="guide-script"></p><small class="guide-audio-note"></small></details><audio controls preload="none"></audio><p role="status">Nhấn Play tour để bắt đầu.</p><small>AI-generated · Nội dung theo metadata nguồn. Hết lời sẽ chuyển điểm xem kế tiếp.</small></div>';
  document.body.append(panel);
  const audio=panel.querySelector('audio'),locale=panel.querySelector('select'),play=panel.querySelector('[data-action=play]'),pause=panel.querySelector('[data-action=pause]'),status=panel.querySelector('[role=status]');
  let index=0,running=false,token=0,finished=false,changing=false;
@@ -88,6 +88,8 @@ async function mountGuidedTour(){
    document.querySelector('#captures button[data-id="'+track.capture_id+'"]').click();
    if(audio.src!==new URL(track.url,location.origin).href)audio.src=track.url;
    panel.querySelector('.guide-description').textContent=track.description||track.script;
+   panel.querySelector('.guide-script').textContent=track.script;
+   panel.querySelector('.guide-audio-note').textContent=track.description!==track.script?'Bản thu ngắn được giữ nguyên; mô tả khu bên trên đã được bổ sung.':'';
    status.textContent='Đang tải điểm '+(index+1)+' / '+selected.length;
    await waitCapture(track.capture_id,version);if(version!==token)return;
    await audio.play();if(version!==token){audio.pause();return;}
@@ -101,7 +103,7 @@ async function mountGuidedTour(){
  audio.addEventListener('error',()=>{if(running)stop('Không tải được lời dẫn. Tour đã dừng.');});
  locale.addEventListener('change',()=>{stop('Đã đổi ngôn ngữ. Nhấn Play tour để bắt đầu.');index=0;finished=false;play.textContent='Play tour';});
  for(const type of ['pointerdown','wheel','keydown','click'])document.addEventListener(type,event=>{
-  if(event.isTrusted&&event.target.closest('#viewport,#rooms,#captures,#floorplan,#checkpoints,#panoWalk,#houseMode,#panoMode,[data-chat],#chat-toggle'))stop('Bạn đang tự khám phá; tour tự động đã dừng.');
+  if(event.isTrusted&&event.target.closest('#viewport,#rooms,#captures,#floorplan,#checkpoints,#panoWalk,#houseMode,#panoMode,[data-chat],#chat-toggle')){stop('Bạn đang tự khám phá; tour tự động đã dừng.');panel.querySelector('.guide-description').textContent='Nhấn Play tour để tiếp tục mô tả và lời dẫn.';panel.querySelector('.guide-script').textContent='';panel.querySelector('.guide-audio-note').textContent='';audio.removeAttribute('src');audio.load();}
  },{capture:true,passive:true});
  document.addEventListener('narration-preview-start',()=>stop());document.addEventListener('chat-start',()=>stop());
  document.addEventListener('play',event=>{if(event.target!==audio&&event.target instanceof HTMLMediaElement)stop();},true);

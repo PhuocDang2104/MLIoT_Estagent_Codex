@@ -171,7 +171,7 @@ No manifest schema or existing-record migration is required. See `CHAT-FLOW-HAND
 | `GET /api/tours/published` | Published snapshots only; shareable within this local server; no private drafts |
 | `GET /api/tours/published/{id}` | Immutable manifest, no cookie required |
 | `GET /api/tours/published/{id}/assets/{asset}` | Only assets referenced by that snapshot, no cookie required |
-| `POST /api/tours/drafts/{id}/chat` | `{text,request_id,revision,locale}`; text-only grounded assistant; can rename/describe/reorder/start only existing scene IDs. Revision checked after model response too. Returns `{reply,manifest,source}`; saved history, sequential request idempotency; no exactly-once promise for concurrent provider calls |
+| `POST /api/tours/drafts/{id}/chat` | `{text,request_id,revision,locale,scene_id?}`; text-only grounded assistant; can rename/describe/reorder/start only existing scene IDs. Revision checked after model response too. Returns `{reply,manifest,source}`; saved history, sequential request idempotency; no exactly-once promise for concurrent provider calls |
 | `GET /api/tours/drafts/{id}/messages` | Own text+attachment IDs and successful chat responses, never image base64 |
 | `POST /api/tours/published/{id}/chat` | Same chat body; only approved context, optional existing `scene_id` navigation; no draft write or publish tools |
 

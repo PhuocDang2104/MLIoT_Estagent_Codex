@@ -1,0 +1,44 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "viewport": 1440,
+      "route": "/business/create",
+      "images": 8,
+      "locale": "en",
+      "status": "PASS"
+    },
+    {
+      "route": "/",
+      "status": "PASS"
+    },
+    {
+      "route": "/business/photos",
+      "status": "PASS"
+    },
+    {
+      "route": "/viewer.html",
+      "status": "PASS"
+    },
+    {
+      "route": "/assistant.html",
+      "status": "PASS"
+    },
+    {
+      "route": "/export.html",
+      "status": "PASS"
+    },
+    {
+      "viewport": 390,
+      "route": "/business/create",
+      "images": 8,
+      "locale": "en",
+      "status": "PASS"
+    }
+  ],
+  "source_image_hashes_verified": 8,
+  "public_source_matches_release": true,
+  "automatic_post_requests": [],
+  "provider_calls": 0,
+  "page_errors": []
+}

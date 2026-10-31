@@ -14,7 +14,7 @@ def main():
         page=browser.new_page(viewport={'width':1440,'height':1000})
         page.on('pageerror',lambda e:errors.append(str(e)))
         page.goto('http://127.0.0.1:5188/business/create')
-        page.get_by_text('Chưa kết nối OpenAI.',exact=False).wait_for()
+        page.get_by_text('The AI assistant is currently unavailable.',exact=False).wait_for()
         page.locator('#panoramas').set_input_files({'name':'No-key fixture.png','mimeType':'image/png','buffer':png(60)})
         page.locator('#selected-images .image-tile').wait_for()
         page.locator('[name=name]').fill('No-key synthetic draft')

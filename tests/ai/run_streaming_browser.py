@@ -23,7 +23,7 @@ def main():
         first=page.locator('.thinking-summary').inner_text()
         page.wait_for_function('(n)=>document.querySelector(".thinking-summary").textContent.length>n',arg=len(first))
         page.screenshot(path=str(out/'streaming-live-fixture.png'),full_page=True)
-        page.get_by_role('button',name='Xác nhận & tiếp tục ↗',exact=True).wait_for()
+        page.get_by_role('button',name='Confirm & continue ↗',exact=True).wait_for()
         page.reload();page.locator('[data-node=spatial] summary').click()
         page.locator('.thinking-summary').filter(has_text='Check 34').wait_for()
         page.set_viewport_size({'width':320,'height':844})

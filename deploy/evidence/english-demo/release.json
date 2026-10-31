@@ -1,0 +1,24 @@
+{
+  "source": "5200bca18ef65f017228609a1c382062510959ba",
+  "previous_image": "estagent-assistant:e12582f793273b3e0000c8e47d779309b1da433e",
+  "previous_image_id": "sha256:db5a3a361981bace5165ae89e6a985ac4a7470a6baa401e1a93e622bf7383cf3",
+  "previous_env": "/opt/estagent/runtime/studio-e12582f.env",
+  "runtime_env": "/opt/estagent/runtime/studio-5200bca.env",
+  "previous_compose": "/opt/estagent/releases/e12582f793273b3e0000c8e47d779309b1da433e/deploy/compose.yaml",
+  "config_preserved_except_image": true,
+  "image_id": "sha256:10e53ee320c5674bb88bb61e22f625fa3ee98fc8a5f0b1cec97c641b3628a110",
+  "health": {
+    "ready": true,
+    "mode": "single-host-sqlite",
+    "geometry_configured": true
+  },
+  "backup": "/opt/estagent/backups/studio-rollout/20261031T092135006031Z-before-english-5200bca",
+  "backup_files_verified": 24,
+  "studio_assets_preserved": 8,
+  "runtime_env_preserved_except_image": true,
+  "mounts_preserved": true,
+  "mount_verification": "compared by destination; Docker changed list order",
+  "published_preserved": true,
+  "catalog_preserved_except_english_title": true,
+  "provider_calls": 0
+}

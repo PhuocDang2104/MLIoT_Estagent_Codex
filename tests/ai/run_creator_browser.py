@@ -40,29 +40,29 @@ def main():
         page.locator('#generate').wait_for(state='visible')
         assert '/business/projects/' in page.url
         page.locator('#generate').click()
-        page.get_by_role('button',name='Xác nhận & tiếp tục ↗',exact=True).wait_for(timeout=15000)
+        page.get_by_role('button',name='Confirm & continue ↗',exact=True).wait_for(timeout=15000)
         assert page.locator('.activity-card[data-status=completed][open]').count()==0
         scene=page.locator('.activity-card[data-node=scene]')
         scene.locator('summary').click()
         assert scene.locator('.observation-item').count()==2
         page.locator('#review [name=label]').first.fill('Phòng khách fixture')
-        page.get_by_role('button',name='＋ Nối hai khu').click()
+        page.get_by_role('button',name='＋ Connect two spaces').click()
         page.locator('[name=forward]').fill('90')
         page.locator('[name=back]').fill('-90')
         page.evaluate('window.scrollTo(0,0)')
         page.screenshot(path=str(EVIDENCE/'spatial-review-desktop.png'),full_page=True)
-        page.get_by_role('button',name='Xác nhận & tiếp tục ↗',exact=True).click()
-        page.get_by_role('heading',name='Chờ dựng 3D',exact=True).wait_for(timeout=15000)
+        page.get_by_role('button',name='Confirm & continue ↗',exact=True).click()
+        page.get_by_role('heading',name='Waiting for 3D build',exact=True).wait_for(timeout=15000)
         assert page.locator('.activity-card[data-node=scene]').get_attribute('open') is not None
         assert not page.locator('#publish').is_visible()
-        assert page.locator('#top-status').inner_text()=='Chờ dịch vụ 3D'
+        assert page.locator('#top-status').inner_text()=='Waiting for 3D service'
         url=page.url
         page.reload()
-        page.get_by_role('heading',name='Chờ dựng 3D',exact=True).wait_for()
+        page.get_by_role('heading',name='Waiting for 3D build',exact=True).wait_for()
         assert page.locator('.activity-card[data-status=completed][open]').count()==0
         assert page.url==url
-        page.get_by_role('tab',name='Nhà 3D',exact=True).click()
-        assert page.locator('#preview').inner_text()=='Mô hình chưa sẵn sàng.'
+        page.get_by_role('tab',name='3D house',exact=True).click()
+        assert page.locator('#preview').inner_text()=='The model is not ready yet.'
         page.screenshot(path=str(EVIDENCE/'waiting-integration-desktop.png'),full_page=True)
         for width in (390,320):
             page.set_viewport_size({'width':width,'height':844})
@@ -73,7 +73,7 @@ def main():
         page.locator('#propose-edit').click()
         page.locator('#apply-edit').wait_for(timeout=15000)
         page.locator('#apply-edit').click()
-        page.get_by_role('button',name='Xác nhận & tiếp tục ↗',exact=True).wait_for(timeout=15000)
+        page.get_by_role('button',name='Confirm & continue ↗',exact=True).wait_for(timeout=15000)
         assert page.locator('#review [name=label]').first.input_value() == 'Phòng khách mới fixture'
         assert page.locator('#publish').is_hidden()
         page.screenshot(path=str(EVIDENCE/'pre-geometry-edit-320.png'),full_page=True)

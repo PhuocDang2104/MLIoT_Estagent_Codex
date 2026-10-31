@@ -27,4 +27,21 @@ set `SEOUL_SAMPLE_DIR`, `UPLOAD_QA_DIR`, optional `UPLOAD_QA_ORIGIN`, and
 `CREATOR_QA_BROWSER`. Source data is user-provided and kept outside Git.
 
 No dependencies, database migration, model-default changes or new API spend.
-Release evidence will be recorded under `deploy/evidence/english-demo/`.
+Production source: `5200bca18ef65f017228609a1c382062510959ba`, deployed at
+https://estagent.duckdns.org/business/create. Strict web and AI gates passed
+(209 AI tests); 31 affected demo/tour tests passed after merging the concurrent
+Seoul media and documentation changes. Local upload and production desktop /
+390px mobile browser checks passed with zero page errors and no provider calls.
+All eight public image hashes match the supplied manifest.
+
+Evidence: `deploy/evidence/english-demo/`. The versioned runtime environment is
+`/opt/estagent/runtime/studio-5200bca.env`; the previous environment is
+`studio-e12582f.env`. Image ID, previous compose path and verified 24-file backup
+are recorded in `release.json`. Runtime variables and all mounted catalogs/data
+were preserved. One post-cutover assertion initially compared Docker mount list
+order; verification by destination confirmed identical mounts and access modes.
+Published tours and all eight existing Studio assets were preserved.
+
+The legacy browser harness selectors now match English controls; their
+multilingual synthetic user content is retained. No historical evidence is
+rewritten to claim those prior runs were English.

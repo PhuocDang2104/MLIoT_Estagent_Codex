@@ -48,9 +48,10 @@
     {
       "type": "play",
       "src": "synthetic-published-wav",
-      "duration": NaN,
+      "duration": null,
       "volume": 1
     }
   ],
-  "page_errors": []
+  "page_errors": [],
+  "serialization_note": "Non-finite browser durations from the original report are null (metadata unavailable); this normalization is not a rerun."
 }

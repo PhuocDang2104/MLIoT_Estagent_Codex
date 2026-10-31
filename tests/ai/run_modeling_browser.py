@@ -1,5 +1,6 @@
 """Full UI workflow with a synthetic planner and the real automatic Blender CLI."""
 import json
+import math
 import os
 from pathlib import Path
 from playwright.sync_api import sync_playwright
@@ -106,7 +107,9 @@ def main():
     # Strip runtime IDs from evidence; all input/media are synthetic.
     for event in result['media_events']:
         event['src']='synthetic-published-wav'
-    (EVIDENCE/'full-browser.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf8')
+        if not math.isfinite(event['duration']):
+            event['duration']=None  # Browser metadata was not available for this event.
+    (EVIDENCE/'full-browser.json').write_text(json.dumps(result,ensure_ascii=False,indent=2,allow_nan=False),encoding='utf8')
     print('FULL BROWSER PASS; synthetic planner/audio, actual Blender and Three.js')
 
 

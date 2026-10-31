@@ -83,7 +83,7 @@ Remote chính: `github.com/PhuocDang2104/MLIoT_Estagent_Codex` (nhánh `main`). 
 - [ ] H0: Dev 1 chạy kickoff theo `docs/ORCHESTRATION.md §3`
 
 ## Đang kẹt
-Production đã tích hợp pitch UX, cached Nhà Demo và guide thật EN/VI/auto-next, native Video/MinIO. Source/image/evidence mới nhất: `status/web.md` và `deploy/evidence/landing-model/release.json`. Strict còn core SKIP; global chat/realtime và TTS generation mới vẫn tắt. Manifest/rollback: `docs/DEPLOYMENT.md`; local integration: `docs/INTEGRATION-HANDOFF.md`.
+Production đã tích hợp pitch UX, cached Nhà Demo và guide thật EN/VI/auto-next, native Video/MinIO. Source/image/evidence mới nhất: `status/web.md` và `deploy/evidence/integrated-c6d9aa3/state.json`. Strict còn core SKIP; global chat/realtime và TTS generation mới vẫn tắt. Manifest/rollback: `docs/DEPLOYMENT.md`; local integration: `docs/INTEGRATION-HANDOFF.md`.
 Chưa có đề chính thức của hackathon và chưa có tên 3 dev.
 
 ## Quyết định đã chốt

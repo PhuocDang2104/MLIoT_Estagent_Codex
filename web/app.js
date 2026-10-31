@@ -124,7 +124,7 @@ if(document.querySelector('#demo-hero')){
 }
 
 if(document.querySelector('#hero-building')){
- const labelBuilding=()=>document.querySelector('#hero-building').setAttribute('aria-label',t('3D building illustration. Drag or use arrow keys to rotate.','Mô hình toà nhà minh hoạ. Kéo hoặc dùng phím mũi tên để xoay.'));
+ const labelBuilding=()=>document.querySelector('#hero-building').setAttribute('aria-label',t('Sample home 3D model. Drag or use arrow keys to rotate.','Khung nhà mẫu 3D. Kéo hoặc dùng phím mũi tên để xoay.'));
  labelBuilding();document.addEventListener('languagechange',labelBuilding);
  import('/assets/models/building-preview.js').then(module=>module.mountBuildingPreview()).catch(error=>{console.error('Building preview module:',error);document.querySelector('#building-state').textContent=t('3D preview unavailable.','Không tải được mô hình 3D.');});
 }

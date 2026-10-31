@@ -1,0 +1,6 @@
+{
+  "candidate": "c73c636ba71381decbf842e15801e9af43d26762",
+  "production_deployed": false,
+  "push_rejected_remote_advanced_to": "408f30ffbc58f5d5ce90b53c80c7954438eef0cb",
+  "reason": "Thai authorized merge with teammate408f30f; expanded rollout remains HOLD pending exact image qualification."
+}

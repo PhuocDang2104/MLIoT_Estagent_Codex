@@ -1,0 +1,8 @@
+{
+  "canonical_manifest_unchanged": true,
+  "canonical_asset_hashes": 8,
+  "guide_v2_bindings": 32,
+  "wav_hashes_against_pinned_manifest": 22,
+  "demo_glb_hash_verified": true,
+  "read_only": true
+}

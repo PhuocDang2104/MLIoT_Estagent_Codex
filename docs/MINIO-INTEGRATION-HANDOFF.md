@@ -94,7 +94,7 @@ Deploy owns packaging/config/provisioning:
 
 1. Include `server/object_storage.py` and all changed modules; pinned SDK MinIO
    7.2.20 is already in the approved requirements baseline. Keep one app process.
-2. Provision the **dedicated new VM** selected by the user, private bucket,
+2. Provision a **dedicated MinIO instance on the existing Estagent VM** (no new cloud resource), private bucket,
    least-privilege application access key and server-enforced quota (planned
    512 MiB). Do not reuse another project's bucket/keys or publish bucket policy.
 3. Pass `MEDIA_STORAGE_BACKEND=minio`, `MINIO_ENDPOINT` as host/port without URL,

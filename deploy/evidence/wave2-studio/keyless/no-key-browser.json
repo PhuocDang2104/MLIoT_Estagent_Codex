@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "checks": [
+    "actual app without OpenAI key",
+    "save upload without provider",
+    "generate disabled",
+    "reload keeps draft",
+    "no invented progress"
+  ],
+  "page_errors": []
+}

@@ -35,12 +35,25 @@ no account system, production hardening or deployment in this task.
 - Separate photo/panorama checkpoints; no reconstructed 3D, floor plan, measured dimensions or inferred room adjacency.
 - Tour order is editorial. Descriptions are Creator supplied, not independently verified. Furniture fit needs measurements.
 - No image understanding connected. Text chat can edit existing labels/order; assistant intake API remains compatible.
-- Recorded narration and licensed background music are unavailable. Viewer controls expose that state and offer
-  optional **device speech fallback**, only for the tour's source language. This is not OpenAI narration.
+- Creator supports authorized recorded narration per scene and background music as PCM 16-bit WAV
+  (mono/stereo, supported 8–48 kHz rates, ≤20 MiB and ≤180 seconds per track). Viewer has playback,
+  independent music/voice controls and ducking. Missing audio remains explicit; optional **device speech
+  fallback** uses the source language. This is not OpenAI narration. See [audio handoff](docs/AUDIO-HANDOFF.md).
 - HEIC needs conversion to JPEG. Projection and coverage are never inferred from aspect ratio alone.
 - Hero image licensing remains an existing release blocker; see the [asset audit](web/evidence/ASSET-AUDIT.md).
 - Synthetic images/demo mechanics do not establish rental-shortlisting effectiveness. The supplied deck is problem/JTBD
   context, not hackathon rules or independently verified outcome research.
+
+## Teammate Generation Studio
+
+`/business/create` is an additional persisted workflow from the teammate branch, separate from the
+photo checkpoint Creator above. It stores inputs without a key; generation requires a configured provider.
+Spatial and narration reviews are explicit. Without a geometry worker the workflow waits for integration;
+it cannot publish a fabricated model. Studio snapshots use their own Viewer and schema. See
+[Studio handoff](docs/CREATOR-STUDIO.md) for implementation, fixtures and remaining work.
+
+Production remains a keyless preview. No live OpenAI call or genuine reconstructed model is verified.
+API attempt limits are not a dollar cap, and realtime setup limits do not cap stream duration.
 
 ## Verify without paid API calls
 

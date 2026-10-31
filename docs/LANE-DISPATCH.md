@@ -1,6 +1,13 @@
 # Điều phối lane — 2026-10-31
 
-## Wave 2 — current dispatch
+## Wave 2 — integration and release
+
+2026-10-31: audio handback `f095ad1`, API guards `0decde3`, teammate Studio
+`origin/web/creator-studio-integrated` at `b504dfe` collected. Integration branch
+`integration/wave2-release` combines all three with commit history preserved.
+Audio/guard writers stopped. Tatejo owns final wiring, regression, main push and keyless rollout;
+review/testing helpers work only inside `.worktrees/release-wave2` with disjoint file ownership.
+The historical dispatch table below records the initial assignment, not currently running work.
 
 Base code: main `1abd9b6` (prod app source `346a0ba`; demo data đã publish riêng).
 Hai writer mới, mỗi người một worktree; không dùng lại worktree integration cũ để tránh kéo stale base.

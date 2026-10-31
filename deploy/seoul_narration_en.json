@@ -1,0 +1,72 @@
+{
+  "sample_id": "seoul-apartment",
+  "locale": "en",
+  "voice": "alloy",
+  "source": "Authored from the eight supplied panoramas; source-assisted premade model, approximate scale.",
+  "chapters": [
+    {
+      "capture_id": "00000000",
+      "title": "Entrance",
+      "yaw_start": -12,
+      "yaw_end": 12,
+      "text": "Welcome to the Seoul apartment sample. This tour follows eight supplied panoramas through a furnished apartment. From the entrance, pale wood flooring and light walls connect the interior. The accompanying dollhouse is a recovered source model, with approximate dimensions.",
+      "pitch": -8
+    },
+    {
+      "capture_id": "00000030",
+      "title": "Kitchen and dining",
+      "yaw_start": -105,
+      "yaw_end": -5,
+      "text": "The kitchen combines light cabinet fronts with wood toned worktops. A sink and cooktop sit along the counter, with storage above and below. A small round dining table and white chairs occupy the adjoining space.",
+      "pitch": -10
+    },
+    {
+      "capture_id": "00000070",
+      "title": "Living space",
+      "yaw_start": -20,
+      "yaw_end": 35,
+      "text": "The living area has a light sofa with patterned cushions, a low white coffee table, and a black and white rug. A television sits against the partition, while open shelving separates parts of the shared living and dining space.",
+      "pitch": -10
+    },
+    {
+      "capture_id": "00000110",
+      "title": "Balcony connection",
+      "yaw_start": -12,
+      "yaw_end": 12,
+      "text": "Glazed doors connect the living area to a small balcony. Outside, a rounded chair, a small table, and potted plants are visible. Inside, the sofa and coffee table remain close to the doorway, with the television opposite the seating.",
+      "pitch": -8
+    },
+    {
+      "capture_id": "00000150",
+      "title": "Bathroom entrance",
+      "yaw_start": 50,
+      "yaw_end": 100,
+      "text": "At the bathroom entrance, the wood toned interior meets a pale tiled floor. This view shows a washing machine beneath a counter and a glass shower enclosure beyond. The open doorway also keeps the relationship to the main living space visible.",
+      "pitch": -12
+    },
+    {
+      "capture_id": "00000180",
+      "title": "Bathroom",
+      "yaw_start": 20,
+      "yaw_end": 80,
+      "text": "Inside the bathroom, pale tiles cover the walls and floor. The compact arrangement includes a toilet, a glass enclosed shower, and a basin with a mirror. The washing machine is integrated into the same small room.",
+      "pitch": -14
+    },
+    {
+      "capture_id": "00000250",
+      "title": "Sleeping alcove entrance",
+      "yaw_start": 20,
+      "yaw_end": 60,
+      "text": "The sleeping alcove sits behind the television partition. A bed with light bedding fills the space, with bedside furniture, wall lights, and framed artwork. The partition defines the sleeping area while retaining a connection to the rest of the apartment.",
+      "pitch": -12
+    },
+    {
+      "capture_id": "00000310",
+      "title": "Sleeping alcove",
+      "yaw_start": 0,
+      "yaw_end": 45,
+      "text": "The final view brings the bed, patterned pillows, bedside tables, and striped wall finish into focus. This completes the eight capture tour. You can return to the dollhouse to explore the original viewpoints, or download the video, transcript, and AI generated voice track.",
+      "pitch": -12
+    }
+  ]
+}

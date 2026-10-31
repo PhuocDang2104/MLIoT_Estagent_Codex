@@ -1,102 +1,172 @@
-# Estagent — local product preview
+<div align="center">
 
-Help rental seekers decide which homes are worth visiting. Creators provide photos and descriptions;
-viewers explore approved checkpoints and see what is still unknown.
+<img src="web/assets/favicon.svg" width="72" height="72" alt="Estagent logo" />
 
-## Generation Studio with house modeling
+# Estagent
 
-`/business/create` is the newer persistent Studio flow: upload up to 12 captures
-and an optional floorplan, clarify/approve the modeling agent's plan, automatically
-build a textured house in local Blender, review narration, then publish. Creator
-and Viewer use Three.js for the dollhouse and clickable panorama checkpoints.
-Set `STUDIO_BLENDER_EXECUTABLE` if Blender is not discovered locally; generation
-also needs the backend OpenAI key. No floorplan is required when the images and
-creator clarification support an explicitly approximate layout. This is authored
-single-floor geometry, not metric photogrammetry or PanSplat neural rendering.
+### See the space. Understand the place.
 
-See [Studio setup](docs/CREATOR-STUDIO.md) and the
-[house-modeling integration handoff](docs/HOUSE-MODELING-AGENT.md) for contracts,
-configuration, artifacts, budgets and evidence. The photo-tour instructions and
-limits below describe the separate legacy `/creator.html` flow.
+Property tours built with spatial context, guided narration and conversational AI.
 
-## Run the whole product
+<p><strong><a href="https://estagent.duckdns.org">Explore the demo</a> · <a href="docs/PRODUCT-OVERVIEW.md">Giới thiệu sản phẩm</a> · <a href="#quick-start">Quick start</a> · <a href="#architecture">Architecture</a> · <a href="docs/DEPLOYMENT.md">Deployment</a></strong></p>
 
-Requirements: Python 3.13, [uv](https://docs.astral.sh/uv/) and Node for frontend checks.
-From the repository root:
+<p><code>OpenAI</code> &nbsp; <code>LangGraph</code> &nbsp; <code>Blender</code> &nbsp; <code>Three.js</code> &nbsp; <code>FastAPI</code> &nbsp; <code>MinIO</code></p>
+
+</div>
+
+---
+
+Estagent helps people understand a property before deciding to visit. Creators turn photos,
+panoramas and property information into a reviewed tour. Visitors explore the space, listen
+to its story and ask questions about the room they are viewing.
+
+| Create with context | Explore with confidence |
+| :--- | :--- |
+| Upload captures and an optional floorplan. Clarify the AI layout, review the model and refine the narration. | Move between a 3D dollhouse and panorama checkpoints, follow guided audio and ask about approved property information. |
+| **Creator / Business Studio** | **Viewer / Rental seeker** |
+
+## From captures to a conversation
+
+1. **Bring the evidence.** Add property photos or panoramas, a description and an optional floorplan.
+2. **Shape the space.** OpenAI helps organize the captures into a structured scene plan. The Creator clarifies and approves the layout before Blender builds the model.
+3. **Tell the story.** Review narration and navigation, generate speech, then publish a shareable tour.
+4. **Explore and ask.** Visitors inspect the dollhouse, enter panorama checkpoints and ask questions grounded in the published tour.
+
+### What makes Estagent different
+
+- **A tour you can discuss.** Questions use the active checkpoint and approved tour context; supported navigation targets are checked by the backend.
+- **A Creator who stays in control.** Layout and content reviews are explicit. Natural-language edit proposals create a new generation after confirmation.
+- **A workflow that can resume.** LangGraph checkpoints, a SQLite outbox, request deduplication and version history preserve progress across interruptions.
+- **One OpenAI foundation.** Planning, vision, text, speech and visitor assistance use backend OpenAI integrations with configurable model roles.
+- **A published version that stays stable.** Later draft edits do not rewrite an already published snapshot.
+- **Private media, deliberate publication.** Local storage or private MinIO holds assets; public access is limited to assets referenced by a published tour.
+
+## Architecture
+
+The two diagrams below describe the **product architecture direction**. The implementation
+status table separates the current runtime from the integrations shown as future capabilities.
+
+### 01 · Tour generation
+
+[![OpenAI and LangGraph architecture for property tour generation](docs/Langgraph%20Tour%20Generation%20OpenAI%20Architecture.png)](docs/Langgraph%20Tour%20Generation%20OpenAI%20Architecture.png)
+
+**Creator input → scene understanding → spatial review → model building → narration and navigation → publication.**
+
+Today's Studio runs a checkpointed graph with human reviews and a validated scene plan.
+The local Blender worker authors a textured, single-floor model; Three.js renders the
+dollhouse and its capture markers. This is approximate authored geometry, not metric
+photogrammetry. Blender MCP and external enrichment in the diagram are extension points.
+
+[Runtime flow and Mermaid](docs/Business%20Workflow%20Langgraph/Estagent_Business_LangGraph_Flow.md) ·
+[House-modeling implementation](docs/HOUSE-MODELING-AGENT.md)
+
+### 02 · Spatial context assistant
+
+[![Customer assistant architecture with spatial context and retrieval](docs/Langgraph%20Rag%20Spatial%20Context%20Assistant.png)](docs/Langgraph%20Rag%20Spatial%20Context%20Assistant.png)
+
+**Question + viewing context → relevant evidence → grounded response → supported viewer action.**
+
+The current assistant uses approved tour data, the selected scene or checkpoint and bounded
+conversation context. The diagram extends that foundation toward hybrid retrieval, a spatial
+knowledge hub and external tools. PostgreSQL, BM25/vector retrieval, Maps and market-data
+connectors shown here are architecture goals, not claims that these services are connected today.
+
+[Creator and Viewer chat](docs/CHAT-FLOW-HANDOFF.md) ·
+[Product writeup and roadmap](docs/PRODUCT-OVERVIEW.md)
+
+### Implementation at a glance
+
+| Capability | Current implementation |
+| :--- | :--- |
+| AI tour generation | OpenAI scene planning, clarification, spatial/content approval and a local Blender builder |
+| Immersive exploration | Three.js dollhouse, selectable capture markers and panorama checkpoints |
+| Narration and audio | Reviewed OpenAI TTS in Studio; uploaded narration/music and guided playback in photo tours |
+| Conversational editing | Confirmed Studio proposals, selective regeneration and immutable published versions |
+| Customer assistance | Published-tour Q&A, active scene/checkpoint context and validated navigation |
+| Media and exports | Private MinIO or local media; metadata/audio/video export paths depend on the tour flow and enabled renderer |
+| Broader spatial RAG | PostgreSQL knowledge hub, hybrid search and external intelligence remain planned |
+
+Video export currently renders the supported photo/panorama tour flow; it is not a cinematic
+render of the generated 3D house. A complete automated live house-generation benchmark is
+separate from the recorded provider-connectivity, Blender and browser checks.
+
+## Quick start
+
+**Requirements:** Python 3.13, [uv](https://docs.astral.sh/uv/), and Bash.
+Use Git Bash or WSL on Windows. Blender is needed for local Studio model generation;
+Node.js is needed for frontend checks, and FFmpeg for its supported video-export mode.
 
 ```bash
+git clone https://github.com/PhuocDang2104/MLIoT_Estagent_Codex.git
+cd MLIoT_Estagent_Codex
 bash scripts/dev.sh
 ```
 
-Open **http://127.0.0.1:5180/**. Landing, Creator, Viewer, assets and APIs use this same origin.
-The command installs pinned Python dependencies if needed; no `.env` file is loaded automatically.
-No key is needed to upload, edit, preview and publish a visual tour. Chat without a configured
-`OPENAI_API_KEY` returns an explicit 503. A configured key enables provider calls only on chat submit;
-obtain the team's model/data/budget approval before live use. No paid call is part of the tests below.
+Open **http://127.0.0.1:5180/**. The frontend, APIs and assets share one origin.
+The script resolves pinned Python dependencies; it does not load an `.env` file automatically.
 
-1. Choose **Create tour**, attach JPEG/PNG/WebP images (≤12 MiB each, ≤20 per tour), and optionally add text.
-2. Review scene names, descriptions, order and opening scene. Images default to ordinary photos.
-   Select cylindrical panorama only for suitable input and review its explicitly provisional coverage.
-3. Save, open the private preview, then check the review/rights checkbox and Publish.
-4. Open or copy the published Viewer link. Later draft edits do not change the published snapshot.
+| Entry | Purpose | Requirements |
+| :--- | :--- | :--- |
+| `/business/create` | AI / Blender Generation Studio | Uploads can be saved without a key; generation needs OpenAI and an available geometry worker |
+| `/business/photos` | Photo-tour editor | Upload, edit, preview and publish visual tours without an LLM; AI chat needs OpenAI |
+| `/viewer.html` | Published tour library | Explore available published tours and demos |
 
-Drafts and normalized images survive reload/restart on local disk under `projects/assistant/work/`.
-Keep the browser cookie to retain access to your private drafts; this is session isolation, **not login**.
-Published tours are listed and viewable by anyone who can access this local server. This preview has
-no account system, production hardening or deployment in this task.
-`TOUR_DATA_DIR` can select a dedicated writable directory; do not point it at another application's data.
+Start with the photo-tour editor for a local visual walkthrough. For generation, configure
+the backend environment using [`.env.example`](.env.example) and follow
+[Studio setup](docs/HOUSE-MODELING-AGENT.md). `STUDIO_BLENDER_EXECUTABLE` selects an explicit
+Blender executable when needed. Provider keys stay on the backend; starting generation,
+chatting or requesting generated narration can make paid API calls when enabled.
 
-## Truthful limits
+<details>
+<summary><strong>Runtime and operating notes</strong></summary>
 
-- Separate photo/panorama checkpoints; no reconstructed 3D, floor plan, measured dimensions or inferred room adjacency.
-- Tour order is editorial. Descriptions are Creator supplied, not independently verified. Furniture fit needs measurements.
-- No image understanding connected. Text chat can edit existing labels/order; assistant intake API remains compatible.
-- Creator supports authorized recorded narration per scene and background music as PCM 16-bit WAV
-  (mono/stereo, supported 8–48 kHz rates, ≤20 MiB and ≤180 seconds per track). Viewer has playback,
-  independent music/voice controls and ducking. Missing audio remains explicit; optional **device speech
-  fallback** uses the source language. This is not OpenAI narration. See [audio handoff](docs/AUDIO-HANDOFF.md).
-- HEIC needs conversion to JPEG. Projection and coverage are never inferred from aspect ratio alone.
-- Hero image licensing remains an existing release blocker; see the [asset audit](web/evidence/ASSET-AUDIT.md).
-- Synthetic images/demo mechanics do not establish rental-shortlisting effectiveness. The supplied deck is problem/JTBD
-  context, not hackathon rules or independently verified outcome research.
+- Keep one API process on a dedicated local data volume. This runtime is not a distributed queue.
+- Creator drafts belong to a cookie session. The MVP does not implement account login.
+- Published snapshots are shared deliberately; keep the Creator cookie to retain private draft access.
+- Model roles, admission limits, storage limits and optional capabilities are configured through the backend environment.
+- Missing evidence stays unknown. Approximate layouts and source limitations should remain visible to reviewers.
+- Production releases use an accepted source SHA, isolated secrets, preserved media and database backups.
 
-## Teammate Generation Studio
+See the [runtime contract](docs/STUDIO-RUNTIME.md), [SSH/deploy guide](docs/STUDIO-DEPLOY.md)
+and [current release record](docs/STUDIO-SEOUL-RELEASE.md). The live deployment and the latest
+repository commit may differ.
 
-`/business/create` is an additional persisted workflow from the teammate branch, separate from the
-photo checkpoint Creator above. It stores inputs without a key; generation requires a configured provider.
-Spatial and narration reviews are explicit. Without a geometry worker the workflow waits for integration;
-it cannot publish a fabricated model. Studio snapshots use their own Viewer and schema. See
-[Studio handoff](docs/CREATOR-STUDIO.md) for implementation, fixtures and remaining work.
+</details>
 
-Production remains a keyless preview. No live OpenAI call or genuine reconstructed model is verified.
-API attempt limits are not a dollar cap, and realtime setup limits do not cap stream duration.
+## Development checks
 
-## Verify without paid API calls
+These checks use synthetic fixtures and mocked provider transports rather than paid model requests.
 
 ```bash
 npm --prefix web run lint
 npm --prefix web test
 npm --prefix web run build
-uv run --python 3.13 --with pytest --with jsonschema --with-requirements server/assistant/requirements.txt \
-  python -m pytest tests/ai -q
-# Requires an installed playwright-cli + Chromium. Real local HTTP/browser/SQLite, synthetic images.
-uv run --python 3.13 --with-requirements server/assistant/requirements.txt \
-  python tests/integration/run_browser.py
+
+uv run --python 3.13 --with pytest --with jsonschema \
+  --with-requirements server/assistant/requirements.txt \
+  python -m pytest tests/ai tests/deploy -q
+
 bash scripts/gate.sh all --strict
 python3 scripts/check_commit_attribution.py --all
 ```
 
-Strict `all` still fails the baseline **core SKIP** because no reconstruction pipeline exists; it is not hidden.
-See [integration handoff](docs/INTEGRATION-HANDOFF.md) for exact checks, evidence, commit and remaining work.
-The static build alone cannot host the API; use the single-origin backend command above for the complete flow.
+The full gate also qualifies the core pipeline. Blender-specific checks need a compatible
+Blender installation; consult the [house-modeling handoff](docs/HOUSE-MODELING-AGENT.md)
+and [release verification](docs/STUDIO-SEOUL-RELEASE.md) for the tested environments.
 
-Repo: https://github.com/PhuocDang2104/MLIoT_Estagent_Codex
+## Find your way around
 
-- Reading list also includes `docs/PRODUCT-CONTEXT.md`, supplied in the integrator checkout: rental-seeker JTBD, evidence limits; not hackathon rules.
-- [Runtime contracts and legacy reconstruction draft](docs/CONTRACTS.md)
-- [Two views](docs/USER-VIEWS.md), [audio requirement](docs/TOUR-AUDIO.md), [chat-to-tour design](docs/CHAT-TO-TOUR.md)
-- [Backend teammate guide](docs/BACKEND-HANDOFF.md), [deployment runbook](docs/DEPLOYMENT.md) (not deployment evidence for this branch)
-- [Source/build declaration](docs/DECLARATION.md)
+| Read about… | Start here |
+| :--- | :--- |
+| Product, audience and user journeys | [Giới thiệu sản phẩm](docs/PRODUCT-OVERVIEW.md) · [User views](docs/USER-VIEWS.md) |
+| LangGraph and model generation | [Runtime flow](docs/Business%20Workflow%20Langgraph/Estagent_Business_LangGraph_Flow.md) · [House modeling](docs/HOUSE-MODELING-AGENT.md) |
+| API boundaries and conversations | [Contracts](docs/CONTRACTS.md) · [Chat context](docs/CHAT-FLOW-HANDOFF.md) |
+| Audio, video and private storage | [Audio](docs/AUDIO-HANDOFF.md) · [Video export](docs/VIDEO-EXPORT-HANDOFF.md) · [MinIO](docs/MINIO-INTEGRATION-HANDOFF.md) |
+| Running and releasing the product | [Deployment](docs/DEPLOYMENT.md) · [Studio SSH/deploy](docs/STUDIO-DEPLOY.md) · [Rollback](docs/ROLLBACK-SAFETY.md) |
+| Contributing and source provenance | [Agent instructions](AGENTS.md) · [Source/build declaration](docs/DECLARATION.md) · [Asset sources](web/assets/SOURCES.md) |
 
-Read `AGENTS.md` before changing code. Never commit keys, uploads or DBs. No Claude attribution trailers;
-AI assistance and reused sources still belong in the declaration.
+<div align="center">
+
+<sub>Built by the MLIoT Estagent team · Evidence before assumptions. Review before publication.</sub>
+
+</div>

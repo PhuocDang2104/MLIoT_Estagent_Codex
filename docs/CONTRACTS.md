@@ -370,3 +370,15 @@ The demo interface and application-owned errors/progress are English, including
 sessions with an old Vietnamese UI preference. New content defaults to English;
 explicit content-language choices and stored source content remain supported.
 No schema, endpoint, asset identity or spending limit changes.
+
+## Seoul sample media exception — 2026-10-31
+
+Explicit user authorization adds `GET /api/demos/seoul-apartment/exports` for
+one reviewed, immutable English package. It returns locale, measured duration,
+eight source capture chapters, and video/audio/transcript/captions objects with
+same-origin `url` and `download_url`. Missing packages and every other demo ID
+return 404. Only the pinned Seoul catalog can admit MP4/TXT/VTT export assets;
+the four exact export filenames are validated with hashes, MIME and chapter bounds.
+Asset GET/HEAD supports byte ranges and `?download=1` attachment headers for
+these files. No generation endpoint, published schema or ZInD exception is added.
+The landing preview and sample CTA now reference the same furnished Seoul model.

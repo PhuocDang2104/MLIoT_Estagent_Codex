@@ -148,7 +148,7 @@ def test_unknown_ai_scene_and_stale_response_do_not_mutate(tmp_path):
 def test_same_origin_static_product_and_schema(tmp_path):
     with TestClient(app_at(tmp_path)) as c:
         assert 'FROM PHOTOS' not in c.get('/').text
-        assert '/demos/zind-house-000' in c.get('/').text and '/business/create' in c.get('/').text
+        assert '/demos/seoul-apartment' in c.get('/').text and '/business/create' in c.get('/').text
         for path in ['/creator.html','/viewer.html','/experience.html','/motion.js','/motion.css','/tour-common.js','/panorama.js','/assets/favicon.svg']:
             assert c.get(path).status_code==200,path
         assert '/business/create' in c.get('/experience.html').text

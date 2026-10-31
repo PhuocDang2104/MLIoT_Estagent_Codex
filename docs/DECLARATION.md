@@ -130,3 +130,26 @@ are recorded in `docs/INTEGRATION-HANDOFF.md`.
 - Private `Codex-Hackathon.pdf` consulted through the supplied context note only; not copied/published.
   Small interviews and unverified desk-research numbers are not used as product-effectiveness claims.
 - Existing hero image provenance/license uncertainty remains; integration does not clear the asset audit.
+
+## 8. House-modeling and local live integration — 2026-10-31
+
+H0 remains unconfirmed. Codex-assisted work on `ai/house-modeling-agent` adds
+the project-local house-modeling skill, data-only scene planner, fixed Blender
+worker, textured GLB export and vendored Three.js viewer. Snapshot `863ae2b`
+preserves the initial implementation before entry/library/music refinement.
+The host skill and earlier house-modeling workflow came from the user's prior
+work; this is adaptation/integration, not a claim of all-new competition code.
+
+New refinement: combined published library, Studio entry links, late music
+replacement, explicit Astra High/Terra/Sol/TTS roles, private usage ledger and
+external-dotenv local launcher. Live input uses original ZInD house 000 captures
+12, 7, 5 plus a source-derived annotated open-plan outline. Private input images,
+SQLite data, credentials and generated models are excluded from Git publication.
+This is a three-capture subset; do not label it a complete house or neural
+reconstruction. Results and remaining limitations: `LOCAL-LIVE-RUN.md`.
+
+Bundled audio: Dream Culture, Kevin MacLeod (incompetech.com), CC BY 4.0. Source,
+75-second excerpt/fade adaptation and SHA-256: `web/assets/music/CREDITS.md`.
+This is licensed existing music; narration is separately synthesized by OpenAI.
+Three.js license accompanies its vendored assets. No panorama photographs are
+projected onto model geometry and no generated Python is executed by the worker.

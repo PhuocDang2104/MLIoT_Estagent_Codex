@@ -149,7 +149,7 @@ def test_same_origin_static_product_and_schema(tmp_path):
         assert 'FROM PHOTOS' not in c.get('/').text and 'hero-title' in c.get('/').text
         for path in ['/creator.html','/viewer.html','/experience.html','/motion.js','/motion.css','/tour-common.js','/panorama.js','/assets/favicon.svg']:
             assert c.get(path).status_code==200,path
-        assert 'creator.html' in c.get('/experience.html').text
+        assert '/business/create' in c.get('/experience.html').text
         schema=json.loads(Path('fixtures/tour.schema.json').read_text())
         fixture=json.loads(Path('fixtures/checkpoint-tour/tour.json').read_text())
         jsonschema.validate(fixture,schema)

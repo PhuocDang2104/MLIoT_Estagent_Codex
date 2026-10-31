@@ -46,7 +46,7 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
         connection = sqlite3.connect(path,check_same_thread=False)
         os.chmod(path,0o600)
         saver = SqliteSaver(connection)
-        client = OpenAI(api_key=key,max_retries=0,timeout=30) if key else None
+        client = OpenAI(api_key=key,base_url='https://api.openai.com/v1',max_retries=0,timeout=90) if key else None
         def unavailable(_): raise ValueError('Cần cấu hình OpenAI ở máy chủ để tiếp tục.')
         graph = build_graph(extractor or (make_extractor(client,env.get('OPENAI_MODEL_TEXT','gpt-6.1-sol')) if client else unavailable),saver,required)
         app.state.graph = graph
@@ -164,6 +164,18 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
         rows = app.state.creator.store.rows('SELECT data FROM published WHERE id=?', (tour_id,))
         if not rows: raise HTTPException(404, 'Tour chưa được xuất bản.')
         return json.loads(rows[0]['data'])
+
+    @app.get('/api/studio-tours')
+    def published_library():
+        result = []
+        for row in app.state.creator.store.rows('SELECT data FROM published ORDER BY rowid DESC'):
+            package = json.loads(row['data'])
+            tid = package['public_id']
+            result.append({'id':tid, 'title':package['name'],
+                'thumbnail_url':f"/api/studio-tours/{tid}/assets/{package['rooms'][0]['asset_id']}",
+                'viewer_url':f'/studio-tour.html?id={tid}', 'format':'studio',
+                'published_at':package['published_at']})
+        return result
 
     @app.get('/api/studio-tours/{tour_id}')
     def published(tour_id: str, response: Response, request: Request):

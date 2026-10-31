@@ -81,7 +81,8 @@ def test_real_sdk_planner_loads_skill_and_floorplan():
         assert body['text']['format']['type']=='json_schema'
         assert body['text']['format']['strict'] is True
         assert 'Studio modeling agent template' in body['instructions']
-        assert body['max_output_tokens']==12000 and body['store'] is False
+        assert body['max_output_tokens']==24000 and body['store'] is False
+        assert body['model']=='gpt-6-astra' and body['reasoning']=={'effort':'high'}
         content=body['input'][0]['content']
         assert sum(item['type']=='input_image' for item in content)==3
         assert all(item['image_url'].startswith('data:image/jpeg;base64,') for item in content if item['type']=='input_image')

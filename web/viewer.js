@@ -35,7 +35,7 @@ function renderText(){if(!manifest){renderLibrary();return;}$('#tour-heading').t
 function renderLibrary(){
   $('#tour-library').replaceChildren();
   if(!libraryTours.length)$('#tour-library').append(node('p',t('No published tours yet. A Creator must review and publish a tour first.','Chưa có tour được xuất bản. Creator cần xem thử và duyệt tour trước.'),'empty-state'));
-  for(const tour of libraryTours){const card=link('',`/viewer.html?tour=${tour.id}`,'library-card');const img=node('img');img.src=tour.thumbnail_url;img.alt='';card.append(img,node('h2',tour.title),node('span',t('Open tour ↗','Mở tour ↗')));$('#tour-library').append(card);}
+  for(const tour of libraryTours){const card=link('',tour.viewer_url||`/viewer.html?tour=${tour.id}`,'library-card');const img=node('img');img.src=tour.thumbnail_url;img.alt='';card.append(img,node('h2',tour.title),node('span',tour.format==='studio'?t('3D + panorama · Open tour ↗','3D + panorama · Mở tour ↗'):t('Open tour ↗','Mở tour ↗')));$('#tour-library').append(card);}
 }
 $('#previous').onclick=()=>select(index-1);$('#next').onclick=()=>select(index+1);
 $('#zoom-in').onclick=()=>{view.fov=Math.max(30,view.fov-8);draw();};$('#zoom-out').onclick=()=>{view.fov=Math.min(110,view.fov+8);draw();};$('#reset-view').onclick=()=>{view.yaw=0;view.pitch=0;view.fov=70;draw();};
@@ -54,5 +54,10 @@ try{
   if(draftID||tourID){manifest=await api(draftID?`/drafts/${draftID}`:`/published/${tourID}`);$('#tour-view').hidden=false;$('#viewer-chat').hidden=!!draftID;
     manifest.scenes.forEach((scene,i)=>{const button=node('button',undefined,'scene-thumb');button.type='button';const image=node('img');image.src=scene.thumbnail_url;image.alt='';button.append(image,node('span',scene.name));button.onclick=()=>select(i);$('#scene-nav').append(button);});
     index=manifest.scenes.findIndex(s=>s.id===manifest.start_scene_id);renderText();
-  }else{libraryTours=await api('/published');renderLibrary();}
+  }else{
+    const results=await Promise.allSettled([api('/published'),fetch('/api/studio-tours').then(async response=>{
+      if(!response.ok)throw new Error('Studio library unavailable');return response.json();})]);
+    libraryTours=results.flatMap(result=>result.status==='fulfilled'?result.value:[]);renderLibrary();
+    if(results.some(result=>result.status==='rejected'))notice(t('Part of the tour library could not be loaded. Please refresh.','Một phần thư viện chưa tải được. Vui lòng tải lại.'),true);
+  }
 }catch(e){notice(e.message,true);}

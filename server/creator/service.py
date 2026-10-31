@@ -170,8 +170,6 @@ class Creator:
             package = current['package']
             if current['status'] != 'completed' or not package or not package['approved']:
                 raise HTTPException(409, 'Tour chưa được duyệt và hoàn tất.')
-            if not package.get('music'):
-                raise HTTPException(422, 'Cần nhạc nền có nguồn/quyền sử dụng trước khi xuất bản.')
             previous = self.store.rows('SELECT id FROM published WHERE generation=?', (generation_id,))
             if previous:
                 return {'id': previous[0]['id']}
@@ -181,6 +179,9 @@ class Creator:
             package['public_id'] = public_id
             # Publish only approved artifacts, never raw description/missing fields.
             assets = self.store.assets(current['project_id'])
+            package['music'] = next((a for a in assets if a['kind'] == 'music'), None)
+            if not package['music']:
+                raise HTTPException(422, 'Cần nhạc nền có nguồn/quyền sử dụng trước khi xuất bản.')
             allowed = {r['asset_id'] for r in package['rooms']} | {package['model']['asset_id'], package['music']['id']}
             allowed |= {a['asset_id'] for a in package['narration']['audio']}
             if not allowed <= {a['id'] for a in assets}:

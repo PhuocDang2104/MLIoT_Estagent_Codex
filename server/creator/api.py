@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import StreamingResponse
 from .models import ProjectInput, Action, Review
 from .store import image_info, wav_duration
+from .music import replace_music, PLACEHOLDER, CREDIT
 
 COOKIE = 'estagent_studio'
 
@@ -66,6 +67,8 @@ def router(origin):
             raise HTTPException(422, str(error)) from None
         # Serialize validation and insert with generate/input freeze.
         with service.store.lock:
+            if kind == 'music':
+                return replace_music(service.store, project_id, name, data, credit.strip())
             if service.store.rows('SELECT id FROM generations WHERE project=?', (project_id,)):
                 raise HTTPException(409, 'Đầu vào đã khóa khi bắt đầu tạo tour.')
             assets = service.store.assets(project_id)
@@ -83,12 +86,24 @@ def router(origin):
                  'width': width, 'height': height, 'duration': duration, 'credit': credit.strip(),
                  'warning': 'Ảnh không có tỷ lệ panorama 2:1; hãy kiểm tra.' if kind == 'panorama' and abs(width/height-2) > .15 else None})
 
+    @routes.post('/projects/{project_id}/music/placeholder')
+    def placeholder(project_id: str, data: Action, request: Request):
+        service = creator(request)
+        token = owner(request)
+        service.store.project(token, project_id)
+        return service.store.action(token, data.request_id, {'placeholder_music':project_id},
+            lambda: replace_music(service.store,project_id,'Dream Culture (demo excerpt)',
+                                  PLACEHOLDER.read_bytes(),CREDIT))
+
     @routes.delete('/projects/{project_id}/assets/{asset_id}')
     def remove(project_id: str, asset_id: str, request: Request):
         service = creator(request)
         service.store.project(owner(request), project_id)
         with service.store.lock:
-            if service.store.rows('SELECT id FROM generations WHERE project=?', (project_id,)):
+            asset = next((a for a in service.store.assets(project_id) if a['id']==asset_id), None)
+            if service.store.rows('SELECT id FROM published WHERE project=?', (project_id,)) or (
+                (not asset or asset['kind'] != 'music') and
+                service.store.rows('SELECT id FROM generations WHERE project=?', (project_id,))):
                 raise HTTPException(409, 'Đầu vào đã khóa khi bắt đầu tạo tour.')
             service.store.execute('DELETE FROM assets WHERE id=? AND project=?', (asset_id, project_id))
         return {'removed': True}

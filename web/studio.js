@@ -265,6 +265,9 @@ $("#create-form").onsubmit = async (e) => {
         },
       );
     }
+    if (!$("#music").files.length && $("#placeholder-music").checked) {
+      await post(`/projects/${result.id}/music/placeholder`, { request_id: requestId() });
+    }
     pendingRequest = null;
     selected.forEach((p) => URL.revokeObjectURL(p.url));
     selected = [];
@@ -315,6 +318,7 @@ async function openProject(id) {
   }
 }
 function renderAssets() {
+  renderMusic();
   $("#asset-count").textContent =
     project.assets.filter((a) => a.kind === "panorama").length + " ảnh";
   $("#assets").replaceChildren(
@@ -340,6 +344,36 @@ function renderAssets() {
       ),
   );
 }
+function renderMusic() {
+  const track = project.assets.find((a) => a.kind === "music");
+  const panel = $("#current-music");
+  panel.replaceChildren();
+  if (track) {
+    panel.append(node("strong", track.name), node("audio", null, {
+      controls: "", preload: "none", src: assetUrl(track), "aria-label": "Nghe nhạc nền",
+    }), node("p", track.credit, { class: "muted" }));
+  } else panel.append(node("p", "Chưa có nhạc. Chọn nhạc mẫu hoặc tải WAV để xuất bản."));
+  $("#music-options").hidden = !!project.published.length;
+}
+async function saveMusic(placeholder) {
+  if (busy || !project) return;
+  const file = $("#replacement-music").files[0];
+  const credit = $("#replacement-credit").value.trim();
+  if (!placeholder && (!file || !credit)) return notify("Chọn WAV và nhập nguồn/quyền sử dụng.", true);
+  busy = true;
+  $("#save-music").disabled = $("#use-placeholder").disabled = true;
+  try {
+    if (placeholder) await post(`/projects/${project.id}/music/placeholder`, { request_id: requestId() });
+    else await api(`/projects/${project.id}/assets?` + new URLSearchParams({kind:"music",name:file.name,credit}),
+      {method:"POST",headers:{"Content-Type":"audio/wav"},body:file});
+    project = await api("/projects/" + project.id);
+    renderMusic();
+    notify("Đã lưu nhạc. Không cần tạo lại tour.");
+  } catch (error) { notify(error.message, true); }
+  finally { busy = false; $("#save-music").disabled = $("#use-placeholder").disabled = false; }
+}
+$("#use-placeholder").onclick = () => saveMusic(true);
+$("#save-music").onclick = () => saveMusic(false);
 function renderHistory() {
   $("#history-count").textContent = project.generations.length;
   $("#history").replaceChildren(
@@ -466,6 +500,7 @@ $("#publish").onclick = async () => {
       { id: result.id, generation: generation.id },
     ];
     renderStages();
+    renderMusic();
     notify("Đã xuất bản phiên bản đã duyệt.");
   } catch (e) {
     notify(e.message, true);

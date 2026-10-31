@@ -10,7 +10,7 @@ Dependencies: existing Python requirements, locally installed Blender CLI, vendo
 
 ## OpenAI
 
-Use the existing backend Responses API client and configured vision model. A server-owned agent template produces typed scene data, never Python or shell code. Include uploaded panorama/photo images and the optional floorplan. At most three completed planning passes per generation (initial plus two user-requested revisions), each at most 12,000 output tokens. Existing image observation, narration and voice budgets remain unchanged. Tests use synthetic provider responses, USD 0; actual Blender is exercised separately. No claim of live model accuracy or account access.
+Use the existing backend Responses API client and configured vision model. A server-owned agent template produces typed scene data, never Python or shell code. Include uploaded panorama/photo images and the optional floorplan. At most three completed planning passes per generation (initial plus two user-requested revisions), each at most 24,000 output tokens including reasoning. Existing image observation, narration and voice budgets remain unchanged. Tests use synthetic provider responses, USD 0; actual Blender is exercised separately. No claim of live model accuracy or account access.
 
 ## API compatibility and budget
 
@@ -19,7 +19,7 @@ across the hackathon. This is not a per-generation allocation or permission to
 spend the balance. Verification here costs USD 0 in OpenAI calls. Production uses
 the official SDK `POST /v1/responses` (text/vision structured output) and
 `POST /v1/audio/speech` (WAV), with server-side `OPENAI_API_KEY` and configurable
-`OPENAI_MODEL_TEXT`, `OPENAI_MODEL_VISION`, `OPENAI_MODEL_TTS`. Model access must be
+`OPENAI_MODEL_TEXT`, `OPENAI_MODEL_VISION`, `OPENAI_MODEL_MODELING`, `OPENAI_MODEL_TTS`. Model access must be
 checked with the team's project; configured IDs alone do not prove availability.
 
 At 12 captures: at most 17 completed structured generation calls including all
@@ -116,3 +116,5 @@ See [verification evidence](../tests/ai/evidence/house-modeling/RESULTS.md).
 The provider was synthetic; OpenAI endpoint/schema compatibility used the real
 SDK with mocked HTTP. No API credits were spent, no live accuracy claim is made,
 and no production deployment or push was performed.
+
+Current model defaults and separately authorized live evaluation supersede the original offline-only budget above; see `LOCAL-LIVE-RUN.md`.

@@ -1743,3 +1743,6 @@ dialog p {
 .house-marker:focus-visible { outline: 3px solid #242d28; outline-offset: 2px; }
 .plan-preview { display: block; width: 100%; min-height: 180px; max-height: 340px; padding: 12px; }
 .review input[type=checkbox] { width: auto; margin-right: 8px; }
+
+.music-panel audio, .form-grid audio { display:block; width:100%; max-width:100%; margin:12px 0; }
+.music-panel p {overflow-wrap:anywhere;}

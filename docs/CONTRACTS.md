@@ -144,7 +144,7 @@ separate manifest from the unimplemented reconstruction v1 above; no `/api/proje
 Runtime schema: `server/tours/models.py`; checked-in JSON Schema + synthetic fixture:
 `fixtures/tour.schema.json`, `fixtures/checkpoint-tour/tour.json`.
 Existing `/api/assistant/*` request/response/cookie contracts remain unchanged. `/` now serves landing;
-`experience.html` redirects to Creator. `/creator.html`, `/viewer.html`, assets and APIs share one origin.
+`experience.html` redirects to `/business/create` (Studio). Legacy `/creator.html` remains accessible. `/viewer.html`, assets and APIs share one origin.
 
 - `schema_version=checkpoint-tour-v1`, `id`, `revision>=1`, `status=draft|published`, `title`,
   `locale=en|vi`, ordered `scenes[1..20]`, `start_scene_id`, `audio`, `credits`.
@@ -187,3 +187,17 @@ or inaccessible storage fails visibly; no shared existing DB/storage is opened.
 OpenAI uses existing `OPENAI_API_KEY`/`OPENAI_MODEL_TEXT`, structured output, timeout 30s, retries=0,
 1200 output tokens, `store=false`. Calls only on explicit chat submit. Integration QA uses no key or
 injected test interpreters. No image analysis, TTS, GPU or paid live validation authorized/performed.
+
+## Studio library and late music (2026-10-31)
+
+User-authorized additive integration: `GET /api/studio-tours` returns published
+snapshot cards only (`id`, `title`, `thumbnail_url`, `viewer_url`, `format`,
+`published_at`). Drafts, owner cookies and original descriptions remain private.
+The main library combines these with legacy `/api/tours/published`.
+
+`POST /api/studio/projects/{id}/music/placeholder` accepts an Action request ID
+and attaches the bundled credited WAV. Existing `POST .../assets?kind=music`
+replaces the draft music even after generation; spatial inputs remain frozen.
+Publication resolves current music into an immutable snapshot without repeating
+model/TTS work. Published projects reject music replacement/deletion with 409.
+Published v1 schema stays unchanged.

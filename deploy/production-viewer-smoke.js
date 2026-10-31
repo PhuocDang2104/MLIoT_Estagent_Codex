@@ -2,6 +2,7 @@ async page => {
   const base='https://estagent.duckdns.org',id='f9c9100bf6effa0f141594dd972bed6d';
   const errors=[],checks=[],requests=[];
   const check=(ok,message)=>{if(!ok)throw Error(message);checks.push(message);};
+  const checkedWait=async(fn,arg,options={})=>{try{return await page.waitForFunction(fn,arg,{polling:100,...options});}catch(error){throw Error('Viewer wait after '+(checks.at(-1)||'initial load')+': '+error.message);}};
   page.on('pageerror',e=>errors.push(e.message));
   // Actual deployed frontend and API; GET-only, no local route overrides.
   await page.unrouteAll({behavior:'ignoreErrors'});
@@ -13,13 +14,13 @@ async page => {
   });
   await page.setViewportSize({width:1440,height:1000});
   await page.goto(base+'/viewer.html?tour='+id);await page.locator('#panorama').waitFor({state:'visible'});await page.locator('[data-lang="en"]').click();
-  await page.waitForFunction(()=>document.getAnimations().length===0);
+  await checkedWait(()=>document.getAnimations().length===0);
   check(await page.locator('#publish,#save-draft,#attach-audio').count()===0,'Viewer has no Creator edit/publish controls');
   const canvas=page.locator('#panorama');
   const pixels=()=>canvas.evaluate(c=>c.toDataURL());
   for(let i=0;i<4;i++){
     await page.locator('#viewer-stops summary').click();await page.locator('#scene-nav button').nth(i).click();
-    await page.locator('#viewer-stops .panel-close').click();await page.waitForFunction(()=>!document.querySelector('#panorama').hidden&&document.querySelector('#stage').ariaBusy!=='true'&&document.getAnimations().length===0);
+    await page.locator('#viewer-stops .panel-close').click();await checkedWait(()=>!document.querySelector('#panorama').hidden&&document.querySelector('#stage').ariaBusy!=='true'&&document.getAnimations().length===0);
     check((await page.locator('#coverage').textContent()).includes('240°'),'Scene '+i+' preserves 240°');
     check((await page.locator('#projection-label').textContent()).includes('provisional'),'Scene '+i+' provisional label');
   }
@@ -30,15 +31,15 @@ async page => {
   await page.locator('#viewer-chat summary').click();const chatBefore=await pixels();await page.locator('#question').fill('Fixture audit; this question is NOT submitted.');await page.locator('#question').press('ArrowLeft');check(chatBefore===await pixels(),'Typing and arrows in chat do not drag camera');
   await page.keyboard.press('Escape');check(!await page.locator('#viewer-chat').evaluate(e=>e.open),'Escape closes panel');
   check(await page.evaluate(()=>document.activeElement===document.querySelector('#viewer-chat summary')),'Escape restores focus');
-  await page.locator('#reset-view').click();await page.locator('#fullscreen').click();await page.waitForFunction(()=>!!document.fullscreenElement);
+  await page.locator('#reset-view').click();await page.locator('#fullscreen').click();await checkedWait(()=>!!document.fullscreenElement);
   check(await page.evaluate(()=>document.fullscreenElement.id==='tour-view'),'Gesture fullscreen includes controls');
-  await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.fullscreenElement);check(true,'Escape exits fullscreen');
+  await page.keyboard.press('Escape');await checkedWait(()=>!document.fullscreenElement);check(true,'Escape exits fullscreen');
   check(await page.locator('body').evaluate(b=>b.classList.contains('is-immersive')),'Exiting API fullscreen retains viewport layout');
-  await page.locator('#previous').click();await page.waitForFunction(()=>document.querySelector('#scene-counter').textContent==='3 / 4');
-  await page.locator('#next').click();await page.waitForFunction(()=>document.querySelector('#scene-counter').textContent==='4 / 4');
+  await page.locator('#previous').click();await checkedWait(()=>document.querySelector('#scene-counter').textContent==='3 / 4');
+  await page.locator('#next').click();await checkedWait(()=>document.querySelector('#scene-counter').textContent==='4 / 4');
   const sizes=[];
   for(const [width,height] of [[1440,1000],[390,844],[320,740]]){
-    await page.setViewportSize({width,height});await page.waitForFunction(()=>document.querySelector('#stage').ariaBusy!=='true'&&document.getAnimations().length===0);
+    await page.setViewportSize({width,height});await checkedWait(()=>document.querySelector('#stage').ariaBusy!=='true'&&document.getAnimations().length===0);
     const size=await page.evaluate(()=>{const r=document.querySelector('#stage').getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,sw:document.documentElement.scrollWidth,sh:document.documentElement.scrollHeight,iw:innerWidth,ih:innerHeight};});sizes.push(size);
     check(size.x===0&&size.y===0&&size.w===width&&size.h===height,'Stage fills '+width+' viewport');
     check(size.sw===width&&size.sh===height,'No page overflow '+width);
@@ -51,7 +52,7 @@ async page => {
     }
     if(width===390){await page.locator('[data-lang="vi"]').click();await page.locator('#viewer-info summary').click();await page.screenshot({path:'/private/tmp/estagent-wave3-viewer-evidence/details-vi-390.png'});await page.locator('#viewer-info .panel-close').click();await page.locator('[data-lang="en"]').click();}
   }
-  await page.emulateMedia({reducedMotion:'reduce'});await page.locator('#previous').click();await page.waitForFunction(()=>!document.querySelector('#panorama').hidden);check(await page.evaluate(()=>document.getAnimations().length===0),'Reduced motion disables scene transition');
+  await page.emulateMedia({reducedMotion:'reduce'});await page.locator('#previous').click();await checkedWait(()=>!document.querySelector('#panorama').hidden);check(await page.evaluate(()=>document.getAnimations().length===0),'Reduced motion disables scene transition');
   await page.locator('.viewer-back').click();await page.locator('.library-card').first().waitFor();check(!await page.locator('body').evaluate(b=>b.classList.contains('is-immersive')),'Library keeps document layout');
   await page.screenshot({path:'/private/tmp/estagent-wave3-viewer-evidence/library-320.png'});
   await page.locator('.library-card').first().click();await page.locator('#tour-view').waitFor();check(await page.locator('body').evaluate(b=>b.classList.contains('is-immersive')),'Library opens immersive viewer');

@@ -208,3 +208,14 @@ this gate. `deploy/minio_app_smoke.py` runs actual SDK/app routes in isolated
 temporary SQLite, including a private5600044-byte/175s PCM WAV with two-part ETag,
 cross-part Range/SHA/restart. No provider calls; isolated publish exercises a
 private test DB, never the production public library.
+
+After wave3 acceptance, `6c50572344930f338b83517c908b88edf05dd8f1` is a
+verified MinIO-aware rollback baseline: image
+`sha256:fd0e9835b2d7e460c2c01c96855a70b2769a519e3da3fca2e22e2fb76ffe0030`.
+Its commit-specific compose and private runtime env remain on the VM. A later
+CSS/landing-only hotfix can roll back with that compose/env using config --quiet
+and up -d --wait; preserve the MinIO service/network and current data volume.
+Actual production backups now contain3tour and1Studio MinIO refs; the legacy
+346a0ba preflight correctly returns incompatible. No restore/reset is required
+or permitted to make a downgrade succeed. Core reconstruction, paid AI and
+physical iOS device acceptance are not claimed by these checks.

@@ -1,0 +1,66 @@
+PASS release + fallback source archive checksums
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.49kB done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/python:3.13-slim
+#2 DONE 1.2s
+
+#3 [ 1/12] FROM docker.io/library/python:3.13-slim@sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 1.71MB 0.0s done
+#4 DONE 0.1s
+
+#5 [ 3/12] COPY server/assistant/requirements.txt /app/server/assistant/requirements.txt
+#5 CACHED
+
+#6 [ 8/12] COPY server/limits.py /app/server/limits.py
+#6 CACHED
+
+#7 [ 4/12] RUN pip install --no-cache-dir -r server/assistant/requirements.txt     && groupadd --gid 10001 assistant     && useradd --uid 10001 --gid assistant --no-create-home assistant     && mkdir /data && chown assistant:assistant /data
+#7 CACHED
+
+#8 [ 6/12] COPY server/creator/ /app/server/creator/
+#8 CACHED
+
+#9 [ 7/12] COPY server/tours/ /app/server/tours/
+#9 CACHED
+
+#10 [ 9/12] COPY server/storage.py /app/server/storage.py
+#10 CACHED
+
+#11 [ 2/12] WORKDIR /app
+#11 CACHED
+
+#12 [ 5/12] COPY server/assistant/ /app/server/assistant/
+#12 CACHED
+
+#13 [10/12] COPY server/object_storage.py /app/server/object_storage.py
+#13 CACHED
+
+#14 [11/12] COPY web/ /app/web/
+#14 DONE 0.3s
+
+#15 [12/12] COPY deploy/entrypoint.py deploy/smoke.py /app/deploy/
+#15 DONE 0.1s
+
+#16 exporting to image
+#16 exporting layers 0.1s done
+#16 writing image sha256:fd0e9835b2d7e460c2c01c96855a70b2769a519e3da3fca2e22e2fb76ffe0030 done
+#16 naming to docker.io/library/estagent-assistant:6c50572344930f338b83517c908b88edf05dd8f1
+#16 naming to docker.io/library/estagent-assistant:6c50572344930f338b83517c908b88edf05dd8f1 done
+#16 DONE 0.1s
+/usr/local/lib/python3.13/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+CONFIG OK (presence/format only; model access and quota not verified)
+ Container estagent-assistant-assistant-1 Recreate 
+ Container estagent-assistant-assistant-1 Recreated 
+ Container estagent-assistant-assistant-1 Starting 
+ Container estagent-assistant-assistant-1 Started 
+ Container estagent-assistant-assistant-1 Waiting 
+ Container estagent-assistant-assistant-1 Healthy 
+{"source": "6c50572344930f338b83517c908b88edf05dd8f1", "image": "sha256:fd0e9835b2d7e460c2c01c96855a70b2769a519e3da3fca2e22e2fb76ffe0030", "health": "healthy", "keyless": true, "api_upload_storage_guards": "enabled verified", "minio": "private backend connected", "read_only": true, "uid": "10001", "memory": 1073741824}

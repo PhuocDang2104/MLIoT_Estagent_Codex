@@ -1,0 +1,8 @@
+{"pass":true,"origin":"https://estagent.duckdns.org","pages":["landing","Creator","private preview"],"upload":"two synthetic PNGs + private synthetic PCM WAV","audio":"actual decode/play/pause","persistence":"reload verified","locale":"VI","mobile":[390,320],"ai":"explicit 503, no paid calls","published":false}
+
+╔════════════════════════════════════════════════════════════════════╗
+║ Update available for @playwright/cli: 0.1.18 → 0.1.22              ║
+║ Run `npm install -g @playwright/cli@latest` (global) or            ║
+║ `npm install --save-dev @playwright/cli@latest` (local) to update. ║
+╚════════════════════════════════════════════════════════════════════╝
+

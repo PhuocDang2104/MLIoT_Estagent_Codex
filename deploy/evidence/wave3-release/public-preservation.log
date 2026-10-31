@@ -1,0 +1,2 @@
+PASS TLS public manifest byte-identical + all 8 image/thumbnail hashes unchanged; 4 scenes preserved
+HEALTH PASS (HTTP + checkpoint read; no model/quota check)

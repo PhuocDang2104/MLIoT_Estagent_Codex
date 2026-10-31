@@ -1,0 +1,2 @@
+{"remote_markers": {"media_storage": 3, "media_refs": 1}, "studio_no_blob_duplicates": true, "standalone_backups": "verified"}
+{"check": "legacy_audio_and_remote_media_compatibility", "compatible": false, "manifests": {"drafts": {"incompatible": 1, "total": 3}, "published": {"incompatible": 0, "total": 1}}, "remote_media": {"creator": 1, "tours": 3}, "target_commit": "346a0ba40051f3e5b739a318e86549a26730d439"}

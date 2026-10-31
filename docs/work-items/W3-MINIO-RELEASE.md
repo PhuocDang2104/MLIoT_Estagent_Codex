@@ -35,3 +35,11 @@ Thái's direct role update recorded in AGENTS.md and docs/CODE-INTEGRATION.md: r
 ## Final integration gate
 
 Immersive Viewer b0849df merged preserving teammate commit; root accepted desktop/mobile direction. Final web strict and AI strict PASS after merge. Hard quota now also verified that existing synthetic media remains readable while new writes are denied. Video Export9:16/16:9 explicitly stays next release. Production smoke extends private Creator draft with real PCM upload/play/pause; Viewer audit uses deployed files only (no route override), screenshots with real demo remain local. Final artifact/release evidence follows after rollout.
+
+## Production checkpoint and directly requested UI hotfix
+
+Source6c505723/imagefd0e9835 deployed from clean main clone/checksummed artifact. Actual production Creator+private PCM playback, Studio save/reload, Viewer1440/390/320/fullscreen/panels/keyboard/drag, TLS and all8old image/thumbnail hashes PASS. Viewer test initially timed out waiting for CSS animation after resize with default RAF polling; same condition reproduced and passed with timer polling, then full deployed-file audit PASS. No application change made to satisfy that test.
+
+Production SQLite confirms3tour remote markers +1Studio marker, no duplicate Studio BLOB. Fresh standalone backups cause legacy rollback preflight to correctly refuse346a0ba (remote counts reported). Root's role remains coordination/review/acceptance.
+
+Direct Thái follow-ups: landing exactly2hero CTA Create tour/Tạo tour and View tours/Xem tour, Creator entry preserved; remove standalone Studio hero CTA, retain Studio route/backend. Index ownership explicitly assigned; body Creator CTA wording made consistent, no redesign. CSSglass dee0618 merged preserving lane commit, same JS/API/layout/assets. Hotfix webstrict and local-HTML browser EN/VI1440/390/320, correct entries and Studio200 PASS. Final production hotfix verification follows; Video Export remains next release.

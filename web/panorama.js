@@ -1,6 +1,6 @@
 // Adapted with permission from demo-cache/panorama-tour/renderer.js; see docs/INTEGRATION-HANDOFF.md. No demo photos included.
 'use strict';
-// Rectilinear camera -> cylindrical panorama. Pixels outside captured UV are white.
+// Rectilinear camera -> cylindrical panorama. Pixels outside captured UV are neutral dark, never synthesized.
 // Coverage is a provisional calibration, never inferred as a complete 360 capture.
 export class PanoramaCamera {
   constructor(canvas){
@@ -26,7 +26,7 @@ export class PanoramaCamera {
         float longitude=atan(ray.x,ray.z);
         float u=.5+longitude/coverage;
         float v=.5-ray.y/(max(length(ray.xz),.00001)*verticalSpan);
-        if(u<0.||u>1.||v<0.||v>1.)gl_FragColor=vec4(1.);
+        if(u<0.||u>1.||v<0.||v>1.)gl_FragColor=vec4(.09,.115,.12,1.);
         else gl_FragColor=vec4(texture2D(photo,vec2(u,v)).rgb,1.);
       }`);
     this.program=gl.createProgram();gl.attachShader(this.program,vertex);gl.attachShader(this.program,fragment);gl.linkProgram(this.program);
@@ -39,7 +39,7 @@ export class PanoramaCamera {
     this.texture=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,this.texture);
     for(const axis of [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T])gl.texParameteri(gl.TEXTURE_2D,axis,gl.CLAMP_TO_EDGE);
     for(const filter of [gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER])gl.texParameteri(gl.TEXTURE_2D,filter,gl.LINEAR);
-    gl.clearColor(1,1,1,1);gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clearColor(.09,.115,.12,1);gl.clear(gl.COLOR_BUFFER_BIT);
   }
   setImage(image){
     const gl=this.gl,max=Math.min(8192,gl.getParameter(gl.MAX_TEXTURE_SIZE));let source=image;

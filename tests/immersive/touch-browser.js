@@ -1,0 +1,28 @@
+async page=>{
+ const context=await page.context().browser().newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+ const mobile=await context.newPage(),errors=[];mobile.on('pageerror',e=>errors.push(e.message));
+ const check=(ok,msg)=>{if(!ok)throw Error(msg);};
+ try{
+  await mobile.goto('http://127.0.0.1:5197/viewer.html?tour=f9c9100bf6effa0f141594dd972bed6d');
+  await mobile.waitForFunction(()=>document.querySelector('#stage').ariaBusy==='false'&&!document.querySelector('#panorama').hidden);
+  const pixels=()=>mobile.locator('#panorama').evaluate(c=>c.toDataURL());const before=await pixels();
+  const cdp=await context.newCDPSession(mobile);
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:150,y:380}]});
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:230,y:400}]});
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  check(before!==await pixels(),'Touch drag did not move camera');
+  await mobile.locator('#viewer-chat summary').tap();const after=await pixels();
+  await mobile.locator('#question').tap();await mobile.locator('#question').fill('Local typing; never submitted.');await mobile.locator('#question').press('ArrowLeft');
+  check(after===await pixels(),'Typing moved camera');await mobile.locator('#viewer-chat .panel-close').tap();
+  check(await mobile.evaluate(()=>document.documentElement.scrollHeight===innerHeight),'Touch viewport scroll');
+  await mobile.locator('#reset-view').tap();await mobile.locator('#panorama').focus();
+  for(let i=0;i<40;i++)await mobile.keyboard.press('ArrowRight');const boundary=await pixels();
+  for(let i=0;i<5;i++)await mobile.keyboard.press('ArrowRight');check(boundary===await pixels(),'Camera wrapped beyond coverage boundary');
+  await mobile.screenshot({path:'/private/tmp/estagent-immersive-evidence/captured-boundary-mobile.png'});
+  await mobile.locator('#reset-view').tap();
+  await mobile.screenshot({path:'/private/tmp/estagent-immersive-evidence/touch-mobile.png'});
+  await mobile.locator('#viewer-info summary').tap();await mobile.keyboard.press('Escape');check(!await mobile.locator('#viewer-info').evaluate(e=>e.open),'Escape panel');
+  check(errors.length===0,'JS errors');
+  return {pass:true,actualChromiumTouchEvents:true,typingIsolated:true,horizontalBoundaryClamped:true,noPageScroll:true,errors};
+ }finally{await context.close();}
+}

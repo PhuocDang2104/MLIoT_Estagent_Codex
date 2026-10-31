@@ -35,7 +35,7 @@ class Turn(BaseModel):
     text: str = Field(min_length=1, max_length=2000)
     request_id: str = Field(pattern=r'^[a-zA-Z0-9-]{8,80}$')
 
-def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, tour_interpreter=None, creator_provider=None, creator_worker=None):
+def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, tour_interpreter=None, creator_provider=None, creator_worker=None, tour_chat_provider=None):
     env = dict(os.environ if env is None else env)
     origin = env.get('ASSISTANT_ORIGIN', 'http://127.0.0.1:5180')
     required = tuple(x.strip() for x in env.get('ASSISTANT_REQUIRED_FIELDS','address,area,bedrooms').split(','))
@@ -70,7 +70,10 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
                 try:
                     app.state.close_video_exports()
                 finally:
-                    app.state.narration.close()
+                    try:
+                        app.state.narration.close()
+                    finally:
+                        app.state.visitor_chat.close()
             finally:
                 try:
                     app.state.creator.close()
@@ -172,7 +175,7 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
             return JSONResponse({'error':'Voice connection interrupted. You can still use text chat.'},status_code=502)
 
     from server.tours.api import install
-    install(app, env, path.parent / 'tours', interpreter=tour_interpreter, object_storage=object_storage)
+    install(app, env, path.parent / 'tours', interpreter=tour_interpreter, object_storage=object_storage, chat_provider=tour_chat_provider)
 
     @app.get('/')
     def home(): return FileResponse(WEB/'index.html')

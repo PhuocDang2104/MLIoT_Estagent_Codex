@@ -144,7 +144,7 @@ def install_demos(app, env, web):
 
     @app.get('/demos/static/{name}')
     def demo_static(name: str):
-        if name not in {'house.css', 'house.js', 'seoul.css', 'seoul.js'}:
+        if name not in {'house.css', 'house.js', 'seoul.css', 'seoul.js', 'chat-panel.js', 'chat-panel.css', 'chat-bootstrap.js'}:
             raise HTTPException(404)
         return FileResponse(web/'demos'/name)
 

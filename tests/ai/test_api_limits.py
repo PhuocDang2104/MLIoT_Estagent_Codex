@@ -42,7 +42,12 @@ def stub(tmp_path, clock=None, endpoint=None, **overrides):
     handler = endpoint or default
     for route in ['/api/assistant/turn', '/api/assistant/voice',
                   '/api/tours/drafts/{id}/chat', '/api/tours/published/{id}/chat',
-                  '/api/tours/assets']:
+                  '/api/tours/assets', '/api/tours/audio-assets',
+                  '/api/studio/projects/{id}/assets',
+                  '/api/studio/projects/{id}/generations',
+                  '/api/studio/generations/{id}/review',
+                  '/api/studio/generations/{id}/retry',
+                  '/api/studio-tours/{id}/questions']:
         app.add_api_route(route, handler, methods=['POST'])
     app.add_api_route('/api/assistant/state', default, methods=['GET'])
     install_limits(app, config(tmp_path, **overrides), clock=clock or Clock())
@@ -201,6 +206,58 @@ def test_upload_has_separate_burst_and_concurrency_bounds(tmp_path):
         assert len(calls) == 2
 
 
+@pytest.mark.parametrize('route', [
+    '/api/studio/projects/project/generations',
+    '/api/studio/generations/generation/review',
+    '/api/studio/generations/generation/retry',
+    '/api/studio-tours/tour/questions',
+])
+def test_studio_work_shares_existing_ai_attempt_allowance(tmp_path, route):
+    app, calls = stub(tmp_path, API_LIMITS_AI_REQUESTS='1')
+    with TestClient(app) as client:
+        assert client.post('/api/assistant/turn').status_code == 200
+        response = client.post(route)
+        assert response.status_code == 429 and response.json()['code'] == 'rate_limited'
+        assert len(calls) == 1
+
+
+@pytest.mark.parametrize('route', [
+    '/api/tours/audio-assets', '/api/studio/projects/project/assets',
+])
+def test_audio_and_studio_uploads_share_image_upload_bucket(tmp_path, route):
+    app, calls = stub(tmp_path, API_LIMITS_UPLOAD_REQUESTS='1')
+    with TestClient(app) as client:
+        assert client.post('/api/tours/assets').status_code == 200
+        assert client.post(route).status_code == 429
+        assert client.post('/api/assistant/turn').status_code == 200
+        assert len(calls) == 2
+
+
+def test_app_factory_requires_limits_for_configured_key(tmp_path):
+    with pytest.raises(ValueError, match='API_LIMITS_ENABLED'):
+        create_app(db_path=tmp_path/'assistant.sqlite',
+                   env={'OPENAI_API_KEY':'fixture-not-a-real-key'})
+
+
+@pytest.mark.parametrize('route', [
+    '/api/studio/projects/project/generations',
+    '/api/studio/generations/generation/review',
+    '/api/studio/generations/generation/retry',
+    '/api/studio-tours/tour/questions',
+    '/api/tours/audio-assets',
+    '/api/studio/projects/project/assets',
+])
+def test_real_factory_guard_runs_before_studio_and_audio_boundaries(tmp_path, route):
+    env = config(tmp_path, API_LIMITS_AI_REQUESTS='1', API_LIMITS_UPLOAD_REQUESTS='1')
+    app = create_app(db_path=tmp_path/'assistant.sqlite', env=env)
+    with TestClient(app) as client:
+        # No Origin or credentials; first admission reaches existing boundary and is
+        # rejected, second admission is rejected before route/body processing.
+        assert client.post(route, content=b'fixture').status_code == 403
+        response = client.post(route, content=b'fixture')
+        assert response.status_code == 429 and response.json()['code'] == 'rate_limited'
+
+
 def test_storage_failure_is_explicit_fail_closed_and_releases_slot(tmp_path, monkeypatch):
     app, calls = stub(tmp_path)
     ledger = app.state.api_limits
@@ -284,7 +341,6 @@ def test_existing_assistant_success_error_and_missing_key_semantics(tmp_path):
 
     env = config(tmp_path) | {'ASSISTANT_ORIGIN': 'http://testserver'}
     app = create_app(db_path=tmp_path / 'assistant.sqlite', env=env, extractor=extract)
-    install_limits(app, env, clock=Clock())
     with TestClient(app) as client:
         assert client.get('/api/assistant/state').status_code == 200
         headers = {'Origin': 'http://testserver'}

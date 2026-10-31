@@ -38,6 +38,9 @@ def validate():
     db.parent.mkdir(parents=True, exist_ok=True)
     if not os.access(db.parent, os.W_OK) or (db.exists() and not os.access(db, os.W_OK)):
         raise ValueError('ASSISTANT_DB: checkpoint path is not writable by this runtime user')
+    from fastapi import FastAPI
+    from server.limits import install_limits
+    install_limits(FastAPI(), os.environ)
 
 
 if __name__ == '__main__':

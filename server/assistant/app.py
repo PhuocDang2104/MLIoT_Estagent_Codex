@@ -16,6 +16,7 @@ from openai import OpenAI, APIError
 from pydantic import BaseModel, Field, ConfigDict
 from langgraph.checkpoint.sqlite import SqliteSaver
 from .graph import build_graph, make_extractor, LABELS, QUESTIONS
+from server.limits import install_limits
 from server.creator.api import router as creator_router
 from server.creator.service import Creator
 from server.creator.provider import OpenAIProvider
@@ -192,6 +193,7 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
         return FileResponse(WEB/filename)
 
     app.mount('/assets',StaticFiles(directory=WEB/'assets'),name='assets')
+    install_limits(app, env)
     return app
 
 app = create_app()

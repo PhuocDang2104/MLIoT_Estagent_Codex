@@ -26,7 +26,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     blob = subprocess.check_output([
-        'git', 'archive', sha, 'server/assistant', 'server/tours', 'server/creator', 'web', 'tests/ai',
+        'git', 'archive', sha, 'server/assistant', 'server/tours', 'server/creator', 'server/limits.py', 'web', 'tests/ai',
     ], cwd=ROOT)
     print(f'Application snapshot: {sha}; deploy tooling: current uncommitted files', flush=True)
     with tempfile.TemporaryDirectory(prefix='estagent-native-qa-') as directory:
@@ -36,7 +36,7 @@ def main():
         shutil.copytree(ROOT / 'deploy', stage / 'deploy', ignore=shutil.ignore_patterns(
             'evidence', '__pycache__', '.env', '.env.*', 'runtime', '*.tar', '*.tar.gz'))
         env = {k: v for k, v in os.environ.items() if not k.startswith((
-            'OPENAI_', 'ASSISTANT_', 'TOUR_', 'STUDIO_', 'CREATOR_', 'ESTAGENT_', 'LANGCHAIN_', 'LANGSMITH_'))}
+            'OPENAI_', 'ASSISTANT_', 'TOUR_', 'STUDIO_', 'CREATOR_', 'ESTAGENT_', 'API_LIMITS_', 'LANGCHAIN_', 'LANGSMITH_'))}
         env.update({
             'PYTHONDONTWRITEBYTECODE': '1', 'NO_PROXY': '127.0.0.1,localhost',
             'ASSISTANT_DB': str(stage / 'data' / 'checkpoints.sqlite'),
@@ -63,7 +63,14 @@ def main():
         command('deploy/entrypoint.py', '--check-config', expected=2,
                 environment={**preview, 'OPENAI_API_KEY': 'fixture-secret'})
         print('PASS keyless preview: explicit opt-in accepted; nonempty key rejected', flush=True)
-        configured = {**env, 'OPENAI_API_KEY': 'local-fixture-not-a-real-key'}
+        configured = {**env, 'OPENAI_API_KEY': 'local-fixture-not-a-real-key',
+            'API_LIMITS_ENABLED':'1', 'API_LIMITS_DB':str(stage/'data'/'api-limits.sqlite'),
+            'API_LIMITS_AI_REQUESTS':'100','API_LIMITS_AI_WINDOW_SECONDS':'60',
+            'API_LIMITS_AI_CONCURRENCY':'1','API_LIMITS_AI_ATTEMPTS':'100',
+            'API_LIMITS_AI_ATTEMPT_WINDOW_SECONDS':'3600'}
+        command('deploy/entrypoint.py', '--check-config', expected=2,
+                environment={**configured, 'API_LIMITS_ENABLED':'0'})
+        print('PASS config: configured key without admission limits rejected', flush=True)
         print(command('deploy/entrypoint.py', '--check-config', environment=configured), flush=True)
         for name, value in [('OPENAI_API_KEY', '   '), ('ASSISTANT_ORIGIN', 'http://invalid.example'),
                             ('ASSISTANT_REQUIRED_FIELDS', 'not-an-app-field')]:

@@ -116,9 +116,13 @@ class LimitsMiddleware:
             return None
         path = scope['path'].rstrip('/')
         if path in {'/api/assistant/turn', '/api/assistant/voice'} or re.fullmatch(
-                r'/api/tours/(drafts|published)/[^/]+/chat', path):
+                r'/api/tours/(drafts|published)/[^/]+/chat', path) or re.fullmatch(
+                r'/api/studio/projects/[^/]+/generations', path) or re.fullmatch(
+                r'/api/studio/generations/[^/]+/(review|retry)', path) or re.fullmatch(
+                r'/api/studio-tours/[^/]+/questions', path):
             return 'ai'
-        if path == '/api/tours/assets':
+        if path in {'/api/tours/assets', '/api/tours/audio-assets'} or re.fullmatch(
+                r'/api/studio/projects/[^/]+/assets', path):
             return 'upload'
         return None
 

@@ -9,6 +9,7 @@ RUN pip install --no-cache-dir -r server/assistant/requirements.txt \
 COPY server/assistant/ /app/server/assistant/
 COPY server/creator/ /app/server/creator/
 COPY server/tours/ /app/server/tours/
+COPY server/limits.py /app/server/limits.py
 COPY web/ /app/web/
 COPY deploy/entrypoint.py deploy/smoke.py /app/deploy/
 USER 10001:10001

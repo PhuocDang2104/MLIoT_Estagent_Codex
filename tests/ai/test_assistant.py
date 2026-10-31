@@ -8,6 +8,13 @@ from langgraph.checkpoint.memory import MemorySaver
 from server.assistant.graph import build_graph, Extraction, LABELS
 from server.assistant.app import create_app, COOKIE
 
+def voice_fixture_env(tmp_path):
+    return {'OPENAI_API_KEY':'fixture-secret','ASSISTANT_ORIGIN':'http://testserver',
+        'API_LIMITS_ENABLED':'1','API_LIMITS_DB':str(tmp_path/'limits.sqlite'),
+        'API_LIMITS_AI_REQUESTS':'6','API_LIMITS_AI_WINDOW_SECONDS':'60',
+        'API_LIMITS_AI_CONCURRENCY':'1','API_LIMITS_AI_ATTEMPTS':'50',
+        'API_LIMITS_AI_ATTEMPT_WINDOW_SECONDS':'3600'}
+
 def extracted(intent='answer',clarification=None,clear_fields=None,**patch):
     return Extraction.model_validate({'intent':intent,'patch':{k:patch.get(k) for k in LABELS},'clear_fields':clear_fields or [],'clarification':clarification})
 
@@ -105,7 +112,7 @@ def test_voice_transport_server_key_and_graph_owns_replies(tmp_path):
         assert '"create_response": false' in payload
         assert '"model": "gpt-transcribe"' in payload
         return httpx.Response(200,text='v=0\r\nm=audio 9 UDP/TLS/RTP/SAVPF 111\r\n')
-    app = create_app(db_path=tmp_path/'voice.sqlite',extractor=lambda s:extracted(),env={'OPENAI_API_KEY':'fixture-secret','ASSISTANT_ORIGIN':'http://testserver'},voice_transport=httpx.MockTransport(upstream))
+    app = create_app(db_path=tmp_path/'voice.sqlite',extractor=lambda s:extracted(),env=voice_fixture_env(tmp_path),voice_transport=httpx.MockTransport(upstream))
     with TestClient(app) as client:
         client.get('/api/assistant/state')
         result = client.post('/api/assistant/voice',content='v=0\r\nm=audio 9 UDP/TLS/RTP/SAVPF 111\r\n',headers={'Origin':'http://testserver','Content-Type':'application/sdp'})
@@ -113,7 +120,7 @@ def test_voice_transport_server_key_and_graph_owns_replies(tmp_path):
         assert 'fixture-secret' not in result.text
 
 def test_voice_error_does_not_expose_upstream_body(tmp_path):
-    app = create_app(db_path=tmp_path/'badvoice.sqlite',env={'OPENAI_API_KEY':'fixture-secret','ASSISTANT_ORIGIN':'http://testserver'},voice_transport=httpx.MockTransport(lambda r:httpx.Response(401,text='private upstream content')))
+    app = create_app(db_path=tmp_path/'badvoice.sqlite',env=voice_fixture_env(tmp_path),voice_transport=httpx.MockTransport(lambda r:httpx.Response(401,text='private upstream content')))
     with TestClient(app) as client:
         client.get('/api/assistant/state')
         response=client.post('/api/assistant/voice',content='v=0\r\nm=audio 9 UDP/TLS/RTP/SAVPF 111\r\n',headers={'Origin':'http://testserver','Content-Type':'application/sdp'})

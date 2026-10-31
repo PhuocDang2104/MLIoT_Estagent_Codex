@@ -1,6 +1,5 @@
 import json
 import sqlite3
-import time
 from .runtime import RuntimeLock, DurableQueue
 from fastapi import HTTPException
 from langgraph.checkpoint.sqlite import SqliteSaver
@@ -197,7 +196,7 @@ class Creator:
             with self.store.transaction():
                 self.store.execute("UPDATE generations SET status='queued' WHERE id=?", (generation_id,))
                 self.store.execute("UPDATE jobs SET status='queued',payload=?,available_at=? WHERE generation=?",
-                    (json.dumps({'input':None}), time.time()+5, generation_id))
+                    (json.dumps({'input':None}), self.queue.clock()+5, generation_id))
             return
         except Exception:
             # No provider body, prompts, private metadata or traceback in public events.

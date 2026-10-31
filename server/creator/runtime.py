@@ -34,8 +34,9 @@ class RuntimeLock:
 
 
 class DurableQueue:
-    def __init__(self, store, run):
+    def __init__(self, store, run, clock=time.time):
         self.store, self.run = store, run
+        self.clock = clock
         self.stop = threading.Event()
         self.wake = threading.Event()
         self.thread = threading.Thread(target=self.loop, name='studio-outbox', daemon=True)
@@ -51,7 +52,7 @@ class DurableQueue:
     def loop(self):
         from langgraph.types import Command
         while not self.stop.is_set():
-            rows = self.store.rows("SELECT generation,payload FROM jobs WHERE status='queued' AND available_at<=? ORDER BY rowid LIMIT 1", (time.time(),))
+            rows = self.store.rows("SELECT generation,payload FROM jobs WHERE status='queued' AND available_at<=? ORDER BY rowid LIMIT 1", (self.clock(),))
             if not rows:
                 self.wake.wait(.2)
                 self.wake.clear()

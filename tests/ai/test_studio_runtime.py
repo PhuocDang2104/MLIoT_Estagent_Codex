@@ -3,6 +3,7 @@ import json
 import subprocess
 import sys
 import threading
+import time
 import httpx
 import pytest
 from fastapi.testclient import TestClient
@@ -256,6 +257,20 @@ def test_geometry_pending_requeues_without_repeating_paid_nodes(tmp_path):
         gid = post(client,f'/projects/{pid}/generations',{'request_id':'pending-worker-start'}).json()['id']
         g = settled(client,gid)
         assert post(client,f'/generations/{gid}/review',spatial(g)).status_code == 202
+        service = client.app.state.creator
+        deadline = time.monotonic()+10
+        while time.monotonic()<deadline:
+            row = service.store.rows('SELECT status,available_at FROM jobs WHERE generation=?',(gid,))[0]
+            if worker.calls == 1 and row['status'] == 'queued' and row['available_at'] > 0:
+                break
+            time.sleep(.01)
+        else:
+            raise AssertionError('Pending geometry was not durably scheduled')
+        assert row['available_at'] > service.queue.clock()
+        # Advance only the scheduler clock; no five-second wall-clock sleep.
+        future = row['available_at']+1
+        service.queue.clock = lambda:future
+        service.queue.wake.set()
         g = settled(client,gid)
         assert g['review']['kind'] == 'final' and worker.calls == 2
         assert provider.calls == ['brief','observe','observe','script']

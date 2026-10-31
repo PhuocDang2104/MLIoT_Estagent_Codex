@@ -1,0 +1,10 @@
+.git
+.env*
+tasks
+docs
+status
+projects
+demo-cache
+saveweb2zip-*
+web/evidence
+web/dist

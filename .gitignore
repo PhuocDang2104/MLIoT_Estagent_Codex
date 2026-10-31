@@ -11,3 +11,4 @@ __pycache__/
 # template thương mại scrape để tham khảo giao diện — không phân phối lại trên repo public
 saveweb2zip-*
 .playwright-cli/
+.vercel

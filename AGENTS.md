@@ -13,10 +13,12 @@ updated: 2026-10-31
 
 > Agent nào mở repo này cũng đọc theo thứ tự: **file này → `docs/CONTRACTS.md` → task card của mình**.
 > Không đọc task card/lane khác trừ khi card yêu cầu. Lead đọc thêm `docs/ORCHESTRATION.md`.
+> Codex worker đọc thêm `docs/CODEX-OPENAI.md`; task dùng OpenAI API phải điền mục **OpenAI** trong card.
 
 ## 1. Mục tiêu
 Trong 12 tiếng, 3 dev ship một sản phẩm **demo được end-to-end** trên `main`, có link deploy và demo 3 phút.
 Đề mặc định và cut-list: `docs/PRODUCT.md`. Sản phẩm tham khảo: `../codex_hack` (**chỉ đọc**).
+Máy không có `../codex_hack` thì giải nén `codex_hack-ref.tgz` (Thái tạo bằng `scripts/pack-ref.sh`, gửi riêng, **không commit**) cạnh repo.
 
 ## 2. Lane và ownership — một file, một chủ
 
@@ -39,6 +41,7 @@ File root (`package.json`, lockfile, `.gitignore`, `scripts/`, `AGENTS.md`) ch�
 8. **Không sửa `../codex_hack`.** Copy code từ đó chỉ khi mục ⚠️ cuối file đã được chốt là được phép.
 9. **Không push `main`, không force-push, không merge.** Agent chỉ commit trên nhánh của mình; lead merge.
 10. **Done = gate xanh + bằng chứng chạy thật**, không phải "code trông đúng".
+11. **Bắt buộc declare nguồn và phần build trong thời gian thi** theo `docs/DECLARATION.md`. Copy/adapt source cũ, dependency, model/API, asset và data/cache đều phải ghi; commit hôm nay không chứng minh code viết hôm nay. Worker khai trong `NOTES`; Dev 1 tổng hợp trước khi nộp.
 
 ## 4. Gate
 `scripts/gate.sh <web|core|ai|all>` — build/lint/test/kiểm contract của lane. Từ H1 dùng `--strict` (SKIP = fail).
@@ -60,7 +63,9 @@ NOTES: <bẫy gặp phải, ≤3 dòng>
 ```
 
 ## Đang ở đâu
-2026-10-31: mới có bộ luật + script điều phối; chưa có code sản phẩm, chưa có đề thật.
+2026-10-31: có bộ luật + script điều phối (`spawn/review/done/gate/doctor/pack-ref`, đã chạy thử với codex giả); chưa có code sản phẩm.
+Remote: `github.com/hoaianthai345/SeaOpenAI_MLIoT_Estagent` (**PUBLIC**, nhánh `main`). Tên repo gợi ý đề ML + IoT + agent bất động sản, chưa xác nhận.
+Đã thêm quy định khai báo nguồn/build trong ngày thi ở `docs/DECLARATION.md`; mốc H0 và phân loại thực tế còn chờ xác minh.
 
 ## Next action
 - [ ] Thái chốt 3 mục ⚠️ dưới đây trước H0
@@ -80,3 +85,4 @@ Chưa có đề chính thức của hackathon và chưa có tên 3 dev.
 - [ ] Luật hackathon có cho mang code viết sẵn không? Không → chỉ mang `docs/`, `scripts/`, còn code từ codex_hack chỉ được đọc.
 - [ ] Đề thật có phải House VR Tour v2 không? Khác → chỉ cần viết lại `docs/PRODUCT.md` + `docs/CONTRACTS.md` ở H0.
 - [ ] Ai là Dev 1/2/3, mỗi người có máy GPU/Kaggle không (lane `core` cần nhất)?
+- [ ] Repo đang PUBLIC: luật hackathon có bắt buộc public không? Không → chuyển private cho tới lúc nộp.

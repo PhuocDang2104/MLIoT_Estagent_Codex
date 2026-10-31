@@ -1,0 +1,13 @@
+# không có "/" cuối: spawn.sh symlink node_modules vào worktree, pattern có "/" không bắt symlink
+node_modules
+dist
+.env
+.env.local
+tasks/
+projects/*/work/
+demo-cache/
+__pycache__/
+.DS_Store
+# template thương mại scrape để tham khảo giao diện — không phân phối lại trên repo public
+saveweb2zip-*
+.playwright-cli/

@@ -39,7 +39,7 @@ lead: đọc báo cáo → xem diff → gate lane → review chéo → merge nh�
 
 | Giờ | Dev 1 · web + integrator | Dev 2 · core | Dev 3 · ai | Cổng ra |
 |---|---|---|---|---|
-| **H-1** (trước giờ G, nếu luật cho) | `scripts/doctor.sh` cả 3 máy · tạo repo private · đọc tham khảo | đo môi trường GPU/Kaggle, tải sẵn model | auth API/LLM, quota | 3 máy `doctor` xanh |
+| **H-1** (trước giờ G, nếu luật cho) | `scripts/doctor.sh` cả 3 máy · gửi `codex_hack-ref.tgz` (`scripts/pack-ref.sh`) cho Dev 2/3 · đọc tham khảo | đo môi trường GPU/Kaggle, tải sẵn model | auth API/LLM, quota | 3 máy `doctor` xanh |
 | **H0:00–0:45** kickoff | Chốt đề → `PRODUCT.md`; chốt `CONTRACTS.md` v1; tạo skeleton + `fixtures/` + gate | Lead đọc `../codex_hack` phần core, viết 6–9 card | Như Dev 2, phần ai/server | **Contract freeze v1** · skeleton xanh trên `main` |
 | **H0:45–4:00** wave 1 | UI chạy trên fixture: tạo job, tiến trình, viewer | **Trước H1:30 khởi chạy job nặng tạo data demo** (chạy nền) · pipeline bước 1–3 | API job + `status.json` thật · VLM/LLM trên ảnh mẫu | mỗi lane ≥ 2 merge |
 | **H4:00** sync #1 (15') | Demo vertical slice e2e (được phép mock 1–2 bước) | Báo ETA job nặng | Báo chất lượng AI trên data mẫu | Cắt scope theo cut-list |
@@ -83,4 +83,16 @@ CODEX_DRY=1 scripts/spawn.sh tasks/web/web-03.md   # chỉ dựng worktree + in 
 scripts/review.sh web/web-03-upload-form           # Codex review nhánh so với main
 scripts/gate.sh web --strict                       # gate một lane; `all` cho main
 scripts/done.sh web/web-03-upload-form             # sau khi merge: xoá worktree + nhánh
+scripts/pack-ref.sh                                # (máy Thái) đóng gói codex_hack bản gọn ~600 KB cho Dev 2/3
+```
+
+`spawn.sh` tự làm: worktree `../CodexHackathon-wt/<id>` · chép `.env` · symlink `node_modules` khi lockfile trùng ·
+gate smoke trong worktree (fail thì không gọi Codex) · Codex chạy `workspace-write` có quyền ghi `.git` để commit ·
+`Network: yes` trong card mới bật mạng · hậu kiểm in `OUT_OF_SCOPE` nếu worker sửa file ngoài `Paths`.
+
+```text
+Kết quả spawn.sh mẫu (đã chạy thử):
+■ web-03  codex_exit=0  STATUS: DONE
+  commit dc480fd web: job page
+  OUT_OF_SCOPE: server.py
 ```

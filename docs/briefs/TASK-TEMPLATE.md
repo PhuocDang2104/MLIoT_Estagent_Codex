@@ -25,5 +25,19 @@ Network: no                    <!-- yes chỉ khi card cần mạng (Kaggle, t�
 - `scripts/gate.sh web --strict` xanh
 - <lệnh kiểm hành vi thật: curl / pytest / playwright screenshot ...>
 
+## OpenAI (ghi `none` nếu không dùng; quy tắc: docs/CODEX-OPENAI.md)
+- Mode: <fixture | live; fixture không được báo là API chạy thật>
+- Models: <tác vụ → model ID chính xác; tên biến môi trường; fallback được duyệt hoặc none>
+- Tools: <tool allowlist và mục đích; hoặc none>
+- Network/data: <host được phép; input được phép gửi; quyền đọc/ghi>
+- Budget: <USD tối đa cho card; số request/tool call; timeout; concurrency; output token cap>
+- Evidence: <fixture/schema tests; lệnh smoke live nếu Mode=live; log đã che dữ liệu nhạy cảm>
+
 ## Out of scope
 - <thứ dễ bị làm lan, ví dụ: không đổi style chung, không sửa server>
+
+## Declaration (bắt buộc, theo docs/DECLARATION.md)
+- Có sẵn/tái sử dụng: <source URL/path + version/commit + license; copy/adapt/tham khảo/dependency; hoặc none>
+- Build trong giờ thi: <file/function/feature dự kiến viết mới hoặc thay đổi; không tính toàn bộ module cũ>
+- Bằng chứng sau khi làm: <commit/diff + test/output; chưa xác minh thì ghi rõ>
+- AI hỗ trợ: <Codex/model/tool thực dùng và phần hỗ trợ; hoặc none>

@@ -1,0 +1,17 @@
+▶ web lint
+  ok
+▶ web test
+  ok
+▶ web build
+  ok
+▶ core compile
+  ok
+▶ core pytest
+  ok
+▶ ai compile
+  ok
+▶ ai pytest
+  ok
+▶ contract tour.json
+  ok
+GATE OK (all)

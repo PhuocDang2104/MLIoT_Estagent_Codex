@@ -2,8 +2,8 @@
 
 Ngày đối chiếu: 2026-10-31. Authority: `server/creator/graph.py`, `service.py`,
 `runtime.py`, `edits.py`, `worker.py`, `store.py`, `provider.py` và `api.py`.
-Phạm vi Thái đã chốt: hoàn thiện khung production và điểm nối, chưa làm model
-tái dựng, Blender MCP hoặc MP4. Đây là code runtime, không chỉ thay tên diagram.
+Runtime tích hợp: durable queue, confirmed edits, Astra High scene planning,
+Blender CLI và Three.js. MP4 nằm trong pipeline export riêng của photo tour.
 
 ## Diagram và source authority
 
@@ -32,9 +32,9 @@ flowchart TB
         edit["edit<br/>Áp dụng đề xuất đã xác nhận · fork generation"]:::node
         understand["understand<br/>OpenAI · trích xuất hồ sơ"]:::node
         scene["scene<br/>OpenAI Vision · từng ảnh"]:::node
-        spatial["spatial<br/>Tạo room / checkpoint nháp"]:::node
+        spatial["spatial<br/>House-modeling agent · ảnh + mặt bằng"]:::node
         spatial_review["spatial_review<br/>interrupt · Business kiểm tra"]:::review
-        build_model["build_model<br/>Adapter dựng 3D"]:::worker
+        build_model["build_model<br/>Blender CLI · GLB + scene"]:::worker
         mapping["mapping<br/>Kiểm tra room / anchor"]:::node
         semantic["semantic<br/>Giữ dữ kiện có nguồn"]:::node
         navigation["navigation<br/>Hotspots + hành trình hợp lệ"]:::node
@@ -44,7 +44,6 @@ flowchart TB
         assemble["assemble<br/>Kiểm tra và đóng gói"]:::node
         __end__["END"]:::terminal
         assemble --> __end__
-        build_model --> mapping
         mapping --> semantic
         narration --> final_review
         navigation --> narration
@@ -61,6 +60,9 @@ flowchart TB
         scene -->|"Đủ ảnh"| spatial
         spatial_review -->|"Từ chối"| __end__
         spatial_review -->|"Duyệt"| build_model
+        spatial_review -->|"Làm rõ / tối đa 3 bản"| spatial
+        build_model -->|"GLB hợp lệ"| mapping
+        build_model -->|"Bản cũ chưa có plan"| spatial
         final_review -->|"Từ chối"| __end__
         final_review -->|"Duyệt"| voice
         voice -->|"Đủ audio"| assemble
@@ -79,7 +81,7 @@ flowchart TB
     __end__ -. "package + approved" .-> READY
     PUBLISH["Business chọn xuất bản<br/>API kiểm approval + music + assets"]:::review
     SNAPSHOT["Snapshot bất biến"]:::terminal
-    VIEWER["Viewer · ảnh / 360° + audio<br/>GLB download · OpenAI Q&A chỉ đọc"]:::boundary
+    VIEWER["Viewer · Three.js / 360° + audio<br/>Checkpoint → panorama · Q&A chỉ đọc"]:::boundary
     READY -.-> PUBLISH -.-> SNAPSHOT -.-> VIEWER
     CHAT["Chat chỉnh sửa · OpenAI EditPlan<br/>Owner + revision + idempotency"]:::boundary
     CONFIRM["Business xác nhận đề xuất<br/>Tạo generation mới · giữ bản published"]:::review
@@ -103,11 +105,14 @@ flowchart TB
    Một dispatcher thực thi graph; UI đọc progress/SSE có cursor bền vững.
 3. `understand` trích brief từ mô tả bằng OpenAI. `scene` xử lý từng ảnh, checkpoint
    sau mỗi ảnh, không tự suy ra phòng nối nhau hay số đo hình học.
-4. `spatial` tạo checkpoint/room nháp; `spatial_review` interrupt bắt buộc.
+4. `spatial` tạo checkpoint/room và HousePlan khi có local Blender; Astra High
+   stream public reasoning summary. Thiếu layout thì hỏi làm rõ, tối đa ba lượt
+   planning. `spatial_review` interrupt bắt buộc; layout ước lượng cần xác nhận.
    Business xác nhận label/yaw và đường nối hai chiều; backend kiểm connectivity.
    Reject kết thúc, không TTS/publish.
 5. `build_model` gọi adapter geometry. Chưa có adapter thì waiting_integration;
-   có HTTP adapter thì submit idempotent/poll job thật. Không dựng GLB giả.
+   local Blender chạy builder cố định với HousePlan đã validate; HTTP adapter
+   vẫn submit idempotent/poll job khi operator cấu hình. Không chạy Python từ LLM.
 6. `mapping` kiểm checkpoint/room/anchor; `semantic` giữ provenance phù hợp;
    `navigation` tạo hotspot/hành trình hợp lệ; `narration` soạn script bằng OpenAI.
 7. `final_review` interrupt cho Business sửa/duyệt script trước TTS. Reject kết
@@ -178,8 +183,7 @@ Các cap này không phải giới hạn USD. Health kiểm dispatcher/SQLite, k
 | Floorplan estimation/reliability auto-bypass | Chưa có model; luôn duyệt spatial |
 | 3D renderer dual-view, geometry accuracy QA, MP4 | Chưa triển khai |
 
-Diagram hiện tại khớp **khung runtime đã chốt**, không đồng nghĩa kiến trúc đích
-đã có model/Blender/MP4 hoàn chỉnh. QA dùng HTTP/LangGraph/SQLite/SDK/browser thật
-với dữ liệu synthetic; không paid OpenAI hoặc live worker. Hướng dẫn vận hành,
-protocol và giới hạn: [STUDIO-RUNTIME.md](../STUDIO-RUNTIME.md).
-SSH/deploy/backup/rollback: [STUDIO-DEPLOY.md](../STUDIO-DEPLOY.md).
+Integrated evaluation and rollout evidence: [PRODUCTION-INTEGRATION.md](../PRODUCTION-INTEGRATION.md).
+Previous live three-capture evaluation: [LOCAL-LIVE-RUN.md](../LOCAL-LIVE-RUN.md).
+HTTP protocol: [STUDIO-RUNTIME.md](../STUDIO-RUNTIME.md).
+Backup/rollback: [STUDIO-DEPLOY.md](../STUDIO-DEPLOY.md).

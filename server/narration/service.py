@@ -1,6 +1,6 @@
 """One bounded worker. Durable attempts/jobs; no provider I/O inside DB transactions."""
 from contextlib import contextmanager, nullcontext
-import fcntl
+from server.file_lock import acquire, release
 import hashlib
 import json
 import logging
@@ -57,8 +57,8 @@ class NarrationService:
         self.configured=self.enabled and provider is not None
         self.lock=threading.RLock();self.queue=queue.Queue(self.queue_size)
         self.thread=None;self.closed=False
-        self.worker_lock=(self.root/'narration.worker.lock').open('a')
-        try:fcntl.flock(self.worker_lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        self.worker_lock=(self.root/'narration.worker.lock').open('a+b')
+        try:acquire(self.worker_lock)
         except BlockingIOError:
             self.worker_lock.close()
             raise ValueError('Narration requires exactly one worker process per data root') from None

@@ -9,7 +9,7 @@ HEADERS={'Origin':'http://testserver'}
 
 
 def app(tmp_path, provider=None, worker=None):
-    return create_app(db_path=tmp_path/'assistant.sqlite',env={'ASSISTANT_ORIGIN':'http://testserver'},
+    return create_app(db_path=tmp_path/'assistant.sqlite',env={'ASSISTANT_ORIGIN':'http://testserver','STUDIO_GEOMETRY':'off'},
                       creator_provider=provider,creator_worker=worker)
 
 
@@ -105,7 +105,7 @@ def test_complete_fixture_publish_immutable_and_private_inputs(tmp_path):
         g=settled(client,gid)
         assert g['status']=='needs_review' and g['review']['kind']=='final'
         assert 'speech' not in provider.calls
-        assert post(client,f'/generations/{gid}/review',{'kind':'final','decision':'approve','request_id':'approve-final'}).status_code == 202
+        assert post(client,f'/generations/{gid}/review',{'kind':'final','decision':'approve','request_id':'approve-final','introduction':'Creator-reviewed introduction.'}).status_code == 202
         g=settled(client,gid)
         assert g['status']=='completed',g
         assert len(g['package']['narration']['audio']) == 3
@@ -114,6 +114,7 @@ def test_complete_fixture_publish_immutable_and_private_inputs(tmp_path):
         public=result.json()['id']
         package=client.get('/api/studio-tours/'+public).json()
         assert package['approved'] and 'description' not in package
+        assert package['narration']['introduction']=='Creator-reviewed introduction.'
         assert post(client,f'/generations/{gid}/publish',{'request_id':'publish-fixture'}).json()['id']==public
         client.cookies.clear()
         assert client.get('/api/studio-tours/'+public).json() == package

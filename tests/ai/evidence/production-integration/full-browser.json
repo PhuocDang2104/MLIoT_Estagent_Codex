@@ -1,0 +1,57 @@
+{
+  "status": "PASS",
+  "fixture": "synthetic provider, actual Blender GLB, silence WAV; not live OpenAI",
+  "checks": [
+    "floorplan/music upload",
+    "clarification revision",
+    "approximate scale acceptance",
+    "real Blender build",
+    "Three.js textured GLB",
+    "orbit/zoom/wall visibility",
+    "model marker enters panorama",
+    "final script edit",
+    "approve before TTS",
+    "publish snapshot",
+    "share page",
+    "360 preview",
+    "browser media play/ended",
+    "music ducking",
+    "rapid checkpoint switch/pause",
+    "read-only Viewer Q&A",
+    "320 no overflow"
+  ],
+  "media_events": [
+    {
+      "type": "play",
+      "src": "synthetic-published-wav",
+      "duration": 0.1,
+      "volume": 0.048
+    },
+    {
+      "type": "play",
+      "src": "synthetic-published-wav",
+      "duration": 0.1,
+      "volume": 1
+    },
+    {
+      "type": "pause",
+      "src": "synthetic-published-wav",
+      "duration": 0.1,
+      "volume": 1
+    },
+    {
+      "type": "ended",
+      "src": "synthetic-published-wav",
+      "duration": 0.1,
+      "volume": 1
+    },
+    {
+      "type": "play",
+      "src": "synthetic-published-wav",
+      "duration": null,
+      "volume": 1
+    }
+  ],
+  "page_errors": [],
+  "serialization_note": "Non-finite browser durations from the original report are null (metadata unavailable); this normalization is not a rerun."
+}

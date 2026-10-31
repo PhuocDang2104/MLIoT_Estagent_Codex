@@ -67,7 +67,7 @@ This implements local/VM SQLite, not Redis, Supabase or multi-process locking.
 
 ## Workflow
 
-understand -> scene (one checkpoint per image) -> spatial -> spatial review
+understand -> scene (one observation per image) -> spatial -> spatial review
 interrupt -> build_model -> mapping -> semantic -> navigation -> narration ->
 final review interrupt -> voice (one checkpoint per segment) -> assembly.
 
@@ -80,14 +80,22 @@ the dimensions are consistent. Aspect ratio alone never proves panorama.
 Review accepts room labels/yaw and explicit two-way links with yaw/pitch. All
 checkpoints must be reachable. The LLM never invents measured room dimensions or
 adjacency. Navigation builds validated hotspots and a connected itinerary.
-Uncertain layout remains marked estimated; uploaded floorplan is shown as source.
+The automatic Blender route loads the project-local house-modeling skill and
+Studio agent template at `spatial`. It analyzes the optional floorplan alongside
+all captures, groups captures into logical rooms, and creates a validated HousePlan.
+Without enough layout evidence, targeted questions block building. Creator can
+submit `decision=revise` with `clarification` (maximum three planning passes).
+Provisional geometry requires `accept_approximate=true`. Review renders the plan;
+source files remain available in the input strip. See `HOUSE-MODELING-AGENT.md`.
 
 Trusted adapter seam: `create_app(creator_worker=adapter)`; implement
 `build(project, rooms, connections, assets) -> {glb: bytes, anchors: {...}}`.
 Each checkpoint anchor has position [x,y,z] and matching room_id. Resolve private
 asset IDs through backend storage; use generation_id as external job idempotency
 key. Geometry/container/mapping validation occurs before downstream work.
-With no worker, the graph interrupts as waiting_integration. It cannot publish
+By default, the app discovers Blender on PATH (or its Windows installation).
+Set `STUDIO_BLENDER_EXECUTABLE` explicitly or `STUDIO_GEOMETRY=off` for an external
+integration. With no worker, the graph interrupts as waiting_integration. It cannot publish
 or be bypassed by a browser final-approval request. Restart with an adapter and
 retry the same generation; completed vision and spatial review remain saved.
 No Blender Python or shell supplied by a model is executed here.
@@ -97,11 +105,15 @@ from publish. Publish requires approval, existing geometry/audio and credited
 music; snapshots are immutable. The share page provides confirmed panorama/photo
 views, linked checkpoints, introduction/room audio, gain controls, ducking,
 pause/subtitles and read-only OpenAI Q&A. Asking a question pauses narration and
-does not auto-resume. GLB is downloadable; a full browser GLB renderer is pending.
+does not auto-resume. Creator and Viewer render the actual GLB with Three.js,
+orbit/zoom, wall visibility and representative capture buttons. All captures
+remain available in the panorama selector/confirmed navigation. No extra floor
+plane is placed over model floors.
 
 ## OpenAI / limits
 
-Development mode: fixture, USD 0 / zero live OpenAI or Blender calls. Runtime
+Initial Studio development used fixtures only. The house-modeling integration
+uses synthetic provider responses and real local Blender; no live OpenAI calls. Runtime
 uses only OPENAI_API_KEY on the backend. OPENAI_MODEL_TEXT defaults to the
 existing gpt-6.1-sol; VISION defaults to text; TTS defaults to gpt-4o-mini-tts.
 There is no provider/model fallback. Approved host: api.openai.com; only this
@@ -109,8 +121,10 @@ project's description/images/scripts and published Viewer context are sent.
 No tools, tracing, secret logs or public API keys are introduced.
 
 One generation executing, queue <=8, timeout 30s/call, SDK retries zero. At most
-14 structured generation calls (brief, <=12 images, narration) and <=13 TTS
-segments; max structured output 2400 tokens. Explicit retry capped at 3 execution
+14 base structured generation calls (brief, <=12 images, narration) and <=13 TTS
+segments; max base structured output 2400 tokens. Automatic geometry adds at most
+three completed HousePlan calls, each capped at 12,000 output tokens/120 seconds.
+Explicit retry capped at 3 execution
 attempts; no automatic paid retry after restart. A call in flight during process
 death is not exactly-once; completed checkpointed calls are retained. Viewer:
 800 output tokens, 20 questions/session/tour, one outstanding question. Cookie

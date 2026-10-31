@@ -1,0 +1,193 @@
+{
+  "node_ids": [
+    "__start__",
+    "understand",
+    "scene",
+    "spatial",
+    "spatial_review",
+    "build_model",
+    "mapping",
+    "semantic",
+    "navigation",
+    "narration",
+    "final_review",
+    "voice",
+    "assemble",
+    "__end__"
+  ],
+  "edges": [
+    {
+      "source": "__start__",
+      "target": "understand",
+      "conditional": false
+    },
+    {
+      "source": "assemble",
+      "target": "__end__",
+      "conditional": false
+    },
+    {
+      "source": "mapping",
+      "target": "semantic",
+      "conditional": false
+    },
+    {
+      "source": "narration",
+      "target": "final_review",
+      "conditional": false
+    },
+    {
+      "source": "navigation",
+      "target": "narration",
+      "conditional": false
+    },
+    {
+      "source": "semantic",
+      "target": "navigation",
+      "conditional": false
+    },
+    {
+      "source": "spatial",
+      "target": "spatial_review",
+      "conditional": false
+    },
+    {
+      "source": "understand",
+      "target": "scene",
+      "conditional": false
+    },
+    {
+      "source": "scene",
+      "target": "scene",
+      "conditional": true
+    },
+    {
+      "source": "scene",
+      "target": "spatial",
+      "conditional": true
+    },
+    {
+      "source": "spatial_review",
+      "target": "__end__",
+      "conditional": true
+    },
+    {
+      "source": "spatial_review",
+      "target": "build_model",
+      "conditional": true
+    },
+    {
+      "source": "spatial_review",
+      "target": "spatial",
+      "conditional": true
+    },
+    {
+      "source": "build_model",
+      "target": "mapping",
+      "conditional": true
+    },
+    {
+      "source": "build_model",
+      "target": "spatial",
+      "conditional": true
+    },
+    {
+      "source": "final_review",
+      "target": "__end__",
+      "conditional": true
+    },
+    {
+      "source": "final_review",
+      "target": "voice",
+      "conditional": true
+    },
+    {
+      "source": "voice",
+      "target": "assemble",
+      "conditional": true
+    },
+    {
+      "source": "voice",
+      "target": "voice",
+      "conditional": true
+    }
+  ],
+  "graph_source_sha256": "b5b8e803336fadcfe8ecedab7fc2b25e32ca668dcc42dfed9e565251dd760f76",
+  "source": "StateGraph.builder.edges + branches.ends; Graph.draw_mermaid()",
+  "compiled_visualization_edges": [
+    {
+      "source": "__start__",
+      "target": "understand"
+    },
+    {
+      "source": "build_model",
+      "target": "mapping"
+    },
+    {
+      "source": "build_model",
+      "target": "spatial"
+    },
+    {
+      "source": "final_review",
+      "target": "voice"
+    },
+    {
+      "source": "mapping",
+      "target": "semantic"
+    },
+    {
+      "source": "narration",
+      "target": "final_review"
+    },
+    {
+      "source": "navigation",
+      "target": "narration"
+    },
+    {
+      "source": "scene",
+      "target": "scene"
+    },
+    {
+      "source": "scene",
+      "target": "spatial"
+    },
+    {
+      "source": "semantic",
+      "target": "navigation"
+    },
+    {
+      "source": "spatial",
+      "target": "spatial_review"
+    },
+    {
+      "source": "spatial_review",
+      "target": "build_model"
+    },
+    {
+      "source": "spatial_review",
+      "target": "spatial"
+    },
+    {
+      "source": "understand",
+      "target": "scene"
+    },
+    {
+      "source": "voice",
+      "target": "assemble"
+    },
+    {
+      "source": "voice",
+      "target": "voice"
+    },
+    {
+      "source": "assemble",
+      "target": "__end__"
+    },
+    {
+      "source": "voice",
+      "target": "__end__"
+    }
+  ],
+  "executed": false,
+  "live_api_calls": 0
+}

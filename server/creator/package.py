@@ -7,11 +7,23 @@ from .models import Model, Fact, Link, Script
 class Anchor(Model):
     position: tuple[float, float, float]
     room_id: str
+    dollhouse_visible: bool = True
+    heading: float = Field(default=0, ge=-180, le=180, allow_inf_nan=False)
+    accuracy: Literal['approximate', 'measured'] = 'approximate'
+
+
+class GeometryMetadata(Model):
+    units: Literal['meters']
+    up_axis: Literal['Y']
+    scale: Literal['assumed', 'measured']
+    builder: str
+    plan_sha256: str
 
 
 class Geometry(Model):
     asset_id: str
     anchors: dict[str, Anchor]
+    metadata: GeometryMetadata | None = None
 
 
 class Room(Model):

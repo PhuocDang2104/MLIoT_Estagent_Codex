@@ -31,10 +31,11 @@ Tra [model catalog](https://developers.openai.com/api/docs/models) trước khi 
 | Suy luận khó, lỗi nhiều bước | `gpt-6-astra` | Chỉ nâng cấp khi budget card cho phép |
 | Phân loại/trích xuất đơn giản, nhiều request | `gpt-6-luna` | Đạt Acceptance trên fixture đại diện |
 | Phân tích ảnh, tác vụ thị giác | `gpt-6.1-terra` | Kiểm input ảnh và output theo contract |
+| Studio: dựng kế hoạch 3D từ ảnh/mặt bằng | `gpt-6-astra` / high | User-selected default; `OPENAI_MODEL_MODELING`, `OPENAI_REASONING_MODELING` |
 | Giọng nói, transcription, tạo ảnh, embeddings | Model chuyên dụng trong catalog | Kiểm đúng endpoint và định dạng; không dùng ID text thay thế |
 
 - Model chạy Codex do cấu hình runtime quyết định, không lấy bảng app làm cấu hình CLI.
-- Model app đọc từ biến cấu hình theo vai trò, ví dụ `OPENAI_MODEL_TEXT`, `OPENAI_MODEL_VISION`, `OPENAI_MODEL_TTS`.
+- Model app đọc từ biến cấu hình theo vai trò: `OPENAI_MODEL_TEXT`, `OPENAI_MODEL_VISION`, `OPENAI_MODEL_MODELING`, `OPENAI_MODEL_TTS`. Studio text/vision default low; modeling default high. Live access and budget: `LOCAL-LIVE-RUN.md`.
 - Card ghi ID thật; không dùng tên hiển thị hoặc tự suy ra suffix. Chỉ pin snapshot khi tài liệu có ID đó.
 - Không tự fallback model/provider. Nếu được duyệt fallback, log model thực dùng và kiểm lại schema/chất lượng.
 - Chỉ truyền tham số mà model/endpoint hỗ trợ. Bắt đầu reasoning thấp nhất đủ đạt Acceptance; không mặc định mức cao nhất.

@@ -123,7 +123,7 @@ class LimitsMiddleware:
                 r'/api/studio-tours/[^/]+/questions', path):
             return 'ai'
         if path in {'/api/tours/assets', '/api/tours/audio-assets'} or re.fullmatch(
-                r'/api/studio/projects/[^/]+/assets', path):
+                r'/api/studio/projects/[^/]+/(assets|music/placeholder)', path):
             return 'upload'
         return None
 

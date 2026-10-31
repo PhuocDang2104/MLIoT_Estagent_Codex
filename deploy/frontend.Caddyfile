@@ -9,7 +9,9 @@
     encode gzip zstd
     header Cache-Control "no-cache"
     @creator path /business/create
-    rewrite @creator /creator.html
+    rewrite @creator /studio.html
+    @photos path /business/photos
+    rewrite @photos /creator.html
     @studio path /business/projects/*/generate
     rewrite @studio /studio.html
     @api path /api/*

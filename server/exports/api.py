@@ -1,5 +1,5 @@
 """Private persistent export admission and one service-wide local renderer."""
-import fcntl
+from server.file_lock import acquire, release
 import json
 import secrets
 import shutil
@@ -48,13 +48,13 @@ def install(app, env, data_root, db, owner, storage, web):
                 id TEXT PRIMARY KEY,owner TEXT NOT NULL,request_id TEXT NOT NULL,body TEXT NOT NULL,
                 snapshot TEXT NOT NULL,edit TEXT NOT NULL,state TEXT NOT NULL,stage TEXT NOT NULL,
                 error TEXT,created REAL NOT NULL,backend TEXT,UNIQUE(owner,request_id))''')
-        with (folder/'renderer.lock').open('a') as lock:
-            try: fcntl.flock(lock, fcntl.LOCK_EX|fcntl.LOCK_NB)
+        with (folder/'renderer.lock').open('a+b') as lock:
+            try: acquire(lock)
             except BlockingIOError: pass  # Another service process owns the actual renderer.
             else:
                 with db() as conn:
                     conn.execute("UPDATE video_exports SET state='error',stage='interrupted',error='Server restarted; explicit new export required' WHERE state IN ('queued','rendering')")
-                fcntl.flock(lock, fcntl.LOCK_UN)
+                release(lock)
     guard = threading.Lock()
     worker = None
     processes = ProcessScope()
@@ -81,15 +81,15 @@ def install(app, env, data_root, db, owner, storage, web):
 
     def work():
         nonlocal worker
-        with (folder/'renderer.lock').open('a') as lock:
-            try: fcntl.flock(lock, fcntl.LOCK_EX|fcntl.LOCK_NB)
+        with (folder/'renderer.lock').open('a+b') as lock:
+            try: acquire(lock)
             except BlockingIOError: return
             while True:
                 with guard:
                     with db() as conn:
                         row=conn.execute("SELECT * FROM video_exports WHERE state='queued' ORDER BY created LIMIT 1").fetchone()
                         if not row:
-                            fcntl.flock(lock,fcntl.LOCK_UN)
+                            release(lock)
                             worker=None
                             return
                         conn.execute("UPDATE video_exports SET state='rendering',stage='reading-source' WHERE id=?",(row['id'],))
@@ -117,7 +117,7 @@ def install(app, env, data_root, db, owner, storage, web):
                         if (workdir/log_name).is_file():
                             shutil.copyfile(workdir/log_name,folder/(id+'-'+log_name))
                     if workdir.exists(): shutil.rmtree(workdir,ignore_errors=False)
-            fcntl.flock(lock,fcntl.LOCK_UN)
+            release(lock)
 
     @router.get('/sources')
     def sources(request: Request):

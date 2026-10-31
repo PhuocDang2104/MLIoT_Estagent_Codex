@@ -3,7 +3,7 @@ import {mountNarrationPanel} from './narration-panel.js';
 let narrationPanel=null,narrationRevision='',narrationDraft='';
 let manifest=null, session=null, attachments=[], busy=false, dirty=false, pendingCreate=null, pendingTurn=null;
 let chatSceneID=null;
-const creatorPath='/business/create';
+const creatorPath='/business/photos';
 if(location.pathname!==creatorPath)history.replaceState(null,'',creatorPath+location.search);
 function publishHelp(){
   $('#publish-help').textContent=dirty?t('Save your changes, open the preview, then confirm your review to publish.','Lưu thay đổi, mở xem thử rồi tích xác nhận để xuất bản.'):$('#reviewed').checked?t('Ready to publish this reviewed version.','Sẵn sàng xuất bản bản đã duyệt.'):t('Open the preview and tick the review checkbox to enable Publish.','Mở xem thử và tích ô xác nhận đã kiểm tra để bật Xuất bản.');

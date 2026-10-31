@@ -8,7 +8,11 @@ services:
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       ESTAGENT_KEYLESS_PREVIEW: ${ESTAGENT_KEYLESS_PREVIEW:-0}
-      OPENAI_MODEL_VISION: ${OPENAI_MODEL_VISION:-gpt-6.1-sol}
+      OPENAI_MODEL_VISION: ${OPENAI_MODEL_VISION:-gpt-6.1-terra}
+      OPENAI_MODEL_MODELING: ${OPENAI_MODEL_MODELING:-gpt-6-astra}
+      OPENAI_REASONING_MODELING: ${OPENAI_REASONING_MODELING:-high}
+      OPENAI_REASONING_TEXT: ${OPENAI_REASONING_TEXT:-low}
+      OPENAI_REASONING_VISION: ${OPENAI_REASONING_VISION:-low}
       OPENAI_MODEL_TTS: ${OPENAI_MODEL_TTS:-gpt-4o-mini-tts}
       VIDEO_EXPORT_ENABLED: ${VIDEO_EXPORT_ENABLED:-0}
       VIDEO_EXPORT_RENDERER: ffmpeg
@@ -26,12 +30,17 @@ services:
       STUDIO_GEOMETRY_URL: ${STUDIO_GEOMETRY_URL:-}
       STUDIO_GEOMETRY_TOKEN: ${STUDIO_GEOMETRY_TOKEN:-}
       DEMO_CATALOG_PATH: ${DEMO_CATALOG_PATH:-}
+      SEOUL_CATALOG_PATH: ${SEOUL_CATALOG_PATH:-}
       MEDIA_STORAGE_BACKEND: ${MEDIA_STORAGE_BACKEND:-local}
       MINIO_ENDPOINT: ${MINIO_ENDPOINT:-}
       MINIO_SECURE: ${MINIO_SECURE:-0}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-}
       MINIO_BUCKET: ${MINIO_BUCKET:-}
+      STUDIO_GEOMETRY: ${STUDIO_GEOMETRY:-auto}
+      STUDIO_BLENDER_TIMEOUT: ${STUDIO_BLENDER_TIMEOUT:-180}
+      STUDIO_API_CALL_LIMIT: ${STUDIO_API_CALL_LIMIT:-40}
+      STUDIO_USAGE_LOG: /data/studio/provider-usage.jsonl
       OPENAI_MODEL_TEXT: ${OPENAI_MODEL_TEXT:?Set OPENAI_MODEL_TEXT}
       OPENAI_MODEL_REALTIME: ${OPENAI_MODEL_REALTIME:?Set OPENAI_MODEL_REALTIME}
       OPENAI_MODEL_TRANSCRIBE: ${OPENAI_MODEL_TRANSCRIBE:?Set OPENAI_MODEL_TRANSCRIBE}
@@ -57,6 +66,7 @@ services:
     volumes:
       - checkpoints:/data
       - ${DEMO_CATALOG_DIR:-/opt/estagent/runtime/demo-cache}:/demo-catalog:ro
+      - ${SEOUL_CATALOG_DIR:-/opt/estagent/runtime/seoul-cache}:/seoul-catalog:ro
     networks:
       storage: {}
       edge:
@@ -69,10 +79,10 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
-    mem_limit: 1g
-    cpus: 1.0
+    mem_limit: ${ESTAGENT_MEMORY_LIMIT:-1g}
+    cpus: ${ESTAGENT_CPU_LIMIT:-1.0}
     pids_limit: 128
-    stop_grace_period: 120s
+    stop_grace_period: 660s
     logging:
       driver: json-file
       options:

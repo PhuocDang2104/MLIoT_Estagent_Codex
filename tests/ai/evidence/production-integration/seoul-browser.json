@@ -1,0 +1,16 @@
+{
+  "base": "http://127.0.0.1:5193",
+  "status": "PASS",
+  "load_seconds": 1.54,
+  "markers": 5,
+  "panoramas": 8,
+  "page_errors": [],
+  "failed_responses": [],
+  "checks": [
+    "model decode and orbit",
+    "checkpoint transition",
+    "eight panorama captures",
+    "floorplan",
+    "390px mobile"
+  ]
+}

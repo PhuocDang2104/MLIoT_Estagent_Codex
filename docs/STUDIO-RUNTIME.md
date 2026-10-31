@@ -1,5 +1,13 @@
 # Studio runtime — single-host production framework
 
+Production integration update (2026-10-31): this runtime now includes the
+house-modeling planner and local Blender worker. Astra High streams public
+summaries into Studio; typed plans require spatial review before execution.
+An explicitly configured HTTP worker retains precedence. Default creation is
+`/business/create`; the preserved photo editor is `/business/photos`.
+The original framework-only limitations below describe its earlier acceptance;
+current integration/rollout evidence is in [PRODUCTION-INTEGRATION.md](PRODUCTION-INTEGRATION.md).
+
 Phạm vi đã chốt với Thái: hoàn thiện khung runtime/điểm nối; chưa triển khai
 model tái dựng, Blender MCP hoặc MP4. Source authority: `server/creator/`.
 Diagram chạy thật nằm tại [Business Flow](<Business Workflow Langgraph/Estagent_Business_LangGraph_Flow.md>).

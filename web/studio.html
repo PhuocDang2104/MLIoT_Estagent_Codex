@@ -20,6 +20,7 @@
       <div class="header-actions">
         <span class="draft-pill" id="top-status">Bản nháp</span
         ><a href="/business/create" class="subtle">Tạo tour mới ↗</a>
+        <a href="/business/photos" class="subtle">Tour ảnh đơn giản ↗</a>
         <a href="/viewer.html" class="subtle">Xem tour ↗</a>
       </div>
     </header>
@@ -135,10 +136,12 @@
                       accept="image/jpeg,image/png,image/webp"
                   /></label>
                   <label class="wide"
-                    >Nhạc nền WAV
-                    <span class="label-note">Cần khi xuất bản</span
+                    >Nhạc nền WAV riêng
+                    <span class="label-note">Tùy chọn · thay được trước khi xuất bản</span
                     ><input id="music" type="file" accept="audio/wav,.wav"
                   /></label>
+                  <label class="checkbox-label wide"><input id="placeholder-music" type="checkbox" checked /><span>Dùng nhạc mẫu Dream Culture nếu không tải nhạc riêng.</span></label>
+                  <div class="wide"><audio controls preload="none" src="/assets/music/dream-culture-placeholder.wav" aria-label="Nghe nhạc mẫu"></audio><p class="muted">Kevin MacLeod · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> · trích đoạn 75 giây có fade.</p></div>
                   <label class="wide"
                     >Nguồn & quyền sử dụng nhạc<input
                       name="music_credit"
@@ -255,6 +258,17 @@
                   <p>Chọn ảnh để xem trước.</p>
                 </div>
                 <p id="preview-caption" class="muted"></p>
+              </section>
+              <section class="panel music-panel">
+                <h2>Nhạc nền</h2>
+                <div id="current-music"></div>
+                <div id="music-options">
+                  <p class="muted">Đổi nhạc trước khi xuất bản mà không tạo lại tour.</p>
+                  <button id="use-placeholder" type="button">Dùng Dream Culture · CC BY 4.0</button>
+                  <label>Hoặc tải WAV riêng<input id="replacement-music" type="file" accept="audio/wav,.wav" /></label>
+                  <label>Nguồn & quyền sử dụng<input id="replacement-credit" maxlength="300" /></label>
+                  <button id="save-music" type="button">Lưu nhạc riêng</button>
+                </div>
               </section>
               <details class="panel info-panel" id="brief-panel" hidden>
                 <summary>

@@ -20,6 +20,7 @@ function attach(files){
   for(const file of files){if(attachments.length>=20){notice(t('Maximum 20 photos.','Tối đa 20 ảnh.'),true);break;}if(file.size>12*1024*1024){notice(t(`${file.name}: exceeds 12 MB.`,`${file.name}: quá 12 MB.`),true);continue;}attachments.push({file,preview:URL.createObjectURL(file),asset:null});}
   pendingCreate=null;drawAttachments();
 }
+$('#drop-zone').onclick=()=>$('#photos').click();
 $('#photos').onchange=e=>{attach(e.target.files);e.target.value='';};
 $('#drop-zone').ondragover=e=>e.preventDefault();$('#drop-zone').ondrop=e=>{e.preventDefault();attach(e.dataTransfer.files);};
 function field(label,value,change,tag='input'){const wrap=node('label',label);const input=node(tag);input.value=value;input.oninput=()=>{change(input.value);dirtyState();};wrap.append(input);return wrap;}
@@ -53,7 +54,7 @@ function render(){
   renderAudioAttachments();
   if(dirty){$('#preview').removeAttribute('href');$('#revision').textContent=t('Unsaved changes — save before preview.','Có thay đổi chưa lưu — lưu trước khi xem thử.');}
 }
-async function refreshList(){session=await api('/session');$('#draft-list').replaceChildren(node('option','—'));$('#draft-list').firstChild.value='';for(const d of session.drafts){const opt=node('option',d.title);opt.value=d.id;$('#draft-list').append(opt);}if(manifest)$('#draft-list').value=manifest.id;}
+async function refreshList(){session=await api('/session');$('#draft-list').replaceChildren(node('option','—'));$('#draft-list').firstChild.value='';$('#saved-drafts').hidden=!session.drafts.length;for(const d of session.drafts){const opt=node('option',d.title);opt.value=d.id;$('#draft-list').append(opt);}if(manifest)$('#draft-list').value=manifest.id;}
 async function load(id){if(manifest?.id!==id)chatSceneID=null;manifest=await api(`/drafts/${id}`);resetReview();$('#messages').replaceChildren();const messages=await api(`/drafts/${id}/messages`);for(const m of messages){if(m.text)bubble(m.role,m.text);}history.replaceState(null,'',`?draft=${id}`);$('#draft-list').value=id;render();}
 $('#draft-list').onchange=async e=>{if(!e.target.value)return;if(dirty&&!confirm(t('Discard unsaved edits?','Bỏ thay đổi chưa lưu?')))return;try{await load(e.target.value);}catch(e){notice(e.message,true);}};
 $('#new-tour').onclick=()=>{if(dirty&&!confirm(t('Discard unsaved edits?','Bỏ thay đổi chưa lưu?')))return;location.href='/creator.html?new=1';};

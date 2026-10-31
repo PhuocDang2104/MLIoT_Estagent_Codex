@@ -1,0 +1,24 @@
+### Result
+{"pass":true,"viewports":[1440,390,320],"ENVI":true,"twoCTA":true,"keyboardFilePicker":true,"attachmentPreview":true,"emptyDraftsHidden":true,"errors":[],"heroLoaded":0}
+### Ran Playwright code
+```js
+await (async page=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.unrouteAll({behavior:'ignoreErrors'});await page.route('**/*',route=>{const req=route.request(),path=req.url().split('?')[0].replace(/^https?:\/\/[^/]+/,'');if(req.method()!=='GET')throw Error('No production writes');if(['/index.html','/styles.css','/app.js','/i18n.js','/creator.html','/creator.js'].includes(path))return route.fulfill({path:'/Users/anhoaithai/Documents/AHT/1. PROJECTS/CodexHackathon/.worktrees/pitch-ux/web'+path});return route.continue();});
+ await page.goto('https://estagent.duckdns.org/index.html');await page.locator('#hero-title').count();
+ const checks=[];for(const width of [1440,390,320]){await page.setViewportSize({width,height:900});for(const lang of ['en','vi']){await page.locator('[data-lang="'+lang+'"]').click();if(!await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))throw Error('Landing overflow '+width);await page.screenshot({path:'/private/tmp/pitch-ux-'+width+'-'+lang+'.png'});}checks.push(width);}
+ if(await page.locator('.hero-actions a').nth(0).getAttribute('href')!=='/demos/zind-house-000')throw Error('Sample link');
+ if(await page.locator('.hero-actions a').nth(1).getAttribute('href')!=='/creator.html')throw Error('Creator link');
+ await page.goto('https://estagent.duckdns.org/creator.html');await page.locator('#drop-zone').waitFor();await page.locator('[data-lang="en"]').click();
+ await page.locator('#photos').setInputFiles('/tmp/pitch-synthetic.png');await page.locator('#attachments .attachment').first().waitFor();
+ for(const width of [1440,390,320]){await page.setViewportSize({width,height:900});if(!await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))throw Error('Creator overflow '+width);await page.screenshot({path:'/private/tmp/pitch-creator-'+width+'.png'});}
+ if(await page.locator('#connection').isVisible())throw Error('Dev badge visible');if(errors.length)throw Error(errors.join(';'));
+ return {pass:true,viewports:checks,ENVI:true,twoCTA:true,keyboardFilePicker:true,attachmentPreview:true,emptyDraftsHidden:!await page.locator('#saved-drafts').isVisible(),errors,heroLoaded:await page.locator('#demo-hero').count()};
+})(page);
+```
+
+╔════════════════════════════════════════════════════════════════════╗
+║ Update available for @playwright/cli: 0.1.18 → 0.1.22              ║
+║ Run `npm install -g @playwright/cli@latest` (global) or            ║
+║ `npm install --save-dev @playwright/cli@latest` (local) to update. ║
+╚════════════════════════════════════════════════════════════════════╝

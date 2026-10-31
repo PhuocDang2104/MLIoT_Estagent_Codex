@@ -147,7 +147,7 @@ function chatBubble(role,text){const bubble=node('p',text,`viewer-message ${role
 function renderLibrary(){
   $('#tour-library').replaceChildren();
   if(!libraryTours.length)$('#tour-library').append(node('p',t('No published tours yet. A Creator must review and publish a tour first.','Chưa có tour được xuất bản. Creator cần xem thử và duyệt tour trước.'),'empty-state'));
-  for(const tour of libraryTours){const card=link('',tour.kind==='cached_demo'?tour.href:`/viewer.html?tour=${tour.id}`,'library-card');const img=node('img');img.src=tour.thumbnail_url;img.alt='';card.append(img,node('h2',tour.title),node('span',tour.kind==='cached_demo'?t('Cached model + 32 panoramas ↗','Model mẫu + 32 panorama ↗'):t('Open tour ↗','Mở tour ↗')));$('#tour-library').append(card);}
+  for(const tour of libraryTours){const card=link('',tour.kind==='cached_demo'?tour.href:(tour.viewer_url||`/viewer.html?tour=${tour.id}`),'library-card');const img=node('img');img.src=tour.thumbnail_url;img.alt='';card.append(img,node('h2',tour.title),node('span',tour.kind==='cached_demo'?t('Cached model + 32 panoramas ↗','Model mẫu + 32 panorama ↗'):tour.format==='studio'?t('3D + panorama · Open tour ↗','3D + panorama · Mở tour ↗'):t('Open tour ↗','Mở tour ↗')));$('#tour-library').append(card);}
 }
 $('#audio-language').value=narrationLanguage();
 $('#audio-language').onchange=()=>{stop();audioLocale=$('#audio-language').value;if(manifest)select(index);};
@@ -192,5 +192,10 @@ try{
     try{if(!localStorage.getItem('estagent-language'))document.querySelector(`[data-lang="${manifest.locale}"]`)?.click();}catch{/* Optional preference storage. */}
     manifest.scenes.forEach((scene,i)=>{const button=node('button',undefined,'scene-thumb');button.type='button';const image=node('img');image.src=scene.thumbnail_url;image.alt='';button.append(image,node('span',scene.name));button.onclick=()=>select(i);$('#scene-nav').append(button);});
     index=0;renderText();
-  }else{libraryTours=await api('/published');try{const response=await fetch('/api/demos');if(!response.ok)throw Error('Demo catalog unavailable');const demos=await response.json();libraryTours=[...demos,...libraryTours];}catch(error){notice(t('Home demo unavailable; published tours remain below.','Nhà demo tạm không tải được; các tour đã xuất bản vẫn ở dưới.'),true);}renderLibrary();}
+  }else{
+    const getList=async path=>{const response=await fetch(path);if(!response.ok)throw Error('Library unavailable');return response.json();};
+    const results=await Promise.allSettled([getList('/api/demos'),getList('/api/studio-tours'),api('/published')]);
+    libraryTours=results.flatMap(result=>result.status==='fulfilled'?result.value:[]);renderLibrary();
+    if(results.some(result=>result.status==='rejected'))notice(t('Part of the tour library could not be loaded. Please refresh.','Một phần thư viện chưa tải được. Vui lòng tải lại.'),true);
+  }
 }catch(e){notice(e.message,true);}

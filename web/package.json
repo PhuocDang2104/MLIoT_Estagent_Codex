@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "python3 -m http.server 5173 --bind 127.0.0.1",
-    "lint": "node --check export.js && node --check narration-panel.js && node --check app.js && node --check i18n.js && node --check intake.js && node --check property.js && node --check build.mjs && node --check motion.js && node --check tour-common.js && node --check creator.js && node --check viewer.js && node --check panorama.js && node --check assistant.js && node --check studio.js && node --check studio-panorama.js && node --check studio-tour.js",
+    "lint": "node --check export.js && node --check narration-panel.js && node --check app.js && node --check i18n.js && node --check intake.js && node --check property.js && node --check build.mjs && node --check motion.js && node --check tour-common.js && node --check creator.js && node --check viewer.js && node --check panorama.js && node --check assistant.js && node --check studio.js && node --check studio-panorama.js && node --check studio-model.js && node --check studio-tour.js",
     "build": "node build.mjs",
     "test": "node --test tests/*.test.js"
   }

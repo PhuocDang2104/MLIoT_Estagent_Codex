@@ -1,0 +1,63 @@
+{
+  "scope": "Three real ZInD captures; kitchen/dining/living/hallway subset",
+  "attempted_api_calls": 14,
+  "completed_api_responses": 13,
+  "timed_out_requests": 1,
+  "successful_text_vision_estimate_usd": 1.6675,
+  "cost_excludes": [
+    "billing for timed-out request",
+    "TTS audio/text billing; binary WAV speech responses did not include token usage"
+  ],
+  "models": {
+    "gpt-6.1-sol": {
+      "input_tokens": 4289,
+      "output_tokens": 1249,
+      "cached_tokens": 0,
+      "cache_write_tokens": 3404,
+      "calls": 3
+    },
+    "gpt-6.1-terra": {
+      "input_tokens": 1374,
+      "output_tokens": 715,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "calls": 3
+    },
+    "gpt-6-astra": {
+      "input_tokens": 28208,
+      "output_tokens": 29603,
+      "cached_tokens": 16777,
+      "cache_write_tokens": 11425,
+      "calls": 2
+    }
+  },
+  "narration": [
+    {
+      "checkpoint": "introduction",
+      "seconds": 13.25,
+      "pcm_rms": 1294.4,
+      "sha256": "a806394ebc287cade3ed1e54ad7ea0a02bfd68efed5e388c98d42a2e166d738b"
+    },
+    {
+      "checkpoint": "cp01",
+      "seconds": 15.95,
+      "pcm_rms": 1144.8,
+      "sha256": "3d01d1c7a55299ce553a36c845a1097857fa23deddd13891e4bbfd022861b571"
+    },
+    {
+      "checkpoint": "cp02",
+      "seconds": 11.3,
+      "pcm_rms": 1280.8,
+      "sha256": "36a829d45868517da2e8e2028e94c76cd057ed9168102823f7ef2a05d186798b"
+    },
+    {
+      "checkpoint": "cp03",
+      "seconds": 10.35,
+      "pcm_rms": 1170.2,
+      "sha256": "644b56f4ed45b471fa96d91d0b3acfcaf25cd45e8d88ef283731a9a5a8f3729e"
+    }
+  ],
+  "music_seconds": 75.0,
+  "checkpoint_count": 3,
+  "fixture_count": 18
+}

@@ -1,0 +1,58 @@
+{
+  "status": "PASS",
+  "kind": "real OpenAI/Blender/ZInD/recorded speech/licensed music",
+  "checks": [
+    "entry",
+    "library",
+    "GLB",
+    "orbit/zoom",
+    "central markers",
+    "panorama checkpoint switch",
+    "music + narration play/ended/pause",
+    "music credit",
+    "live Q&A",
+    "320px layout"
+  ],
+  "answer": {
+    "text": "The kitchen features wood-toned cabinets, light-colored countertops, wood-look flooring, and a double sink beneath a window. You can also see a dishwasher, an electric range, and an overhead microwave.",
+    "navigate_to": null
+  },
+  "audio": [
+    {
+      "type": "play",
+      "duration": 75,
+      "volume": 0.048
+    },
+    {
+      "type": "play",
+      "duration": 10.35,
+      "volume": 1
+    },
+    {
+      "type": "pause",
+      "duration": 10.35,
+      "volume": 1
+    },
+    {
+      "type": "ended",
+      "duration": 10.35,
+      "volume": 1
+    },
+    {
+      "type": "play",
+      "duration": null,
+      "volume": 1
+    },
+    {
+      "type": "pause",
+      "duration": 11.3,
+      "volume": 1
+    },
+    {
+      "type": "pause",
+      "duration": 75,
+      "volume": 0.048
+    }
+  ],
+  "page_errors": []
+}

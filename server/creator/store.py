@@ -255,13 +255,18 @@ class Store:
             if len(pos) != 3 or any(not isinstance(n, (float, int)) or not math.isfinite(n) for n in pos):
                 raise ValueError('Invalid worker checkpoint anchor')
         asset = self.put_asset(project['id'], 'house.glb', 'model', 'model/gltf-binary', data)
-        return {'asset_id': asset['id'], 'anchors': anchors}
+        return {'asset_id': asset['id'], 'anchors': anchors, **({'metadata':result['metadata']} if result.get('metadata') else {})}
 
-    def emit(self, generation_id, node, status, message):
-        event = {'generation_id': generation_id, 'node_id': node, 'event_type': 'status',
+    def emit(self, generation_id, node, status, message, event_type='status', progress=None):
+        event = {'generation_id': generation_id, 'node_id': node, 'event_type': event_type,
                  'status': status, 'message': message, 'timestamp': now(),
                  'artifact_type': None, 'artifact_url': None}
-        self.execute('INSERT INTO events(generation,data) VALUES(?,?)', (generation_id, json.dumps(event, ensure_ascii=False)))
+        if progress is not None: event['progress']=progress
+        with self.lock:
+            if event_type == 'model_progress':
+                # Cumulative snapshots: retain the latest summary, not thousands of token deltas.
+                self.execute("DELETE FROM events WHERE generation=? AND json_extract(data,'$.event_type')='model_progress'", (generation_id,))
+            self.execute('INSERT INTO events(generation,data) VALUES(?,?)', (generation_id, json.dumps(event, ensure_ascii=False)))
 
     def events(self, generation_id, after=0):
         return [{'event_id': r['id'], **json.loads(r['data'])} for r in self.rows(

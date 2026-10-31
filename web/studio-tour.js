@@ -1,4 +1,5 @@
 import { panorama } from "./studio-panorama.js";
+import { houseModel } from "./studio-model.js";
 const $ = (s) => document.querySelector(s);
 const id = new URLSearchParams(location.search).get("id");
 let tour,
@@ -44,6 +45,8 @@ function select(checkpoint, continueItinerary = false) {
   );
   narration.src = audio ? asset(audio.asset_id) : "";
   dispose();
+  $('#show-panorama').setAttribute('aria-pressed','true');
+  $('#show-model').setAttribute('aria-pressed','false');
   if (room.projection === "equirectangular") {
     dispose = panorama($("#preview"), asset(room.asset_id), room.yaw);
   } else {
@@ -100,6 +103,14 @@ async function play() {
   }
 }
 $("#play").onclick = play;
+$('#show-panorama').onclick = () => { if(room) { pause(); select(room.checkpoint_id); } };
+$('#show-model').onclick = () => {
+  if(!tour) return;
+  pause(); dispose();
+  $('#show-panorama').setAttribute('aria-pressed','false');
+  $('#show-model').setAttribute('aria-pressed','true');
+  dispose=houseModel($('#preview'),asset(tour.model.asset_id),tour.rooms,checkpoint=>select(checkpoint));
+};
 $("#pause").onclick = pause;
 $("#room").onchange = (e) => {
   introPlayed = true;
@@ -186,7 +197,7 @@ try {
   for (const r of tour.rooms) {
     const option = document.createElement("option");
     option.value = r.checkpoint_id;
-    option.textContent = r.label;
+    option.textContent = `${r.label} · ${r.checkpoint_id}`;
     $("#room").append(option);
   }
   music.src = asset(tour.music.id);

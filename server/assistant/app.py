@@ -24,6 +24,7 @@ from server.creator.api import router as creator_router
 from server.creator.service import Creator
 from server.creator.provider import OpenAIProvider
 from server.creator.models import ViewerQuestion
+from pipelines.core.blender_worker import configured_worker
 
 ROOT = Path(__file__).resolve().parents[2]
 WEB = ROOT / 'web'
@@ -50,12 +51,17 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
         connection = sqlite3.connect(path,check_same_thread=False)
         os.chmod(path,0o600)
         saver = SqliteSaver(connection)
-        client = OpenAI(api_key=key,max_retries=0,timeout=30) if key else None
+        client = OpenAI(api_key=key,base_url='https://api.openai.com/v1',max_retries=0,timeout=90) if key else None
         def unavailable(_): raise ValueError('Cần cấu hình OpenAI ở máy chủ để tiếp tục.')
         graph = build_graph(extractor or (make_extractor(client,env.get('OPENAI_MODEL_TEXT','gpt-6.1-sol')) if client else unavailable),saver,required)
         app.state.graph = graph
-        app.state.creator = Creator(Path(env.get('STUDIO_DATA_DIR', path.parent / 'studio')),
-            creator_provider or (OpenAIProvider(client, env) if client else None), creator_worker, env=env,
+        studio_root = Path(env.get('STUDIO_DATA_DIR', path.parent / 'studio'))
+        # Explicit HTTP configuration keeps its durable adapter; otherwise use local Blender.
+        worker = creator_worker
+        if worker is None and not env.get('STUDIO_GEOMETRY_URL'):
+            worker = configured_worker(env, studio_root)
+        app.state.creator = Creator(studio_root,
+            creator_provider or (OpenAIProvider(client, env) if client else None), worker, env=env,
             object_storage=object_storage, storage_limits=app.state.storage_limits)
         try:
             yield
@@ -172,7 +178,10 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
     def home(): return FileResponse(WEB/'index.html')
 
     @app.get('/business/create')
-    def create_tour(): return FileResponse(WEB/'creator.html')
+    def create_tour(): return FileResponse(WEB/'studio.html')
+
+    @app.get('/business/photos')
+    def create_photo_tour(): return FileResponse(WEB/'creator.html')
 
     @app.get('/business/projects/{project_id}/generate')
     def studio(project_id: str = ''): return FileResponse(WEB/'studio.html')
@@ -181,6 +190,18 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
         rows = app.state.creator.store.rows('SELECT data FROM published WHERE id=?', (tour_id,))
         if not rows: raise HTTPException(404, 'Tour chưa được xuất bản.')
         return json.loads(rows[0]['data'])
+
+    @app.get('/api/studio-tours')
+    def published_library():
+        result = []
+        for row in app.state.creator.store.rows('SELECT data FROM published ORDER BY rowid DESC'):
+            package = json.loads(row['data'])
+            tid = package['public_id']
+            result.append({'id':tid, 'title':package['name'],
+                'thumbnail_url':f"/api/studio-tours/{tid}/assets/{package['rooms'][0]['asset_id']}",
+                'viewer_url':f'/studio-tour.html?id={tid}', 'format':'studio',
+                'published_at':package['published_at']})
+        return result
 
     @app.get('/api/studio-tours/{tour_id}')
     def published(tour_id: str, response: Response, request: Request):
@@ -207,7 +228,7 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
 
     @app.get('/{filename}')
     def static_file(filename:str):
-        allowed = {'narration-panel.js','narration-panel.css','assistant.html','assistant.css','assistant.js','index.html','experience.html','styles.css','app.js','i18n.js','intake.js','property.js','motion.css','motion.js','creator.html','viewer.html','tour.css','tour-common.js','creator.js','viewer.js','panorama.js','studio.html','studio.css','studio.js','studio-panorama.js','studio-tour.html','studio-tour.js'}
+        allowed = {'narration-panel.js','narration-panel.css','assistant.html','assistant.css','assistant.js','index.html','experience.html','styles.css','app.js','i18n.js','intake.js','property.js','motion.css','motion.js','creator.html','viewer.html','tour.css','tour-common.js','creator.js','viewer.js','panorama.js','studio.html','studio.css','studio.js','studio-panorama.js','studio-model.js','studio-tour.html','studio-tour.js'}
         if filename not in allowed or not (WEB/filename).is_file(): raise HTTPException(404)
         return FileResponse(WEB/filename)
 

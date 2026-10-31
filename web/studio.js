@@ -1,4 +1,5 @@
 import { panorama } from "./studio-panorama.js";
+import { houseModel, planPreview } from "./studio-model.js";
 const $ = (selector) => document.querySelector(selector);
 const states = {
   queued: "Đang chờ",
@@ -38,6 +39,10 @@ let session,
   pendingRequest = null;
 const expandedActivities = new Map();
 let editKey = "", editProposal = null, editRequest = null, applyRequest = null;
+setInterval(() => {
+  const clock = document.querySelector('[data-model-clock]');
+  if (clock?.dataset.modelClock) clock.textContent=`${clock.dataset.phase} · ${Math.max(0,Math.floor((Date.now()-Number(clock.dataset.modelClock))/1000))}s`;
+}, 1000);
 function node(tag, text, attrs = {}) {
   const n = document.createElement(tag);
   if (text !== null && text !== undefined) n.textContent = text;
@@ -197,7 +202,22 @@ async function loadSession() {
   renderProjects();
 }
 function newProject() {
-  location.replace('/business/create');
+  stopStream();
+  disposePreview();
+  project = null;
+  generation = null;
+  activeAsset = null;
+  reviewKey = "";
+  pendingRequest = null;
+  editKey = "";
+  editProposal = editRequest = applyRequest = null;
+  $("#create-view").hidden = false;
+  $("#workspace-view").hidden = true;
+  $("#top-status").textContent = "Bản nháp";
+  $("#top-status").dataset.status = "draft";
+  if (location.pathname !== "/business/create") history.pushState({}, "", "/business/create");
+  renderProjects();
+  notify(session?.configured ? "" : "Chưa kết nối OpenAI. Bạn vẫn có thể lưu bản nháp.");
 }
 
 $("#new-project").onclick = () => {
@@ -250,6 +270,9 @@ $("#create-form").onsubmit = async (e) => {
         },
       );
     }
+    if (!$("#music").files.length && $("#placeholder-music").checked) {
+      await post(`/projects/${result.id}/music/placeholder`, { request_id: requestId() });
+    }
     pendingRequest = null;
     selected.forEach((p) => URL.revokeObjectURL(p.url));
     selected = [];
@@ -300,6 +323,7 @@ async function openProject(id) {
   }
 }
 function renderAssets() {
+  renderMusic();
   $("#asset-count").textContent =
     project.assets.filter((a) => a.kind === "panorama").length + " ảnh";
   $("#assets").replaceChildren(
@@ -325,6 +349,36 @@ function renderAssets() {
       ),
   );
 }
+function renderMusic() {
+  const track = project.assets.find((a) => a.kind === "music");
+  const panel = $("#current-music");
+  panel.replaceChildren();
+  if (track) {
+    panel.append(node("strong", track.name), node("audio", null, {
+      controls: "", preload: "none", src: assetUrl(track), "aria-label": "Nghe nhạc nền",
+    }), node("p", track.credit, { class: "muted" }));
+  } else panel.append(node("p", "Chưa có nhạc. Chọn nhạc mẫu hoặc tải WAV để xuất bản."));
+  $("#music-options").hidden = !!project.published.length;
+}
+async function saveMusic(placeholder) {
+  if (busy || !project) return;
+  const file = $("#replacement-music").files[0];
+  const credit = $("#replacement-credit").value.trim();
+  if (!placeholder && (!file || !credit)) return notify("Chọn WAV và nhập nguồn/quyền sử dụng.", true);
+  busy = true;
+  $("#save-music").disabled = $("#use-placeholder").disabled = true;
+  try {
+    if (placeholder) await post(`/projects/${project.id}/music/placeholder`, { request_id: requestId() });
+    else await api(`/projects/${project.id}/assets?` + new URLSearchParams({kind:"music",name:file.name,credit}),
+      {method:"POST",headers:{"Content-Type":"audio/wav"},body:file});
+    project = await api("/projects/" + project.id);
+    renderMusic();
+    notify("Đã lưu nhạc. Không cần tạo lại tour.");
+  } catch (error) { notify(error.message, true); }
+  finally { busy = false; $("#save-music").disabled = $("#use-placeholder").disabled = false; }
+}
+$("#use-placeholder").onclick = () => saveMusic(true);
+$("#save-music").onclick = () => saveMusic(false);
 function renderHistory() {
   $("#history-count").textContent = project.generations.length;
   $("#history").replaceChildren(
@@ -365,13 +419,15 @@ async function refreshGeneration(id) {
   renderHistory();
 }
 function connectStream() {
+  stopStream();
   if (!generation || !["queued", "running"].includes(generation.status)) return;
   const id = generation.id;
   source = new EventSource(
     `/api/studio/generations/${id}/events?after=${generation.events.at(-1)?.event_id || 0}`,
   );
+  const stream = source;
   source.onmessage = () => {
-    if (generation?.id !== id) return;
+    if (source !== stream || generation?.id !== id) return;
     clearTimeout(refreshTimer);
     refreshTimer = setTimeout(
       () => refreshGeneration(id).catch((e) => notify(e.message, true)),
@@ -379,7 +435,7 @@ function connectStream() {
     );
   };
   source.addEventListener("settled", () => {
-    if (generation?.id !== id) return;
+    if (source !== stream || generation?.id !== id) return;
     stopStream();
     clearTimeout(refreshTimer);
     refreshGeneration(id)
@@ -387,13 +443,16 @@ function connectStream() {
       .catch((e) => notify(e.message, true));
   });
   source.onerror = () => {
-    if (generation?.id !== id) return;
+    if (source !== stream || generation?.id !== id) return;
     stopStream();
-    notify("Kết nối tiến trình bị gián đoạn. Đang khôi phục…");
     setTimeout(() => {
       if (generation?.id === id)
         refreshGeneration(id)
-          .then(() => connectStream())
+          .then(() => {
+            if(generation?.id !== id) return;
+            if(['queued','running'].includes(generation.status)) connectStream();
+            else renderPreview();
+          })
           .catch((e) => notify(e.message, true));
     }, 2000);
   };
@@ -446,6 +505,7 @@ $("#publish").onclick = async () => {
       { id: result.id, generation: generation.id },
     ];
     renderStages();
+    renderMusic();
     notify("Đã xuất bản phiên bản đã duyệt.");
   } catch (e) {
     notify(e.message, true);
@@ -522,12 +582,15 @@ function renderGeneration() {
   $("#share").hidden = true;
   const latest = new Map();
   for (const event of g?.events || []) latest.set(event.node_id, event);
+  const modelingProgress = g?.events?.findLast((e) => e.event_type === "model_progress")?.progress;
+  const oldSummary = $(".thinking-summary");
+  const summaryScroll = oldSummary ? {top:oldSummary.scrollTop,atBottom:oldSummary.scrollTop+oldSummary.clientHeight>=oldSummary.scrollHeight-30} : {top:0,atBottom:true};
   $("#activity").replaceChildren(
     ...[...latest.values()]
       .filter(
         (event) =>
           event.node_id !== "workflow" ||
-          ["failed", "rejected"].includes(event.status),
+          (["failed", "rejected"].includes(event.status) && event.status === g.status),
       )
       .map((event) => {
         const status =
@@ -582,6 +645,19 @@ function renderGeneration() {
               : event.message,
           ),
         );
+        if (event.node_id === "spatial" && modelingProgress) {
+          const detail = node("section", null, {class:"model-thinking", "aria-label":"Tiến trình suy luận mô hình"});
+          const phases = {connecting:"Đang kết nối",thinking:"Đang phân tích bố cục",writing_plan:"Đang soạn kế hoạch 3D",validating:"Đang kiểm tra kế hoạch"};
+          detail.append(node("strong", `${modelingProgress.model} · ${modelingProgress.effort}`),
+            node("p", `${phases[modelingProgress.phase] || "Đang xử lý"} · ${modelingProgress.elapsed_seconds}s`, {class:"muted", "data-model-clock":status==='running'?modelingProgress.started_at || '':'',"data-phase":phases[modelingProgress.phase] || "Đang xử lý"}),
+            node("p", "Tóm tắt suy luận công khai từ mô hình. Bản nháp bên dưới chưa được kiểm chứng.", {class:"muted"}));
+          const text = node("div", modelingProgress.reasoning_summary || "Đang chờ tóm tắt đầu tiên từ mô hình…", {class:"thinking-summary"});
+          detail.append(text);
+          const preview=modelingProgress.plan_preview || {};
+          if (preview.summary) detail.append(node("p", preview.summary, {class:"plan-summary"}));
+          if (modelingProgress.output_characters) detail.append(node("p", `${preview.spaces?.length || 0} không gian · ${preview.captures || 0} checkpoint · ${preview.fixtures || 0} vật dụng đang được mô tả`, {class:"muted"}));
+          body.append(detail);
+        }
         if (event.node_id === "scene" && g.observations.length) {
           const observations = node("div", null, { class: "observation-list" });
           for (const o of g.observations) {
@@ -595,6 +671,8 @@ function renderGeneration() {
         return card;
       }),
   );
+  const newSummary = $(".thinking-summary");
+  if (newSummary) newSummary.scrollTop=summaryScroll.atBottom?newSummary.scrollHeight:summaryScroll.top;
   $("#brief-panel").hidden = !g?.brief;
   $("#fact-count").textContent = g?.brief?.facts.length || "";
   if (g?.brief) {
@@ -703,7 +781,7 @@ function renderReview() {
   const box = $("#review"),
     editor = $("#script-editor");
   const key =
-    generation?.id + ":" + generation?.status + ":" + generation?.review?.kind;
+    generation?.id + ":" + generation?.status + ":" + generation?.review?.kind + ":" + generation?.plan_attempts;
   if (key === reviewKey) return;
   reviewKey = key;
   box.replaceChildren();
@@ -738,6 +816,24 @@ function renderReview() {
   const form = node("form");
   box.append(form);
   if (g.review.kind === "spatial") {
+    const plan = g.modeling_plan;
+    if (plan) {
+      const preview = node('div'); planPreview(preview,plan); form.append(preview);
+      form.append(node('p',plan.summary));
+      for (const text of [...plan.assumptions,...plan.questions]) form.append(node('p',text,{class:'muted'}));
+      const answer = node('textarea',null,{rows:'3',maxlength:'3000','aria-label':'Làm rõ bố cục',placeholder:'Bổ sung kích thước, phòng chung hoặc cửa nối…'});
+      const revise = node('button',`Cập nhật bố cục (${g.plan_attempts}/3)`,{type:'button'});
+      revise.disabled = g.plan_attempts >= 3;
+      revise.onclick = () => {
+        if(!answer.value.trim()) return notify('Nhập thông tin làm rõ bố cục.',true);
+        action(revise,`/generations/${g.id}/review`,{kind:'spatial',decision:'revise',clarification:answer.value.trim()});
+      };
+      form.append(answer,revise);
+      if(plan.status==='provisional') {
+        const label=node('label',' Tôi chấp nhận bố cục và kích thước ước lượng.');
+        label.prepend(node('input',null,{type:'checkbox',name:'accept_approximate',required:''})); form.append(label);
+      }
+    }
     form.append(
       node("span", "Ước lượng · Cần xác nhận", { class: "review-flag" }),
     );
@@ -784,7 +880,7 @@ function renderReview() {
         });
         for (const room of g.rooms)
           select.append(
-            node("option", room.label, { value: room.checkpoint_id }),
+            node("option", `${room.checkpoint_id} · ${room.label}`, { value: room.checkpoint_id }),
           );
         if (name === "target" && g.rooms.length > 1) select.selectedIndex = 1;
         row.append(select);
@@ -816,8 +912,10 @@ function renderReview() {
     editor.hidden = false;
     editor.append(
       node("h2", "Lời giới thiệu"),
-      node("p", g.script.introduction, { class: "muted" }),
     );
+    const introduction = node("label", "Mở đầu tour");
+    introduction.append(node("textarea", g.script.introduction, {"data-introduction":"",rows:"3",maxlength:"1800",required:""}));
+    editor.append(introduction);
     for (const segment of g.script.segments) {
       const label = node(
         "label",
@@ -844,6 +942,7 @@ function renderReview() {
     ),
     reject = node("button", "Từ chối", { type: "button" });
   form.append(approve, reject);
+  if(g.review.kind==='spatial' && g.modeling_plan?.status==='needs_clarification') approve.disabled=true;
   reject.onclick = () =>
     action(reject, `/generations/${g.id}/review`, {
       kind: g.review.kind,
@@ -853,6 +952,7 @@ function renderReview() {
     e.preventDefault();
     const payload = { kind: g.review.kind, decision: "approve", revision: g.revision };
     if (g.review.kind === "spatial") {
+      payload.accept_approximate = !!form.querySelector('[name=accept_approximate]')?.checked;
       payload.rooms = [...form.querySelectorAll("[data-checkpoint]")].map(
         (row) => ({
           checkpoint_id: row.dataset.checkpoint,
@@ -880,13 +980,14 @@ function renderReview() {
         },
       );
     } else {
+      payload.introduction = editor.querySelector('[data-introduction]').value.trim();
       payload.scripts = g.script.segments.map((segment) => ({
         ...segment,
         text: editor
           .querySelector(`[data-segment=${segment.checkpoint_id}]`)
           .value.trim(),
       }));
-      if (payload.scripts.some((s) => !s.text))
+      if (!payload.introduction || payload.scripts.some((s) => !s.text))
         return notify("Lời giới thiệu không được để trống.", true);
     }
     action(approve, `/generations/${g.id}/review`, payload);
@@ -925,6 +1026,11 @@ function renderPreview() {
     }
   }
   if (mode === "floorplan") {
+    if(generation?.modeling_plan) {
+      planPreview(box,generation.modeling_plan);
+      $('#preview-caption').textContent = generation.modeling_plan.scale==='assumed' ? 'Bố cục ước lượng · chưa có tỷ lệ đo.' : 'Bố cục dựng từ dữ liệu đã duyệt.';
+      return;
+    }
     const asset = project.assets.find((a) => a.kind === "floorplan");
     if (asset) {
       box.append(
@@ -938,15 +1044,11 @@ function renderPreview() {
     }
   }
   if (mode === "model" && generation?.model) {
-    const div = node("div");
-    div.append(
-      node("p", "Mô hình 3D"),
-      node("a", "Tải mô hình 3D ↗", {
-        href: assetUrl(generation.model),
-        download: "house.glb",
-      }),
-    );
-    box.append(div);
+    disposePreview = houseModel(box,assetUrl(generation.model),generation.rooms,checkpoint => {
+      const room=generation.rooms.find(r=>r.checkpoint_id===checkpoint);
+      activeAsset=project.assets.find(a=>a.id===room.asset_id); mode='panorama'; renderPreview();
+    });
+    $('#preview-caption').append(node('a','Tải mô hình GLB ↗',{href:assetUrl(generation.model),download:'house.glb'}));
     return;
   }
   if (mode === "tour" && generation?.package) {
@@ -1006,9 +1108,10 @@ window.addEventListener("pagehide", () => {
   selected.forEach((p) => URL.revokeObjectURL(p.url));
 });
 try {
+  await loadSession();
   const match = location.pathname.match(/\/projects\/([a-f0-9]{32})\/generate/);
-  if (!match) { document.body.hidden=true; newProject(); }
-  else { await loadSession(); await openProject(match[1]); }
+  if (match) await openProject(match[1]);
+  else newProject();
   if (session && !session.configured)
     notify("Trợ lý AI hiện chưa sẵn sàng. Bản nháp đã lưu vẫn được giữ lại.");
 } catch (e) {

@@ -4,6 +4,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.types import interrupt
 from .models import Brief, Observation, Script, Review
 from .package import Room, Narration, Geometry
+from .scene_plan import validate_plan
 
 STEPS = {
     'edit': 'Áp dụng chỉnh sửa đã xác nhận',
@@ -44,10 +45,24 @@ class State(TypedDict, total=False):
     package: dict
     navigation_config: list[dict]
     itinerary: list[str]
+    modeling_plan: dict
+    plan_attempts: int
+    clarification: str
+    revise_plan: bool
 
 
-def validate_review(review, rooms):
+def validate_review(review, rooms, plan=None, plan_attempts=0):
     ids = {r['checkpoint_id'] for r in rooms}
+    if review.decision == 'revise':
+        if review.kind != 'spatial' or plan is None or not review.clarification.strip():
+            raise ValueError('A modeling plan and clarification are required to revise layout')
+        if plan_attempts >= 3:
+            raise ValueError('Three planning passes reached; create a new project with clearer inputs')
+    if review.kind == 'spatial' and review.decision == 'approve' and plan:
+        if plan['status'] == 'needs_clarification':
+            raise ValueError('Answer the layout questions and revise the plan before approval')
+        if plan['status'] == 'provisional' and not review.accept_approximate:
+            raise ValueError('Accept the approximate layout and scale before building')
     if review.kind == 'spatial' and review.decision == 'approve':
         if {r.checkpoint_id for r in review.rooms} != ids or len(review.rooms) != len(ids):
             raise ValueError('All checkpoints must be reviewed exactly once')
@@ -87,18 +102,35 @@ def build_graph(provider, saver, emit, read_asset, write_audio, write_model, wor
 
     def spatial(s):
         assets = {a['id']: a for a in s['assets']}
-        return {'rooms': [
+        rooms = [
             {'checkpoint_id': f'cp{i+1:02}', 'room_id': f'r{i+1:02}',
              'asset_id': o['asset_id'], 'label': o['label'], 'yaw': 0,
              'projection': assets[o['asset_id']].get('projection', 'photo'),
              'summary': o['summary'], 'facts': o['facts'], 'estimated': True}
             for i, o in enumerate(s['observations'])
-        ], 'connections': []}
+        ]
+        if not getattr(worker, 'requires_scene_plan', False):
+            return {'rooms':rooms,'connections':[]}
+        progress = {'on_progress':lambda value: emit(s['project']['generation_id'],
+            'spatial','running','Đang dựng kế hoạch không gian',event_type='model_progress',progress=value)} if getattr(provider,'supports_modeling_progress',False) else {}
+        value = provider.modeling_plan(s['project'],rooms,s['observations'],s['assets'],read_asset,s.get('clarification',''),**progress)
+        plan = validate_plan(value,rooms,s['assets'])
+        captures = {c['checkpoint_id']:c for c in plan['captures']}
+        spaces = {r['id']:r for r in plan['spaces']}
+        for r in rooms:
+            capture = captures.get(r['checkpoint_id'])
+            if capture:
+                r['room_id'] = capture['room_id']
+                r['label'] = spaces[capture['room_id']]['label']
+        return {'rooms':rooms,'connections':[], 'modeling_plan':plan,
+                'plan_attempts':s.get('plan_attempts',0)+1,'revise_plan':False}
 
     def spatial_review(s):
         review = Review.model_validate(interrupt({'kind': 'spatial',
             'message': 'Xác nhận tên khu, hướng nhìn và đường nối thực tế. Chưa có số đo hình học.'}))
-        validate_review(review, s['rooms'])
+        validate_review(review, s['rooms'],s.get('modeling_plan'),s.get('plan_attempts',0))
+        if review.decision == 'revise':
+            return {'revise_plan':True, 'clarification':s.get('clarification','')+'\n'+review.clarification}
         edits = {r.checkpoint_id: r.model_dump() for r in review.rooms}
         return {'rejected': review.decision == 'reject',
                 'rooms': [{**r, **edits.get(r['checkpoint_id'], {})} for r in s['rooms']],
@@ -110,8 +142,14 @@ def build_graph(provider, saver, emit, read_asset, write_audio, write_model, wor
                 'Bố cục đã lưu. Cần kết nối worker dựng 3D để tiếp tục.'})
             # Browser review endpoints cannot resume this boundary.
             raise ValueError('Geometry adapter is not configured')
+        project = dict(s['project'])
+        if getattr(worker,'requires_scene_plan',False):
+            if not s.get('modeling_plan'):
+                # Older persisted generations reach planning/review before any new geometry call.
+                return {'revise_plan':True}
+            project['modeling_plan'] = validate_plan(s['modeling_plan'],s['rooms'],s['assets'])
         return {'model': write_model(s['project'], worker.build(
-            s['project'], s['rooms'], s['connections'], s['assets']))}
+            project, s['rooms'], s['connections'], s['assets'])), 'revise_plan':False}
 
     def mapping(s):
         anchors = s['model'].get('anchors', {})
@@ -173,6 +211,8 @@ def build_graph(provider, saver, emit, read_asset, write_audio, write_model, wor
             'message': 'Kiểm tra nội dung và mô hình trước khi tạo giọng đọc.'}))
         validate_review(review, s['rooms'])
         script = dict(s['script'])
+        if review.introduction is not None:
+            script['introduction'] = review.introduction
         if review.scripts:
             allowed = {'description', *(r['asset_id'] for r in s['rooms'])}
             if any(not set(x.sources) <= allowed for x in review.scripts):
@@ -237,9 +277,12 @@ def build_graph(provider, saver, emit, read_asset, write_audio, write_model, wor
         len([a for a in s['assets'] if a['kind'] == 'panorama']) else 'spatial',
         {'scene': 'scene', 'spatial': 'spatial'})
     builder.add_edge('spatial', 'spatial_review')
-    builder.add_conditional_edges('spatial_review', lambda s: END if s.get('rejected') else 'build_model',
-        {END: END, 'build_model': 'build_model'})
-    chain = ['build_model', 'mapping', 'semantic', 'navigation', 'narration', 'final_review']
+    builder.add_conditional_edges('spatial_review', lambda s: END if s.get('rejected') else
+        'spatial' if s.get('revise_plan') else 'build_model',
+        {END: END, 'spatial':'spatial', 'build_model': 'build_model'})
+    builder.add_conditional_edges('build_model',lambda s:'spatial' if s.get('revise_plan') else 'mapping',
+                                 {'spatial':'spatial','mapping':'mapping'})
+    chain = ['mapping', 'semantic', 'navigation', 'narration', 'final_review']
     for left, right in zip(chain, chain[1:]):
         builder.add_edge(left, right)
     builder.add_conditional_edges('final_review', lambda s: END if s.get('rejected') else 'voice',

@@ -13,6 +13,23 @@ def response(value):
             'text':json.dumps(value),'annotations':[]}]}]}
 
 
+def streaming_response(value):
+    final=response(value)
+    message=final['output'][0]
+    events=[{'type':'response.created','response':{**final,'status':'in_progress','output':[]}},
+        {'type':'response.output_item.added','output_index':0,'item':{'id':'rs_fixture','type':'reasoning','summary':[]}},
+        {'type':'response.reasoning_summary_part.added','item_id':'rs_fixture','output_index':0,'summary_index':0,'part':{'type':'summary_text','text':''}},
+        {'type':'response.reasoning_summary_text.delta','item_id':'rs_fixture','output_index':0,'summary_index':0,'delta':'Comparing the supplied doorway and dimensions.'},
+        {'type':'response.reasoning_text.delta','item_id':'rs_fixture','output_index':0,'content_index':0,'delta':'PRIVATE INTERNAL CONTENT MUST NOT BE FORWARDED'},
+        {'type':'response.reasoning_summary_text.done','item_id':'rs_fixture','output_index':0,'summary_index':0,'text':'Comparing the supplied doorway and dimensions.'},
+        {'type':'response.output_item.added','output_index':1,'item':{**message,'status':'in_progress','content':[]}},
+        {'type':'response.content_part.added','item_id':message['id'],'output_index':1,'content_index':0,'part':{'type':'output_text','text':'','annotations':[]}},
+        {'type':'response.output_text.delta','item_id':message['id'],'output_index':1,'content_index':0,'delta':json.dumps(value)},
+        {'type':'response.completed','response':final}]
+    data=''.join('event: '+event['type']+'\ndata: '+json.dumps({**event,'sequence_number':i})+'\n\n' for i,event in enumerate(events))
+    return httpx.Response(200,content=data.encode(),headers={'Content-Type':'text/event-stream'})
+
+
 def test_openai_sdk_structured_text_vision_and_speech_with_one_server_key():
     requests=[]
     def transport(request):
@@ -22,7 +39,8 @@ def test_openai_sdk_structured_text_vision_and_speech_with_one_server_key():
         if request.url.path.endswith('/audio/speech'):
             assert body['response_format']=='wav' and body['model']=='gpt-4o-mini-tts'
             return httpx.Response(200,content=wav(),headers={'Content-Type':'audio/wav'})
-        assert body['store'] is False and body['max_output_tokens']==2400
+        assert body['store'] is False and body['max_output_tokens']==6000
+        assert body['reasoning']=={'effort':'low'}
         assert body['text']['format']['strict'] is True
         if body['model']=='text-fixture':
             return httpx.Response(200,json=response({'summary':'Summary','facts':[], 'missing':[]}))
@@ -64,3 +82,24 @@ def test_edit_plan_uses_strict_responses_schema_without_tools():
         http_client=httpx.Client(transport=httpx.MockTransport(transport))) as client:
         provider = OpenAIProvider(client,{'OPENAI_MODEL_TEXT':'text-fixture'})
         assert provider.edit({'rooms':[], 'connections':[], 'script':None},'Đổi lời mở đầu') == plan
+
+
+def test_usage_cap_survives_provider_restart_and_contains_no_prompts(tmp_path):
+    log=tmp_path/'usage.jsonl'
+    calls=[]
+    def transport(request):
+        calls.append(request)
+        return httpx.Response(200,json={**response({'summary':'ok','facts':[], 'missing':[]}),
+            'usage':{'input_tokens':10,'output_tokens':5,'total_tokens':15}})
+    env={'STUDIO_API_CALL_LIMIT':'1','STUDIO_USAGE_LOG':str(log)}
+    with OpenAI(api_key='fixture-secret',http_client=httpx.Client(transport=httpx.MockTransport(transport))) as client:
+        provider=OpenAIProvider(client,env)
+        assert provider.modeling_model=='gpt-6-astra' and provider.modeling_effort=='high'
+        assert provider.vision_model=='gpt-6.1-terra' and provider.text_model=='gpt-6.1-sol'
+        provider.brief({'name':'Private property','description':'Private description','locale':'en'})
+        with pytest.raises(ValueError,match='call limit'):
+            OpenAIProvider(client,env).brief({'name':'Second','description':'No call expected','locale':'en'})
+    assert len(calls)==1
+    records=[json.loads(line) for line in log.read_text().splitlines()]
+    assert records[-1]['usage']['total_tokens']==15
+    assert 'Private' not in log.read_text() and 'fixture-secret' not in log.read_text()

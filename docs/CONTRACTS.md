@@ -24,6 +24,16 @@ adapter, narration/TTS và immutable publish. Không có worker thì chờ integ
 và chặn publish. Không giả dựng 3D hoặc tự suy panorama chỉ từ tỷ lệ ảnh.
 Các endpoint, payload, giới hạn và điểm nối worker ghi trong card trên.
 
+House-modeling integration (user-authorized): see `HOUSE-MODELING-AGENT.md`.
+Generation responses add private `modeling_plan` and `plan_attempts`. Spatial
+review additionally accepts `decision=revise`, `clarification` (<=3000 chars),
+and `accept_approximate`. Final review still accepts only approve/reject.
+Published v1 anchor fields optionally add `dollhouse_visible`, `heading` and
+`accuracy`; optional model `metadata` records units, axes, scale, builder and plan
+hash. Defaults preserve older packages/worker adapters. Updated v1 JSON Schema
+and synthetic fixture are checked together. The internal HousePlan is not a
+public tour contract; it is validated before execution and remains private.
+
 > **Trạng thái: v0 nháp** (rút từ `../codex_hack`). Dev 1 sửa theo đề thật rồi **freeze v1 trước H0:45**.
 > Chủ file: Dev 1. Sau freeze chỉ được thêm field (additive), bump `version`, sửa `fixtures/` trong cùng commit.
 > Lane nào cũng code dựa trên fixture trong `fixtures/`, không chờ lane khác.
@@ -146,7 +156,7 @@ separate manifest from the unimplemented reconstruction v1 above; no `/api/proje
 Runtime schema: `server/tours/models.py`; checked-in JSON Schema + synthetic fixture:
 `fixtures/tour.schema.json`, `fixtures/checkpoint-tour/tour.json`.
 Existing `/api/assistant/*` request/response/cookie contracts remain unchanged. `/` now serves landing;
-`experience.html` redirects to Creator. `/creator.html`, `/viewer.html`, assets and APIs share one origin.
+`experience.html` redirects to `/business/create` (Studio). Legacy `/creator.html` remains accessible. `/viewer.html`, assets and APIs share one origin.
 
 Chat context extension: both tour chat endpoints accept optional `scene_id` (null or an existing
 scene ID in that saved draft/published snapshot). Unknown IDs fail 422 before provider invocation.
@@ -314,3 +324,36 @@ translate supplied text. An explicitly selected audio language is retained;
 otherwise narration follows the interface locale, and locale changes pause playback. Chat
 history/suggestions are page-local UI; existing server history boundaries remain.
 Missing/provider AI errors preserve 503/429/502 while returning safe localized text.
+
+## Studio library and late music (2026-10-31)
+
+User-authorized additive integration: `GET /api/studio-tours` returns published
+snapshot cards only (`id`, `title`, `thumbnail_url`, `viewer_url`, `format`,
+`published_at`). Drafts, owner cookies and original descriptions remain private.
+The main library combines these with legacy `/api/tours/published`.
+
+`POST /api/studio/projects/{id}/music/placeholder` accepts an Action request ID
+and attaches the bundled credited WAV. Existing `POST .../assets?kind=music`
+replaces the draft music even after generation; spatial inputs remain frozen.
+Publication resolves current music into an immutable snapshot without repeating
+model/TTS work. Published projects reject music replacement/deletion with 409.
+Published v1 schema stays unchanged.
+
+Private Studio SSE also accepts `event_type=model_progress` with a cumulative
+`progress` object: model, effort, phase, started_at (Unix milliseconds), elapsed_seconds,
+reasoning_summary (public API summary only), plan_preview and output_characters.
+It is replayable for the owner and never added to published v1 tour packages.
+Raw reasoning events and encrypted model content are not forwarded.
+
+Final Studio Review accepts optional `introduction` (1-1800 characters), alongside room scripts. The approved text is persisted before any TTS; published narration schema remains unchanged.
+
+## Production entry integration — 2026-10-31
+
+Explicit user choice supersedes the preceding photo-default routing:
+`/business/create` serves AI/Blender Studio. `/business/photos` serves the existing
+photo editor, and `/creator.html` preserves photo draft queries while normalizing
+to `/business/photos`. `/experience.html` opens the default AI entry. The shared
+library combines cached demos, Studio snapshots and legacy photo snapshots.
+No published schema or existing snapshot is converted. Placeholder music is
+covered by upload admission limits. The existing 20 MiB self-contained GLB limit
+also applies to local Blender output.

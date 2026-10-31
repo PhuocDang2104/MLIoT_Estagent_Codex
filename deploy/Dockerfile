@@ -13,6 +13,7 @@ COPY server/assistant/ /app/server/assistant/
 COPY server/creator/ /app/server/creator/
 COPY pipelines/core/ /app/pipelines/core/
 COPY server/tours/ /app/server/tours/
+COPY server/demo_chat/ /app/server/demo_chat/
 COPY server/exports/ /app/server/exports/
 COPY server/narration/ /app/server/narration/
 COPY server/demos/ /app/server/demos/

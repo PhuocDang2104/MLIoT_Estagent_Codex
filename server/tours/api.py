@@ -8,7 +8,7 @@ import secrets
 import sqlite3
 import threading
 import warnings
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request, Response
@@ -27,12 +27,17 @@ CHAT_HISTORY_TURNS = 6
 CHAT_HISTORY_TEXT = 1000
 Image.MAX_IMAGE_PIXELS = 32_000_000
 
-def install(app, env, root, *, interpreter=None, object_storage=None):
+def install(app, env, root, *, interpreter=None, object_storage=None, chat_provider=None):
     origin = env.get('ASSISTANT_ORIGIN','http://127.0.0.1:5180')
     if 'TOUR_DATA_DIR' in env and not str(env['TOUR_DATA_DIR']).strip():
         raise ValueError('TOUR_DATA_DIR must be a non-empty storage path when configured.')
     data_root = Path(env.get('TOUR_DATA_DIR',root))
     key = (env.get('OPENAI_API_KEY') or '').strip()
+    from server.demo_chat.service import Service
+    from server.demo_chat.snapshots import load_snapshots
+    public_snapshots = load_snapshots(env.get('TOUR_PUBLIC_SNAPSHOTS_DIR'))
+    visitor = Service(env, data_root, interpreter, chat_provider)
+    app.state.visitor_chat = visitor
     lock = threading.RLock()
     router = APIRouter(prefix='/api/tours')
 
@@ -64,7 +69,7 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
             if request.headers.get('origin') != origin:
                 return JSONResponse({'error':'Invalid request origin.'},status_code=403)
             size=0; parts=[]
-            cap = MAX_AUDIO_BYTES if request.url.path == '/api/tours/audio-assets' else MAX_UPLOAD if request.url.path == '/api/tours/assets' else 65536
+            cap = 640044 if request.url.path.endswith('/transcribe') else MAX_AUDIO_BYTES if request.url.path == '/api/tours/audio-assets' else MAX_UPLOAD if request.url.path == '/api/tours/assets' else 65536
             async for part in request.stream():
                 size += len(part)
                 if size > cap: return JSONResponse({'error':'Upload too large (12 MiB/image, 20 MiB/WAV).'},status_code=413)
@@ -117,7 +122,7 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
         who=owner(request,response)
         with db() as conn:
             drafts=[{'id':r['id'],'title':json.loads(r['doc'])['title']} for r in conn.execute('SELECT id,doc FROM drafts WHERE owner=? ORDER BY rowid DESC',(who,))]
-        return {'drafts':drafts,'configured':bool(key or interpreter),'upload_limit_bytes':MAX_UPLOAD}
+        return {'drafts':drafts,'configured':bool(key or interpreter),'viewer_configured':visitor.configured if visitor.enabled else bool(key or interpreter),'voice_configured':visitor.voice_configured,'upload_limit_bytes':MAX_UPLOAD}
 
     @router.post('/assets')
     async def upload(request:Request):
@@ -250,6 +255,7 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
     def published(id:str):
         with db() as conn:
             row=conn.execute('SELECT doc FROM published WHERE id=?',(id,)).fetchone()
+            if not row and id in public_snapshots: return json.loads(json.dumps(public_snapshots[id]))
             if not row: raise HTTPException(404,'Published tour not found.')
             return json.loads(row['doc'])
 
@@ -287,13 +293,14 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
     def ask(data,doc,history,viewer=False):
         context={'locale':data.locale,'text':data.text,'tour':doc,'mode':'viewer' if viewer else 'creator',
                  'scene_id':data.scene_id,'current_scene':current_scene(data,doc),'history':history}
-        if not key and not interpreter:
+        if not key and not interpreter and not (viewer and visitor.configured):
             if data.locale=='vi':
                 message='The assistant is currently unavailable. '+('You can still explore the tour.' if viewer else 'You can still edit and publish the tour.')
             else:
                 message='The assistant is currently unavailable. '+('You can still explore the tour.' if viewer else 'You can still edit and publish your tour.')
             raise HTTPException(503,message)
         try:
+            if viewer and visitor.enabled:return TourReply.model_validate(visitor.answer(context))
             if interpreter:return TourReply.model_validate(interpreter(context))
             with OpenAI(api_key=key,max_retries=0,timeout=30) as client:
                 result=client.responses.parse(model=env.get('OPENAI_MODEL_TEXT','gpt-6.1-sol'),
@@ -357,6 +364,7 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
         who=owner(request)
         doc=published(id)
         current_scene(data,doc)
+        check_revision(doc,data.revision)
         # Same persistence table, a disjoint namespace bound to session + public snapshot.
         # Never query the originating draft's turns when answering a public Viewer.
         scope=f'viewer:{who}:{id}'
@@ -364,15 +372,65 @@ def install(app, env, root, *, interpreter=None, object_storage=None):
             previous=previous_turn(conn,scope,data)
             if previous is not None:return previous
             history=chat_history(conn,scope)
-        reply=ask(data,doc,history,viewer=True)
-        if reply.changes or reply.order is not None: raise HTTPException(502,'The assistant could not complete the request. The tour is preserved.' if data.locale=='vi' else 'The assistant could not complete that request. The tour is unchanged.')
-        if reply.start_scene_id is not None and reply.start_scene_id not in [s['id'] for s in doc['scenes']]: raise HTTPException(502,'The assistant could not find a suitable scene.' if data.locale=='vi' else 'The assistant could not find a matching viewpoint.')
-        result={'reply':reply.reply,'scene_id':reply.start_scene_id,'source':'configured_interpreter' if interpreter else 'openai'}
+        fingerprint=hashlib.sha256(data.model_dump_json().encode()).hexdigest()
+        if visitor.enabled:visitor.cached(scope,data.request_id,fingerprint)
+        with visitor.admission('text') if visitor.enabled else nullcontext():
+            with db() as conn:
+                previous=previous_turn(conn,scope,data)
+                if previous is not None:return previous
+            if visitor.enabled:visitor.record(scope,data.request_id,fingerprint,'started')
+            try:
+                reply=ask(data,doc,history,viewer=True)
+                if reply.changes or reply.order is not None: raise HTTPException(502,'Trợ lý chưa thể hoàn thành yêu cầu. Tour được giữ nguyên.' if data.locale=='vi' else 'The assistant could not complete that request. The tour is unchanged.')
+                if reply.start_scene_id is not None and reply.start_scene_id not in [s['id'] for s in doc['scenes']]: raise HTTPException(502,'Trợ lý chưa tìm được điểm xem phù hợp.' if data.locale=='vi' else 'The assistant could not find a matching viewpoint.')
+                result={'reply':reply.reply,'scene_id':reply.start_scene_id,'source':'configured_interpreter' if interpreter or chat_provider else 'openai'}
+                with db() as conn:
+                    previous=previous_turn(conn,scope,data)
+                    if previous is not None:return previous
+                    conn.execute('INSERT INTO turns VALUES(?,?,?,?)',(scope,data.request_id,data.model_dump_json(),json.dumps(result)))
+                if visitor.enabled:visitor.record(scope,data.request_id,fingerprint,'completed',result)
+                return result
+
+            except BaseException:
+                if visitor.enabled:visitor.record(scope,data.request_id,fingerprint,'error')
+                raise
+
+    @router.get('/published/{id}/messages')
+    def viewer_messages(id:str,request:Request):
+        published(id);scope=f'viewer:{owner(request)}:{id}'
         with db() as conn:
-            previous=previous_turn(conn,scope,data)
-            if previous is not None:return previous
-            conn.execute('INSERT INTO turns VALUES(?,?,?,?)',(scope,data.request_id,data.model_dump_json(),json.dumps(result)))
-        return result
+            rows=conn.execute('SELECT input,response,request_id FROM turns WHERE draft=? ORDER BY rowid DESC LIMIT 50',(scope,)).fetchall()
+        return [{'text':json.loads(r['input'])['text'],'locale':json.loads(r['input'])['locale'],'request_id':r['request_id'],**json.loads(r['response'])} for r in reversed(rows)]
+
+    def voice_request(request):
+        request_id=request.headers.get('x-request-id','')
+        if not re.fullmatch(r'[a-zA-Z0-9-]{8,80}',request_id):raise HTTPException(422,'Invalid request ID')
+        return request_id
+        with db() as conn:
+            rows=conn.execute('SELECT input,response,request_id FROM turns WHERE draft=? ORDER BY rowid DESC LIMIT 50',(scope,)).fetchall()
+        return [{'text':json.loads(r['input'])['text'],'locale':json.loads(r['input'])['locale'],'request_id':r['request_id'],**json.loads(r['response'])} for r in reversed(rows)]
+
+    def voice_request(request):
+        request_id=request.headers.get('x-request-id','')
+        if not re.fullmatch(r'[a-zA-Z0-9-]{8,80}',request_id):raise HTTPException(422,'Invalid request ID')
+        return request_id
+
+    @router.post('/published/{id}/transcribe')
+    async def viewer_transcribe(id:str,request:Request):
+        published(id);who=owner(request);request_id=voice_request(request)
+        locale=request.headers.get('x-audio-locale','')
+        if locale not in {'en','vi'}:raise HTTPException(422,'Choose en or vi')
+        from starlette.concurrency import run_in_threadpool
+        return await run_in_threadpool(visitor.transcribe,f'stt:{who}:{id}',request_id,await request.body(),locale)
+
+    @router.post('/published/{id}/speech')
+    def viewer_speech(id:str,request:Request):
+        published(id);who=owner(request);request_id=voice_request(request)
+        with db() as conn:
+            turn=conn.execute('SELECT input,response FROM turns WHERE draft=? AND request_id=?',(f'viewer:{who}:{id}',request_id)).fetchone()
+        if not turn:raise HTTPException(404,'Answer not found in this session')
+        audio=visitor.speech(f'tts:{who}:{id}',request_id,json.loads(turn['response'])['reply'],json.loads(turn['input'])['locale'])
+        return Response(audio,media_type='audio/wav',headers={'Cache-Control':'private, no-store'})
 
     verify_audio_publish = install_audio(router,db,owner,draft,check_revision,validate_doc,published,data_root,object_storage=object_storage)
     from server.narration.api import install_narration

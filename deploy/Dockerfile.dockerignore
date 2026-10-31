@@ -17,6 +17,8 @@
 !server/creator/
 !server/creator/*.py
 !server/tours/*.py
+!server/demo_chat/
+!server/demo_chat/*.py
 !web/
 !web/*.html
 !web/*.css

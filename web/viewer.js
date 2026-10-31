@@ -185,7 +185,7 @@ $('#question-form').onsubmit=async e=>{
 window.addEventListener('pagehide',stop);document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});document.addEventListener('languagechange',()=>{stop();$('#audio-language').value=narrationLanguage();notice('');renderText();syncFullscreen();});
 $('#photo').onerror=()=>notice(t('This scene image is unavailable. Other scenes remain accessible.','Ảnh này không tải được. Bạn vẫn xem được các điểm khác.'),true);
 try{
-  const session=await api('/session');configured=!!session.configured;
+  const session=await api('/session');configured=!!(session.viewer_configured??session.configured);
   if(draftID||tourID){manifest=await api(draftID?`/drafts/${draftID}`:`/published/${tourID}`);$('#tour-view').hidden=false;document.body.classList.add('is-immersive');
     $('#immersive-title').append($('#tour-heading'));$('#immersive-language').append($('.language-switch'));$('#snapshot-info').append($('#tour-state'));$('#tour-view').append($('#status'));$('#viewer-chat').hidden=!!draftID||!configured;$('#preview-label').hidden=!draftID;
     const opening=manifest.scenes.find(s=>s.id===manifest.start_scene_id);if(opening)manifest.scenes=[opening,...manifest.scenes.filter(s=>s!==opening)];

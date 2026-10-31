@@ -1,0 +1,59 @@
+{
+  "pass": true,
+  "realGLB": true,
+  "rotationBoth": true,
+  "pauseBoth": true,
+  "keyboard": true,
+  "drag": true,
+  "ENVI": true,
+  "reducedMotion": true,
+  "independentAssetFailure": true,
+  "layouts": [
+    {
+      "width": 1440,
+      "copy": {
+        "x": 100.796875,
+        "y": 307.640625,
+        "width": 594.421875,
+        "height": 444.703125
+      },
+      "model": {
+        "x": 777.625,
+        "y": 170,
+        "width": 619.1875,
+        "height": 660
+      }
+    },
+    {
+      "width": 390,
+      "copy": {
+        "x": 20,
+        "y": 114.875,
+        "width": 350,
+        "height": 367.25
+      },
+      "model": {
+        "x": 20,
+        "y": 494.125,
+        "width": 350,
+        "height": 245
+      }
+    },
+    {
+      "width": 320,
+      "copy": {
+        "x": 20,
+        "y": 103.671875,
+        "width": 280,
+        "height": 389.640625
+      },
+      "model": {
+        "x": 20,
+        "y": 505.3125,
+        "width": 280,
+        "height": 245
+      }
+    }
+  ],
+  "errors": []
+}

@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import sqlite3
 import subprocess
+from contextlib import closing
 
 import pytest
 
@@ -17,13 +18,13 @@ spec.loader.exec_module(guard)
 
 def database(tmp_path, drafts=(), published=()):
     path = tmp_path / 'backup.sqlite'
-    with sqlite3.connect(path) as db:
+    with closing(sqlite3.connect(path)) as db, db:
         db.execute('CREATE TABLE drafts(id TEXT PRIMARY KEY, doc TEXT NOT NULL)')
         db.execute('CREATE TABLE published(id TEXT PRIMARY KEY, doc TEXT NOT NULL)')
         for table, docs in (('drafts', drafts), ('published', published)):
             db.executemany(f'INSERT INTO {table} VALUES(?,?)',
                            [(str(i), json.dumps(doc)) for i, doc in enumerate(docs)])
-    with sqlite3.connect(tmp_path / "creator.sqlite") as db:
+    with closing(sqlite3.connect(tmp_path / "creator.sqlite")) as db, db:
         db.execute("CREATE TABLE IF NOT EXISTS assets(id TEXT PRIMARY KEY, content BLOB)")
     return path
 
@@ -105,17 +106,22 @@ def test_unknown_target_does_not_read_or_create_database(tmp_path):
     assert not missing.exists()
 
 
-def test_wrong_database_missing_file_and_symlink_rejected(tmp_path):
+def test_wrong_database_missing_file_and_symlink_rejected(tmp_path, monkeypatch):
     missing = tmp_path / 'missing.sqlite'
     with pytest.raises(ValueError):
         check(missing)
     assert not missing.exists()
-    with sqlite3.connect(missing) as db:
+    with closing(sqlite3.connect(missing)) as db, db:
         db.execute('CREATE TABLE unrelated(secret TEXT)')
     with pytest.raises(ValueError, match='recognized'):
         check(missing)
     link = tmp_path / 'link.sqlite'
-    link.symlink_to(missing)
+    if __import__('os').name == 'nt':
+        link.touch()
+        original_symlink = Path.is_symlink
+        monkeypatch.setattr(Path,'is_symlink',lambda path:path == link or original_symlink(path))
+    else:
+        link.symlink_to(missing)
     with pytest.raises(ValueError, match='symlink'):
         check(link)
 

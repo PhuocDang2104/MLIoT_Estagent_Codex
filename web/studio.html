@@ -228,6 +228,15 @@
               ></div>
               <section id="review" class="panel review" hidden></section>
               <section id="script-editor" class="panel" hidden></section>
+              <section id="edit-panel" class="panel" hidden>
+                <h2>Chỉnh sửa với AI</h2>
+                <form id="edit-form">
+                  <label for="edit-text">Bạn muốn chỉnh gì?</label>
+                  <textarea id="edit-text" rows="3" maxlength="2000" required placeholder="Đổi tên khu đầu thành Phòng khách, giới thiệu ngắn hơn…"></textarea>
+                  <button id="propose-edit" class="primary" type="submit">Đề xuất thay đổi</button>
+                </form>
+                <div id="edit-proposal" aria-live="polite" hidden></div>
+              </section>
               <div id="share" class="panel" hidden></div>
             </div>
             <aside class="preview-column">

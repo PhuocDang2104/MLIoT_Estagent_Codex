@@ -21,3 +21,4 @@
 !deploy/
 !deploy/entrypoint.py
 !deploy/smoke.py
+!deploy/backup_data.py

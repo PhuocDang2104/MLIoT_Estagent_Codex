@@ -118,7 +118,8 @@ class LimitsMiddleware:
         if path in {'/api/assistant/turn', '/api/assistant/voice'} or re.fullmatch(
                 r'/api/tours/(drafts|published)/[^/]+/chat', path) or re.fullmatch(
                 r'/api/studio/projects/[^/]+/generations', path) or re.fullmatch(
-                r'/api/studio/generations/[^/]+/(review|retry)', path) or re.fullmatch(
+                r'/api/studio/generations/[^/]+/(review|retry|edits)', path) or re.fullmatch(
+                r'/api/studio/generations/[^/]+/edits/[^/]+/apply', path) or re.fullmatch(
                 r'/api/studio-tours/[^/]+/questions', path):
             return 'ai'
         if path in {'/api/tours/assets', '/api/tours/audio-assets'} or re.fullmatch(

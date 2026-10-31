@@ -7,8 +7,8 @@ import struct
 import wave
 from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import StreamingResponse
-from .models import ProjectInput, Action, Review
-from .store import image_info, wav_duration
+from .models import ProjectInput, Action, Review, EditRequest, ApplyEdit
+from .store import image_info, wav_duration, sanitize_image
 from server.storage import upload_reservation
 
 COOKIE = 'estagent_studio'
@@ -38,6 +38,13 @@ def router(origin):
         return {'configured': service.provider is not None, 'geometry_configured': service.worker is not None,
                 'projects': [{k: p[k] for k in ('id', 'name', 'created_at')} for p in projects]}
 
+    @routes.get('/health')
+    def health(request: Request):
+        service = creator(request)
+        service.queue.ensure_ready()
+        service.store.rows('SELECT 1')
+        return {'ready':True, 'mode':'single-host-sqlite', 'geometry_configured':service.worker is not None}
+
     @routes.post('/projects', status_code=201)
     def create(data: ProjectInput, request: Request):
         return creator(request).create(owner(request), data)
@@ -61,6 +68,7 @@ def router(origin):
                 mime, width, height = 'audio/wav', 0, 0
                 duration = wav_duration(data)
             else:
+                data = sanitize_image(data)
                 mime, width, height = image_info(data)
                 duration = None
         except (ValueError, EOFError, IndexError, struct.error, wave.Error) as error:
@@ -123,6 +131,22 @@ def router(origin):
     @routes.post('/generations/{generation_id}/publish')
     def publish(generation_id: str, data: Action, request: Request):
         return creator(request).publish(owner(request), generation_id, data.request_id)
+
+    @routes.post('/generations/{generation_id}/edits')
+    def propose_edit(generation_id: str, data: EditRequest, request: Request):
+        return creator(request).propose_edit(owner(request), generation_id, data)
+
+    @routes.get('/generations/{generation_id}/edits')
+    def edits(generation_id: str, request: Request):
+        service = creator(request)
+        token = owner(request)
+        service.generation(token, generation_id)
+        return [{'id':r['id'], 'revision':r['revision'], 'status':r['status'], **json.loads(r['data'])}
+                for r in service.store.rows('SELECT * FROM edits WHERE generation=? AND owner=? ORDER BY rowid DESC LIMIT 20', (generation_id, token))]
+
+    @routes.post('/generations/{generation_id}/edits/{edit_id}/apply', status_code=202)
+    def apply_edit(generation_id: str, edit_id: str, data: ApplyEdit, request: Request):
+        return creator(request).apply_edit(owner(request), generation_id, edit_id, data)
 
     @routes.get('/generations/{generation_id}/events')
     async def events(generation_id: str, request: Request, after: int = 0):

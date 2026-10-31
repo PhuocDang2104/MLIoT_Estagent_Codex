@@ -24,6 +24,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--mermaid-root', required=True, type=Path)
     parser.add_argument('--browser', required=True)
+    parser.add_argument('--evidence-dir', type=Path, default=ROOT/'tests/ai/evidence/studio-refinement')
     args = parser.parse_args()
     tools = args.mermaid_root.resolve(strict=True)
     package = tools/'node_modules/mermaid/package.json'
@@ -32,7 +33,7 @@ def main():
     (tools/'index.html').write_text('''<!doctype html><html><head><meta charset="utf-8">
     <style>@font-face{font-family:Manrope;src:url('/manrope-variable.ttf')}body{margin:24px;background:#fff;font-family:Manrope,Arial}#output{display:inline-block}#output>svg{max-width:none!important}</style>
     </head><body><div id="output"></div></body></html>''', encoding='utf8')
-    output = ROOT/'tests/ai/evidence/studio-refinement'
+    output = args.evidence_dir
     output.mkdir(parents=True, exist_ok=True)
     server = ThreadingHTTPServer(('127.0.0.1',0), partial(QuietHandler,directory=str(tools)))
     thread = threading.Thread(target=server.serve_forever,daemon=True)

@@ -54,7 +54,7 @@ def create_app(*, db_path=None, extractor=None, env=None, voice_transport=None, 
         graph = build_graph(extractor or (make_extractor(client,env.get('OPENAI_MODEL_TEXT','gpt-6.1-sol')) if client else unavailable),saver,required)
         app.state.graph = graph
         app.state.creator = Creator(Path(env.get('STUDIO_DATA_DIR', path.parent / 'studio')),
-            creator_provider or (OpenAIProvider(client, env) if client else None), creator_worker,
+            creator_provider or (OpenAIProvider(client, env) if client else None), creator_worker, env=env,
             object_storage=object_storage, storage_limits=app.state.storage_limits)
         try:
             yield

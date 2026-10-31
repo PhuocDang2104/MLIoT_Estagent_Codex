@@ -67,6 +67,7 @@ class Link(Model):
 
 
 class Review(Model):
+    revision: int | None = Field(default=None, ge=1)
     request_id: str = Field(pattern=r'^[a-zA-Z0-9-]{8,80}$')
     kind: Literal['spatial', 'final']
     decision: Literal['approve', 'reject']
@@ -87,3 +88,35 @@ class ViewerQuestion(Action):
 class ViewerAnswer(Model):
     text: str = Field(min_length=1, max_length=2500)
     navigate_to: str | None
+
+
+class TextEdit(Model):
+    checkpoint_id: str = Field(pattern=r'^cp[0-9]{2}$')
+    label: str | None = Field(max_length=100)
+    summary: str | None = Field(max_length=1200)
+    yaw: float | None = Field(ge=-180, le=180, allow_inf_nan=False)
+
+
+class EditPlan(Model):
+    reply: str = Field(min_length=1, max_length=1200)
+    rooms: list[TextEdit] = Field(max_length=12)
+    scripts: list[Segment] = Field(max_length=12)
+    introduction: str | None = Field(min_length=1, max_length=1800)
+    order: list[str] | None
+    connections: list[Link] | None
+
+
+class EditRequest(Action):
+    revision: int = Field(ge=1)
+    text: str = Field(min_length=1, max_length=2000)
+
+    @field_validator('text')
+    @classmethod
+    def nonblank(cls, value):
+        if not value.strip():
+            raise ValueError('Empty edit request')
+        return value.strip()
+
+
+class ApplyEdit(Action):
+    revision: int = Field(ge=1)

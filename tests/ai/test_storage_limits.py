@@ -102,7 +102,15 @@ def test_headroom_and_storage_errors_fail_closed_then_release(tmp_path,monkeypat
     with pytest.raises(RuntimeError):
         with guard.reserve(100):raise RuntimeError('simulated writer failure')
     with guard.reserve(100):pass
-    (tmp_path/'link').symlink_to(tmp_path/'outside')
+    link = tmp_path/'link'
+    if __import__('os').name == 'nt':
+        # Windows symlink creation needs a privilege unavailable to normal CI.
+        # Exercise the guard with the same filesystem flag; POSIX uses a real link.
+        link.touch()
+        original_symlink = Path.is_symlink
+        monkeypatch.setattr(Path,'is_symlink',lambda path: path == link or original_symlink(path))
+    else:
+        link.symlink_to(tmp_path/'outside')
     with pytest.raises(HTTPException) as error:
         with guard.reserve(100):pytest.fail('Must fail closed')
     assert error.value.status_code==507

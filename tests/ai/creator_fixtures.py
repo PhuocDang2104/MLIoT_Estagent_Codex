@@ -54,6 +54,17 @@ class Provider:
         self.calls.append('answer')
         return {'text':'Thông tin chỉ đọc từ tour fixture đã duyệt.', 'navigate_to':None}
 
+    def edit(self, state, text):
+        self.calls.append('edit')
+        if not state.get('script'):
+            return {'reply':'Đề xuất đổi tên checkpoint từ fixture.',
+                    'rooms':[{'checkpoint_id':state['rooms'][0]['checkpoint_id'],
+                              'label':'Phòng khách mới fixture','summary':None,'yaw':None}],
+                    'scripts':[], 'introduction':None, 'order':None, 'connections':None}
+        return {'reply':'Đề xuất đổi lời giới thiệu đầu tiên từ fixture.', 'rooms':[],
+                'scripts':[{**state['script']['segments'][0], 'text':'Lời mới đã được Business yêu cầu.'}],
+                'introduction':None, 'order':None, 'connections':None}
+
 
 class Worker:
     def build(self, project, rooms, connections, assets):

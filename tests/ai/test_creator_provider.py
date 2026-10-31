@@ -47,3 +47,20 @@ def test_refusal_is_not_a_successful_generation():
         http_client=httpx.Client(transport=httpx.MockTransport(lambda r:httpx.Response(200,json=value)))) as client:
         with pytest.raises(ValueError):
             OpenAIProvider(client,{}).brief({'name':'Fixture','description':'Synthetic','locale':'vi'})
+
+
+def test_edit_plan_uses_strict_responses_schema_without_tools():
+    plan = {'reply':'Đổi lời mở đầu.', 'rooms':[], 'scripts':[],
+            'introduction':'Nội dung mới.', 'order':None, 'connections':None}
+    def transport(request):
+        body = json.loads(request.content)
+        assert body['store'] is False and body['max_output_tokens'] == 2400
+        assert body['model'] == 'text-fixture' and not body.get('tools')
+        schema = body['text']['format']
+        assert schema['strict'] and schema['schema']['additionalProperties'] is False
+        assert set(schema['schema']['required']) == set(plan)
+        return httpx.Response(200,json=response(plan))
+    with OpenAI(api_key='fixture',max_retries=0,
+        http_client=httpx.Client(transport=httpx.MockTransport(transport))) as client:
+        provider = OpenAIProvider(client,{'OPENAI_MODEL_TEXT':'text-fixture'})
+        assert provider.edit({'rooms':[], 'connections':[], 'script':None},'Đổi lời mở đầu') == plan

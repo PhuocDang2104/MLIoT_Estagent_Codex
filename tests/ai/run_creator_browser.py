@@ -69,6 +69,14 @@ def main():
             page.evaluate('window.scrollTo(0,0)')
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'Overflow at {width}'
             page.screenshot(path=str(EVIDENCE/f'workspace-{width}.png'),full_page=True)
+        page.locator('#edit-text').fill('Đổi tên khu đầu thành Phòng khách mới fixture.')
+        page.locator('#propose-edit').click()
+        page.locator('#apply-edit').wait_for(timeout=15000)
+        page.locator('#apply-edit').click()
+        page.get_by_role('button',name='Xác nhận & tiếp tục ↗',exact=True).wait_for(timeout=15000)
+        assert page.locator('#review [name=label]').first.input_value() == 'Phòng khách mới fixture'
+        assert page.locator('#publish').is_hidden()
+        page.screenshot(path=str(EVIDENCE/'pre-geometry-edit-320.png'),full_page=True)
         isolated=browser.new_page()
         isolated.goto('http://127.0.0.1:5186/business/create')
         assert isolated.locator('#create-view').is_visible()
@@ -77,7 +85,8 @@ def main():
     assert not errors,errors
     result={'status':'PASS','fixture':'finite provider, no geometry worker, synthetic PNG',
             'checks':['upload','real HTTP/LangGraph/SQLite','spatial review','SSE','reload','completed cards collapsed; user expansion retained',
-                      'publish blocked without worker','preview placeholder','390/320 no overflow','separate browser session'],
+                      'publish blocked without worker','preview placeholder','390/320 no overflow','separate browser session',
+                      'pre-geometry chat proposal and confirmed spatial fork'],
             'page_errors':errors,'live_openai':False}
     (EVIDENCE/'browser.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf8')
     print(json.dumps(result,ensure_ascii=True))

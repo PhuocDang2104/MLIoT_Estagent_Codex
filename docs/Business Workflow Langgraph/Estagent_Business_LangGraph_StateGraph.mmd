@@ -17,6 +17,7 @@ config:
 ---
 graph TD;
 	__start__([<p>__start__</p>]):::first
+	edit(edit)
 	understand(understand)
 	scene(scene)
 	spatial(spatial)
@@ -30,7 +31,6 @@ graph TD;
 	voice(voice)
 	assemble(assemble)
 	__end__([<p>__end__</p>]):::last
-	__start__ --> understand;
 	assemble --> __end__;
 	build_model --> mapping;
 	mapping --> semantic;
@@ -39,6 +39,12 @@ graph TD;
 	semantic --> navigation;
 	spatial --> spatial_review;
 	understand --> scene;
+	__start__ -.-> edit;
+	__start__ -.-> understand;
+	edit -.-> narration;
+	edit -.-> navigation;
+	edit -.-> semantic;
+	edit -.-> spatial_review;
 	scene -.-> spatial;
 	spatial_review -.-> __end__;
 	spatial_review -.-> build_model;

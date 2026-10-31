@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "mermaid_version": "11.12.1",
+  "renderer": "localhost only",
+  "diagrams": [
+    {
+      "file": "Estagent_Business_LangGraph_Flow.mmd",
+      "parsed": true,
+      "rendered": true,
+      "type": "flowchart-v2"
+    },
+    {
+      "file": "Estagent_Business_LangGraph_StateGraph.mmd",
+      "parsed": true,
+      "rendered": true,
+      "type": "flowchart-v2"
+    },
+    {
+      "file": "Estagent_Business_LangGraph_Flow.reference.mmd",
+      "parsed": true,
+      "rendered": true,
+      "type": "flowchart-v2"
+    }
+  ]
+}

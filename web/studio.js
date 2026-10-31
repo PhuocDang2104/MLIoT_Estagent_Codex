@@ -10,6 +10,7 @@ const states = {
   rejected: "Đã từ chối",
 };
 const stepNames = {
+  edit: "Áp dụng chỉnh sửa",
   understand: "Phân tích bất động sản",
   scene: "Nhận diện không gian",
   spatial: "Chuẩn bị bố cục",
@@ -36,6 +37,7 @@ let session,
   busy = false,
   pendingRequest = null;
 const expandedActivities = new Map();
+let editKey = "", editProposal = null, editRequest = null, applyRequest = null;
 function node(tag, text, attrs = {}) {
   const n = document.createElement(tag);
   if (text !== null && text !== undefined) n.textContent = text;
@@ -639,7 +641,80 @@ function renderGeneration() {
   if (g?.error) notify(g.error, true);
   renderStages();
   renderReview();
+  renderEditPanel();
 }
+
+function renderEditPanel() {
+  const g = generation;
+  $("#edit-panel").hidden = !g?.rooms?.length || !["completed", "needs_review", "waiting_integration"].includes(g.status);
+  const key = g?.id + ":" + g?.revision;
+  if (key === editKey) return;
+  editKey = key;
+  editProposal = null;
+  editRequest = null;
+  applyRequest = null;
+  $("#edit-proposal").hidden = true;
+  if (!g?.rooms?.length) return;
+  api(`/generations/${g.id}/edits`).then((items) => {
+    if (editKey !== key) return;
+    editProposal = items.find((x) => x.status === "pending" && x.revision === g.revision && x.plan);
+    showEditProposal();
+  }).catch((e) => notify(e.message, true));
+}
+
+function showEditProposal() {
+  const box = $("#edit-proposal"), proposal = editProposal;
+  box.replaceChildren();
+  box.hidden = !proposal;
+  if (!proposal) return;
+  box.append(node("p", proposal.plan.reply));
+  const changes = node("ul");
+  for (const room of proposal.plan.rooms) {
+    const values = [room.label, room.summary, room.yaw !== null ? `${room.yaw}°` : null].filter((x) => x !== null);
+    changes.append(node("li", `${room.checkpoint_id}: ${values.join(" · ")}`));
+  }
+  for (const segment of proposal.plan.scripts) changes.append(node("li", `${segment.checkpoint_id}: ${segment.text}`));
+  if (proposal.plan.introduction) changes.append(node("li", proposal.plan.introduction));
+  if (proposal.plan.order) changes.append(node("li", "Thứ tự: " + proposal.plan.order.join(" → ")));
+  if (proposal.plan.connections) changes.append(node("li", "Cập nhật đường nối; cần duyệt lại bố cục."));
+  box.append(changes);
+  if (!proposal.can_apply) return;
+  const apply = node("button", "Áp dụng · Tạo bản mới", { type: "button", class: "primary", id: "apply-edit" });
+  apply.onclick = async () => {
+    if (busy) return;
+    busy = true; apply.disabled = true;
+    applyRequest ||= { request_id: requestId(), revision: proposal.revision };
+    const gid = generation.id, pid = project.id;
+    try {
+      const result = await post(`/generations/${gid}/edits/${proposal.id}/apply`, applyRequest);
+      if (generation?.id !== gid || project?.id !== pid) return;
+      project = await api("/projects/" + pid);
+      await openGeneration(result.id);
+      renderHistory();
+      $("#edit-text").value = "";
+    } catch (e) { notify(e.message, true); }
+    finally { busy = false; apply.disabled = false; }
+  };
+  box.append(apply, node("p", "Bản mới cần duyệt trước khi xuất bản.", { class: "muted" }));
+}
+
+$("#edit-form").onsubmit = async (event) => {
+  event.preventDefault();
+  if (busy || !generation) return;
+  const text = $("#edit-text").value.trim();
+  if (!text) return;
+  busy = true;
+  $("#propose-edit").disabled = true;
+  if (!editRequest || editRequest.text !== text) editRequest = { request_id: requestId(), revision: generation.revision, text };
+  const gid = generation.id;
+  try {
+    const proposal = await post(`/generations/${gid}/edits`, editRequest);
+    if (generation?.id !== gid) return;
+    editProposal = proposal; applyRequest = null; editRequest = null;
+    showEditProposal(); notify("");
+  } catch (e) { notify(e.message, true); }
+  finally { busy = false; $("#propose-edit").disabled = false; }
+};
 function renderReview() {
   const box = $("#review"),
     editor = $("#script-editor");
@@ -792,7 +867,7 @@ function renderReview() {
     });
   form.onsubmit = (e) => {
     e.preventDefault();
-    const payload = { kind: g.review.kind, decision: "approve" };
+    const payload = { kind: g.review.kind, decision: "approve", revision: g.revision };
     if (g.review.kind === "spatial") {
       payload.rooms = [...form.querySelectorAll("[data-checkpoint]")].map(
         (row) => ({

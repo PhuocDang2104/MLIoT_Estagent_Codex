@@ -13,7 +13,7 @@ COPY server/limits.py /app/server/limits.py
 COPY server/storage.py /app/server/storage.py
 COPY server/object_storage.py /app/server/object_storage.py
 COPY web/ /app/web/
-COPY deploy/entrypoint.py deploy/smoke.py /app/deploy/
+COPY deploy/entrypoint.py deploy/smoke.py deploy/backup_data.py /app/deploy/
 USER 10001:10001
 EXPOSE 5180
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \

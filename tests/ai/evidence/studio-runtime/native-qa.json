@@ -1,0 +1,9 @@
+{
+  "command": "python deploy/verify_local.py",
+  "application_snapshot": "2a097d51bc76573d81c0c8e2698635b7f47d89e3",
+  "exit_code": 0,
+  "output_tail": "unconfigured: SMOKE PASS: state/cookie, wrong origin, invalid turn, body limit, unconfigured=503; static HTML; no valid model request or profile mutation sent\r\nHEALTH PASS (HTTP + checkpoint read; no model/quota check)\r\nPASS health: unconfigured server fails production health\r\nconfigured-fixture: SMOKE PASS: state/cookie, wrong origin, invalid turn, body limit; static HTML; no valid model request or profile mutation sent\r\nHEALTH PASS (HTTP + checkpoint read; no model/quota check)\r\nPASS native restart: SQLite reopens and passes quick_check\r\n...........                                                              [100%]\r\n============================== warnings summary ===============================\r\n..\\estagent-creator-venv\\Lib\\site-packages\\langgraph\\checkpoint\\base\\__init__.py:18\r\n  C:\\Users\\ADMIN\\AppData\\Local\\Temp\\estagent-creator-venv\\Lib\\site-packages\\langgraph\\checkpoint\\base\\__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.\r\n    from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer\r\n\r\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\r\n11 passed, 1 warning in 2.81s\r\nLOCAL QA PASS; Docker build/volume/TLS/live OpenAI NOT verified\r\n",
+  "live_api_calls": 0,
+  "docker_verified": false,
+  "tls_verified": false
+}

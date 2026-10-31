@@ -6,6 +6,7 @@ from .models import Brief, Observation, Script, Review
 from .package import Room, Narration, Geometry
 
 STEPS = {
+    'edit': 'Áp dụng chỉnh sửa đã xác nhận',
     'understand': 'Phân tích thông tin bất động sản',
     'scene': 'Nhận diện từng không gian',
     'spatial': 'Chuẩn bị sơ đồ và checkpoint',
@@ -22,6 +23,13 @@ STEPS = {
 
 
 class State(TypedDict, total=False):
+    entry: str
+    edit_plan: dict
+    edit_route: str
+    reuse_script: bool
+    script_overrides: dict
+    previous_script: dict
+    previous_audio: list[dict]
     project: dict
     assets: list[dict]
     brief: dict
@@ -62,6 +70,10 @@ def validate_review(review, rooms):
 
 
 def build_graph(provider, saver, emit, read_asset, write_audio, write_model, worker=None):
+    def edit(s):
+        from .edits import apply_plan
+        return apply_plan(s)
+
     def understand(s):
         return {'brief': Brief.model_validate(provider.brief(s['project'])).model_dump()}
 
@@ -115,13 +127,20 @@ def build_graph(provider, saver, emit, read_asset, write_audio, write_model, wor
                  if f['provenance'] in ('verified', 'observed')]} for r in s['rooms']]}
 
     def narration(s):
-        script = Script.model_validate(provider.script(s['project'], s['rooms'], s['brief']))
+        value = s['script'] if s.get('reuse_script') and s.get('script') else provider.script(s['project'], s['rooms'], s['brief'])
+        value = {**value, 'segments': [dict(x) for x in value['segments']]}
+        overrides = s.get('script_overrides', {})
+        if overrides.get('introduction') is not None:
+            value['introduction'] = overrides['introduction']
+        edits = {x['checkpoint_id']:x for x in overrides.get('scripts', [])}
+        value['segments'] = [edits.get(x['checkpoint_id'], x) for x in value['segments']]
+        script = Script.model_validate(value)
         ids = {r['checkpoint_id'] for r in s['rooms']}
         allowed = {'description', *(r['asset_id'] for r in s['rooms'])}
         if (len(script.segments) != len(ids) or {x.checkpoint_id for x in script.segments} != ids
                 or any(not set(x.sources) <= allowed for x in script.segments)):
             raise ValueError('Narration does not match checkpoint evidence')
-        return {'script': script.model_dump()}
+        return {'script': script.model_dump(), 'audio': []}
 
     def navigation(s):
         rooms = {r['checkpoint_id']: r for r in s['rooms']}
@@ -131,6 +150,9 @@ def build_graph(provider, saver, emit, read_asset, write_audio, write_model, wor
             adjacency[link['source']].append(link['target'])
             hotspots.append({**link, 'label': rooms[link['target']]['label'],
                              'target_yaw': rooms[link['target']]['yaw']})
+        priority = {r['checkpoint_id']:i for i,r in enumerate(s['rooms'])}
+        for targets in adjacency.values():
+            targets.sort(key=priority.__getitem__)
         first = s['rooms'][0]['checkpoint_id']
         itinerary, visited = [first], {first}
         def visit(current):
@@ -156,14 +178,24 @@ def build_graph(provider, saver, emit, read_asset, write_audio, write_model, wor
             if any(not set(x.sources) <= allowed for x in review.scripts):
                 raise ValueError('Invalid narration evidence')
             script['segments'] = [x.model_dump() for x in review.scripts]
-        return {'script': script, 'approved': review.decision == 'approve',
+        old = s.get('previous_script') or {}
+        old_text = {x['checkpoint_id']: x['text'] for x in old.get('segments', [])}
+        old_text['introduction'] = old.get('introduction')
+        texts = {x['checkpoint_id']: x['text'] for x in script['segments']}
+        texts['introduction'] = script['introduction']
+        reusable = [a for a in s.get('previous_audio', [])
+                    if old_text.get(a['checkpoint_id']) == texts.get(a['checkpoint_id'])]
+        return {'script': script, 'audio': reusable, 'approved': review.decision == 'approve',
                 'rejected': review.decision == 'reject'}
 
     def voice(s):
         done = list(s.get('audio', []))
         segments = [{'checkpoint_id': 'introduction', 'text': s['script']['introduction']},
                     *s['script']['segments']]
-        segment = segments[len(done)]
+        pending = [x for x in segments if x['checkpoint_id'] not in {a['checkpoint_id'] for a in done}]
+        if not pending:
+            return {'audio': done}
+        segment = pending[0]
         done.append(write_audio(s['project'], segment['checkpoint_id'],
                                 provider.speech(s['project'], segment['text'])))
         return {'audio': done}
@@ -185,7 +217,7 @@ def build_graph(provider, saver, emit, read_asset, write_audio, write_model, wor
             'approved': s['approved'], 'ai_voice_disclosure': True}}
 
     builder = StateGraph(State)
-    handlers = {'understand': understand, 'scene': scene, 'spatial': spatial,
+    handlers = {'edit': edit, 'understand': understand, 'scene': scene, 'spatial': spatial,
         'spatial_review': spatial_review, 'build_model': model, 'mapping': mapping,
         'semantic': semantic, 'navigation': navigation, 'narration': narration,
         'final_review': final_review, 'voice': voice, 'assemble': assemble}
@@ -196,7 +228,10 @@ def build_graph(provider, saver, emit, read_asset, write_audio, write_model, wor
             emit(state['project']['generation_id'], node, 'completed', STEPS[node])
             return result
         builder.add_node(name, run)
-    builder.add_edge(START, 'understand')
+    builder.add_conditional_edges(START, lambda s: s.get('entry', 'understand'),
+        {'understand': 'understand', 'edit': 'edit'})
+    builder.add_conditional_edges('edit', lambda s: s['edit_route'],
+        {x:x for x in ('spatial_review', 'semantic', 'navigation', 'narration')})
     builder.add_edge('understand', 'scene')
     builder.add_conditional_edges('scene', lambda s: 'scene' if len(s['observations']) <
         len([a for a in s['assets'] if a['kind'] == 'panorama']) else 'spatial',

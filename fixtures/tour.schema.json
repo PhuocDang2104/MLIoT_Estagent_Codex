@@ -4,29 +4,165 @@
       "additionalProperties": false,
       "properties": {
         "status": {
-          "const": "unavailable",
           "default": "unavailable",
+          "enum": [
+            "unavailable",
+            "partial",
+            "ready"
+          ],
           "title": "Status",
           "type": "string"
         },
         "narration": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/SceneNarration"
+              },
+              "maxItems": 20,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "default": null,
-          "title": "Narration",
-          "type": "null"
+          "title": "Narration"
         },
         "music": {
-          "default": null,
-          "title": "Music",
-          "type": "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AudioTrack"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "source": {
-          "const": "none",
           "default": "none",
+          "enum": [
+            "none",
+            "user_uploaded"
+          ],
           "title": "Source",
           "type": "string"
         }
       },
       "title": "Audio",
+      "type": "object"
+    },
+    "AudioTrack": {
+      "additionalProperties": false,
+      "properties": {
+        "source_label": {
+          "maxLength": 200,
+          "minLength": 3,
+          "title": "Source Label",
+          "type": "string"
+        },
+        "rights": {
+          "enum": [
+            "owned",
+            "licensed"
+          ],
+          "title": "Rights",
+          "type": "string"
+        },
+        "rights_note": {
+          "maxLength": 500,
+          "minLength": 3,
+          "title": "Rights Note",
+          "type": "string"
+        },
+        "asset_id": {
+          "pattern": "^[a-f0-9]{32}$",
+          "title": "Asset Id",
+          "type": "string"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        },
+        "content_type": {
+          "const": "audio/wav",
+          "default": "audio/wav",
+          "title": "Content Type",
+          "type": "string"
+        },
+        "duration_seconds": {
+          "exclusiveMinimum": 0,
+          "maximum": 180,
+          "title": "Duration Seconds",
+          "type": "number"
+        },
+        "channels": {
+          "enum": [
+            1,
+            2
+          ],
+          "title": "Channels",
+          "type": "integer"
+        },
+        "sample_rate": {
+          "maximum": 48000,
+          "minimum": 8000,
+          "title": "Sample Rate",
+          "type": "integer"
+        },
+        "sample_width": {
+          "const": 2,
+          "default": 2,
+          "title": "Sample Width",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "source_label",
+        "rights",
+        "rights_note",
+        "asset_id",
+        "url",
+        "duration_seconds",
+        "channels",
+        "sample_rate"
+      ],
+      "title": "AudioTrack",
+      "type": "object"
+    },
+    "SceneNarration": {
+      "additionalProperties": false,
+      "properties": {
+        "scene_id": {
+          "pattern": "^[a-f0-9]{32}$",
+          "title": "Scene Id",
+          "type": "string"
+        },
+        "locale": {
+          "enum": [
+            "en",
+            "vi"
+          ],
+          "title": "Locale",
+          "type": "string"
+        },
+        "transcript": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Transcript",
+          "type": "string"
+        },
+        "track": {
+          "$ref": "#/$defs/AudioTrack"
+        }
+      },
+      "required": [
+        "scene_id",
+        "locale",
+        "track"
+      ],
+      "title": "SceneNarration",
       "type": "object"
     },
     "SceneView": {

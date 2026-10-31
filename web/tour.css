@@ -6,3 +6,5 @@
 .evidence-note{border-left:3px solid #b2bca6;padding:8px 18px;margin-top:24px;background:#eef1eb}.evidence-note strong{font-size:13px}.evidence-note p{font-size:12px;margin:8px 0}
 
 #published-link{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.tour-product::after{display:none}
+
+.creator-audio{border-top:1px solid #d7ded8;margin:25px 0;padding-top:22px}.creator-audio h3{font-size:21px}.creator-audio form{display:grid;gap:7px}.creator-audio audio{max-width:100%;margin-top:14px}.attached-audio{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 0;border-bottom:1px solid #e3e7e3}.attached-audio span,.attached-audio small{font-size:11px;overflow-wrap:anywhere;flex-basis:100%}.attached-audio strong{font-size:13px}.audio-timeline{display:flex!important;gap:12px;flex-wrap:wrap;margin-top:18px;align-items:center}.audio-timeline input{flex:1;min-width:80px}.audio-timeline output{font-size:12px}.audio-panel>audio{display:none}

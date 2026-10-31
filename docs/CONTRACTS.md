@@ -130,8 +130,9 @@ Existing `/api/assistant/*` request/response/cookie contracts remain unchanged. 
   `coverage_degrees=null|30..360`, `coverage_source=unknown|user_provisional|user_calibrated`;
   server-owned `image_url` / `thumbnail_url`. Photo implies null/unknown coverage. Cylindrical
   requires explicit labelled coverage. No spherical/3D claim and no inferred coverage from dimensions.
-- Audio truthfully reports `status=unavailable`, `source=none`, `narration=null`, `music=null`.
-  Browser device voice is an opt-in fallback for original-language descriptions, not an audio asset.
+- Legacy/keyless visual-only manifests use `status=unavailable`, `source=none`, `narration=null`, `music=null`.
+  W2 recorded-audio extension is defined in §8; this old shape remains valid. Device voice is an opt-in
+  fallback, never a recorded/OpenAI audio asset.
 - UI content is user supplied, not automatically translated. Locale switches control labels; content
   language remains visible. No fabricated translations, image analysis, spatial pose or model output.
 
@@ -165,3 +166,73 @@ or inaccessible storage fails visibly; no shared existing DB/storage is opened.
 OpenAI uses existing `OPENAI_API_KEY`/`OPENAI_MODEL_TEXT`, structured output, timeout 30s, retries=0,
 1200 output tokens, `store=false`. Calls only on explicit chat submit. Integration QA uses no key or
 injected test interpreters. No image analysis, TTS, GPU or paid live validation authorized/performed.
+
+
+## 8. W2 recorded PCM WAV extension (feature/tour-audio)
+
+Authority: `docs/work-items/W2-AUDIO.md`, explicit additive schema/API delegation. Existing
+`checkpoint-tour-v1` manifests/routes remain valid. No dependency or provider changes.
+
+### Media and provenance
+
+- **Only RIFF PCM format 1 WAV, 16-bit little endian, mono/stereo.** Supported sample rates:
+  8000, 11025, 16000, 22050, 24000, 32000, 44100, 48000 Hz. MP3/AAC/OGG/float WAV/HEIC audio
+  or WAV extensible are not accepted. Error text explicitly states the supported encoding.
+- Per-file ≤20 MiB and 0 < measured duration ≤180s; both limits apply (high-rate stereo may hit
+  the byte cap sooner). ≤100 audio assets per cookie session. WAV byte signature, RIFF/chunk lengths,
+  format/data uniqueness, frame alignment, byte rate and full PCM payload verified using stdlib
+  `wave` plus RIFF bounds checks. Duration is frame count / sample rate, never client metadata.
+- Stored normalized PCM WAV drops arbitrary metadata chunks. Random server IDs; no arbitrary URLs,
+  paths, names or base64 accepted as playback references. Immutable files under `TOUR_DATA_DIR/audio/`;
+  additive `audio_assets` table in the existing local tour SQLite DB. No change to existing records.
+- Upload provenance required: `{source_label: string[3..200], rights: owned|licensed,
+  rights_note: string[3..500]}`. These are the uploader's declarations, not independent license
+  verification. Rendered safely as text. User must have permission to publish/share the recording.
+- Identical normalized bytes + identical provenance deduplicate within an owner session; changing
+  bytes or provenance creates a new ID. No old blob is overwritten or deleted by attach/remove.
+
+### Endpoints
+
+| Endpoint | Contract |
+|---|---|
+| `POST /api/tours/audio-assets` | Raw WAV body, session + exact Origin; `X-Audio-Metadata` is `encodeURIComponent(JSON.stringify(provenance))`, max 4096 header characters. Returns server `AudioTrack`; signature/encoding/truncation 415, limits 413, provenance 422 |
+| `GET /api/tours/audio-assets/{id}` | Owner-only WAV, `audio/wav`; HTTP Range supported. Other session 404, missing session 401 |
+| `PUT /api/tours/drafts/{id}/audio` | `{revision,music_asset_id:null|ID,narration:[{scene_id,asset_id,locale,transcript?}]}` fully replaces bindings, never files. Music optional; ≤20 narration bindings, unique scene/locale, existing scene and current source locale required. Track IDs must belong to draft owner. Increments revision and clears review, even on explicit reattachment; stale 409 |
+| `GET /api/tours/published/{id}/audio/{asset_id}` | Cookie-free only if asset is referenced by that immutable snapshot. All other IDs 404; `audio/wav`, Range supported |
+
+Existing publish requires exact reviewed revision and verifies every referenced audio asset still
+exists and matches stored metadata. Snapshot rewrites private URLs to snapshot-owned public URLs.
+Later draft edits/removal do not mutate those refs or bytes. Uploading alone does not attach/publish.
+
+### Additive manifest audio shape
+
+- `AudioTrack`: `asset_id`, server-owned `url`, `content_type=audio/wav`, measured `duration_seconds`,
+  `channels=1|2`, `sample_rate`, `sample_width=2`, plus provenance fields above.
+- `audio.music`: null or `AudioTrack`.
+- `audio.narration`: null or ordered list of `{scene_id, locale:en|vi, transcript:string[0..2000], track:AudioTrack}`.
+  Transcript is Creator supplied, not transcription or a guarantee of what the recording says.
+- `audio.source`: `none` when empty; `user_uploaded` if any track exists. No AI/voice identity inference.
+- `audio.status`: `unavailable` if no tracks; `ready` if every scene has a recording in the tour source
+  locale (music is optional); `partial` otherwise. This describes attached media, not real-world quality
+  or playback success. Viewer separately reports source/locale/load failure per current scene.
+- Changing draft locale never relabels a recording. Old-language refs remain with `partial` status;
+  Creator explicitly removes old narration before attaching replacements in the new source locale.
+  Text/interface language switching never claims translated voice. Old null/unavailable shape still valid.
+
+### Playback behavior
+
+Click Play/resume is required. One HTMLMediaElement for narration and one for looping music, no
+implicit generated voice. Independent mute/gain. While an audible narration is actually playing,
+music gain = selected base gain ×0.2; restored on pause/end/wait/mute/error. Pause preserves both clocks.
+Scene change cancels/reset old narration; if playback was active it plays the new scene from zero and
+resumes the same music clock. Fast transitions invalidate prior play promises; no queued voices.
+Seek controls current recording time. Recorded transcript (if supplied) follows the selected scene.
+
+Opening/focusing chat, changing locale, pagehide or a hidden tab pauses/stops tour speech; closing
+chat does not resume automatically. Missing narration/locale/load failures are explicit; visuals still
+work and music may continue if available. Device voice is separate opt-in fallback only when no
+recording is selected; starting it pauses both recorded tracks. It is never presented as uploaded/AI voice.
+
+QA uses generated sine tones only, via actual upload/HTTP/media decode and clock/events. No test
+recording is described as human narration or licensed background music. No paid API, keys, TTS,
+asset download or production-data migration occurs in this task.

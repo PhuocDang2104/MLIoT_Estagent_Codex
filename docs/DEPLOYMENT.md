@@ -198,3 +198,13 @@ Creator input cannot certify compatibility. Once any MinIO refs exist, retain a
 MinIO-aware image/config and bucket for rollback; never reset/restore/delete
 production data to make an old binary pass. Preserve old image/env/data as a
 recovery reference, not an unconditional downgrade target.
+
+The pre-release production inventory had checkpoints/tours SQLite but no Studio
+store. Its legacy gate therefore reports incomplete Creator evidence rather than
+manufacturing an empty backup. After remote writes, use the verified MinIO-aware
+candidate image (same backend source as final UI release) as the rollback binary;
+keep MinIO app config/network and live data. Never roll back to346a0ba by bypassing
+this gate. `deploy/minio_app_smoke.py` runs actual SDK/app routes in isolated
+temporary SQLite, including a private5600044-byte/175s PCM WAV with two-part ETag,
+cross-part Range/SHA/restart. No provider calls; isolated publish exercises a
+private test DB, never the production public library.

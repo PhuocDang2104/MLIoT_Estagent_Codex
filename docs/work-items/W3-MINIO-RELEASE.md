@@ -25,3 +25,9 @@ Backend merged e2e8752 + doc correction92304e1 (adapter415568d included once). D
 QA corrections: operator mount named operator.py shadowed stdlib; renamed task-specific mount. SDK admin constructor requires keyword endpoint. Initial smoke wrongly required list_buckets denial; MinIO can filter visible buckets to permitted bucket, so acceptance now directly tests unauthorized bucket creation. No application contract changed to satisfy QA.
 
 Evidence: deploy/evidence/wave3-release/{ai-gate.log,web-baseline.log,native-qa.log,rollback-tests.log,minio-restart.log}. Initial minio-live.log records quota PASS followed by the overly strict smoke assertion; corrected restart log supersedes that assertion. Remaining: UI handback, accepted clean SHA artifact/image, actual backend MinIO routes/browser, production rollout/hash preservation.
+
+## Checkpoint 13:31 — real application + multipart
+
+Candidate source4cd00f0, image d32df244577fa4ae80b1b49f8d62685b0b4411574f13a9b3711a4f1a130ee1f2 built from committed archive (not production rollout). Actual MinIO SDK + FastAPI routes with temporary SQLite: upload/dedupe/private401, isolated review/publish (no real public site), audio Range206/416, Studio empty BLOB + remote marker, restart readback and disabled-backend503/no fallback PASS. Extra private WAV5600044 bytes/175seconds used two-part multipart ETag; cross-part Range, full SHA, restart and unauthenticated401 PASS. No provider mocks or paid calls. Public baseline current manifest matches prior wave2 raw hash; four scenes/eight image+thumbnail SHA saved outside Git for after-rollout comparison.
+
+Thái's direct role update recorded in AGENTS.md and docs/CODE-INTEGRATION.md: root Tatejo coordinates/reviews/accepts, release lane executes authorized integration/deploy, UI lane owns Viewer; no new approval round.

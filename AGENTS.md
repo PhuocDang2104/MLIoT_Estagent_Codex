@@ -50,7 +50,7 @@ File root (`package.json`, lockfile, `.gitignore`, `scripts/`, `AGENTS.md`) ch�
 UI thì thêm bằng chứng nhìn thấy: screenshot hoặc log Playwright. Pipeline thì thêm output thật khớp contract.
 
 ## 5. Git
-- Thái giao Tatejo giữ vai trò code integrator: review/merge/resolve conflict/push main; quy trình và handback teammate tại `docs/CODE-INTEGRATION.md`. Lane chỉ ghi nhánh/worktree của mình, không force-push main.
+- Quyết định trực tiếp của Thái (2026-10-31): root Tatejo chỉ điều phối, review và nghiệm thu; không trực tiếp implementation hoặc SSH rollout. Lane integration/release được giao thực thi merge/resolve/push main và deploy trong scope đã ủy quyền; lane UI implement Viewer. Không force-push main. Quy trình và handback tại `docs/CODE-INTEGRATION.md`.
 - Trunk-based. Nhánh `<lane>/<task-id>-<slug>`, worktree ở `../CodexHackathon-wt/<task-id>` (tạo bằng `scripts/spawn.sh`).
 - Commit nhỏ, message `<lane>: <việc>`. PR/merge ≤ 90 phút một lần mỗi lane; `main` luôn xanh.
 - `main` đỏ → **dừng mọi merge** cho tới khi Dev 1 xanh lại (andon).
@@ -68,7 +68,7 @@ NOTES: <bẫy gặp phải, ≤3 dòng>
 ```
 
 ## Đang ở đâu
-2026-10-31: Thái giao Tatejo vai trò integrator, maintain `main` và deploy production; được phép push/merge `main` và deploy trong phạm vi này. Đích hiện tại là VM + DuckDNS `estagent.duckdns.org`; Vercel đã gỡ theo chỉ đạo mới. Không đổi stack/DB của project khác. Runbook và trạng thái thật: `docs/DEPLOYMENT.md`.
+2026-10-31 — quyết định vai trò mới nhất của Thái: root Tatejo chỉ điều phối, review và nghiệm thu, không trực tiếp implementation/SSH rollout. Lane integration/release là owner thực thi maintain `main`, merge/resolve/push và SSH/deploy production theo scope Thái đã giao; lane UI implement Viewer. Quyền đã giao tiếp tục hiệu lực, không thêm vòng approval; tin nhắn điều phối không phải phê duyệt mới của Thái. Đích hiện tại là VM + DuckDNS `estagent.duckdns.org`; Vercel đã gỡ theo chỉ đạo mới. Không đổi stack/DB của project khác. Runbook và trạng thái thật: `docs/DEPLOYMENT.md`.
 Checkout `main` đã tích hợp same-origin landing/Creator/Viewer, upload ảnh/chat, draft/review/publish snapshot, FastAPI/LangGraph/SQLite, audio WAV người dùng tải lên và Studio từ teammate. Chạy `bash scripts/dev.sh`; đọc `docs/INTEGRATION-HANDOFF.md`, `docs/AUDIO-HANDOFF.md`, `docs/CREATOR-STUDIO.md`. Core reconstruction và OpenAI live chưa nghiệm thu; fixture geometry/tones không phải model/giọng thật. Thông tin bootstrap bên dưới là lịch sử chuẩn bị.
 2026-10-31: có bộ luật + script điều phối (`spawn/review/done/gate/doctor/pack-ref`, đã chạy thử với codex giả); chưa có code sản phẩm.
 Remote chính: `github.com/PhuocDang2104/MLIoT_Estagent_Codex` (nhánh `main`). Remote cũ giữ dưới tên `previous-origin` để đối chiếu; không push các nhánh backup chứa attribution cũ.

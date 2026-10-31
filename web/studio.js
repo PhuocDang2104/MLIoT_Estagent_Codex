@@ -37,6 +37,10 @@ let session,
   busy = false,
   pendingRequest = null;
 const expandedActivities = new Map();
+setInterval(() => {
+  const clock = document.querySelector('[data-model-clock]');
+  if (clock?.dataset.modelClock) clock.textContent=`${clock.dataset.phase} · ${Math.max(0,Math.floor((Date.now()-Number(clock.dataset.modelClock))/1000))}s`;
+}, 1000);
 function node(tag, text, attrs = {}) {
   const n = document.createElement(tag);
   if (text !== null && text !== undefined) n.textContent = text;
@@ -577,6 +581,9 @@ function renderGeneration() {
   $("#share").hidden = true;
   const latest = new Map();
   for (const event of g?.events || []) latest.set(event.node_id, event);
+  const modelingProgress = g?.events?.findLast((e) => e.event_type === "model_progress")?.progress;
+  const oldSummary = $(".thinking-summary");
+  const summaryScroll = oldSummary ? {top:oldSummary.scrollTop,atBottom:oldSummary.scrollTop+oldSummary.clientHeight>=oldSummary.scrollHeight-30} : {top:0,atBottom:true};
   $("#activity").replaceChildren(
     ...[...latest.values()]
       .filter(
@@ -637,6 +644,19 @@ function renderGeneration() {
               : event.message,
           ),
         );
+        if (event.node_id === "spatial" && modelingProgress) {
+          const detail = node("section", null, {class:"model-thinking", "aria-label":"Tiến trình suy luận mô hình"});
+          const phases = {connecting:"Đang kết nối",thinking:"Đang phân tích bố cục",writing_plan:"Đang soạn kế hoạch 3D",validating:"Đang kiểm tra kế hoạch"};
+          detail.append(node("strong", `${modelingProgress.model} · ${modelingProgress.effort}`),
+            node("p", `${phases[modelingProgress.phase] || "Đang xử lý"} · ${modelingProgress.elapsed_seconds}s`, {class:"muted", "data-model-clock":status==='running'?modelingProgress.started_at || '':'',"data-phase":phases[modelingProgress.phase] || "Đang xử lý"}),
+            node("p", "Tóm tắt suy luận công khai từ mô hình. Bản nháp bên dưới chưa được kiểm chứng.", {class:"muted"}));
+          const text = node("div", modelingProgress.reasoning_summary || "Đang chờ tóm tắt đầu tiên từ mô hình…", {class:"thinking-summary"});
+          detail.append(text);
+          const preview=modelingProgress.plan_preview || {};
+          if (preview.summary) detail.append(node("p", preview.summary, {class:"plan-summary"}));
+          if (modelingProgress.output_characters) detail.append(node("p", `${preview.spaces?.length || 0} không gian · ${preview.captures || 0} checkpoint · ${preview.fixtures || 0} vật dụng đang được mô tả`, {class:"muted"}));
+          body.append(detail);
+        }
         if (event.node_id === "scene" && g.observations.length) {
           const observations = node("div", null, { class: "observation-list" });
           for (const o of g.observations) {
@@ -650,6 +670,8 @@ function renderGeneration() {
         return card;
       }),
   );
+  const newSummary = $(".thinking-summary");
+  if (newSummary) newSummary.scrollTop=summaryScroll.atBottom?newSummary.scrollHeight:summaryScroll.top;
   $("#brief-panel").hidden = !g?.brief;
   $("#fact-count").textContent = g?.brief?.facts.length || "";
   if (g?.brief) {

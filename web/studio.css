@@ -1746,3 +1746,6 @@ dialog p {
 
 .music-panel audio, .form-grid audio { display:block; width:100%; max-width:100%; margin:12px 0; }
 .music-panel p {overflow-wrap:anywhere;}
+.model-thinking {border-top:1px solid var(--line,#dde1e2);margin-top:16px;padding-top:16px;}
+.thinking-summary {white-space:pre-wrap;overflow-wrap:anywhere;max-height:360px;overflow:auto;line-height:1.65;padding:14px;background:#f4f5f6;border-radius:10px;font-size:13px;}
+.plan-summary {border-left:2px solid #ea4a30;padding-left:12px;line-height:1.6;}

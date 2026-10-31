@@ -99,7 +99,9 @@ def build_graph(provider, saver, emit, read_asset, write_audio, write_model, wor
         ]
         if not getattr(worker, 'requires_scene_plan', False):
             return {'rooms':rooms,'connections':[]}
-        value = provider.modeling_plan(s['project'],rooms,s['observations'],s['assets'],read_asset,s.get('clarification',''))
+        progress = {'on_progress':lambda value: emit(s['project']['generation_id'],
+            'spatial','running','Đang dựng kế hoạch không gian',event_type='model_progress',progress=value)} if getattr(provider,'supports_modeling_progress',False) else {}
+        value = provider.modeling_plan(s['project'],rooms,s['observations'],s['assets'],read_asset,s.get('clarification',''),**progress)
         plan = validate_plan(value,rooms,s['assets'])
         captures = {c['checkpoint_id']:c for c in plan['captures']}
         spaces = {r['id']:r for r in plan['spaces']}

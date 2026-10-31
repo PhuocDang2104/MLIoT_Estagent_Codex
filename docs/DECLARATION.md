@@ -153,3 +153,8 @@ Bundled audio: Dream Culture, Kevin MacLeod (incompetech.com), CC BY 4.0. Source
 This is licensed existing music; narration is separately synthesized by OpenAI.
 Three.js license accompanies its vendored assets. No panorama photographs are
 projected onto model geometry and no generated Python is executed by the worker.
+
+Streaming refinement requested by the user: Responses SSE with public reasoning
+summaries and a partial plan preview in Studio. Raw reasoning/encrypted content
+is excluded. Synthetic stream browser fixtures are explicitly labelled; they
+prove event/render/reconnect behavior rather than model quality.

@@ -8,7 +8,7 @@ from server.creator.scene_plan import validate_plan
 from server.creator.provider import OpenAIProvider
 from tests.ai.creator_fixtures import Provider, Worker, png
 from tests.ai.test_creator import app, draft, post, settled, spatial
-from tests.ai.test_creator_provider import response
+from tests.ai.test_creator_provider import streaming_response
 from tests.core.house_fixture import house_plan
 
 ROOMS=[{'checkpoint_id':f'cp{i+1:02}'} for i in range(2)]
@@ -75,6 +75,7 @@ def test_clarification_loop_approval_and_no_repeated_observations(tmp_path):
 
 
 def test_real_sdk_planner_loads_skill_and_floorplan():
+    progress=[]
     def transport(request):
         assert request.url.host=='api.openai.com' and request.url.path=='/v1/responses'
         body=json.loads(request.content)
@@ -82,17 +83,41 @@ def test_real_sdk_planner_loads_skill_and_floorplan():
         assert body['text']['format']['strict'] is True
         assert 'Studio modeling agent template' in body['instructions']
         assert body['max_output_tokens']==24000 and body['store'] is False
-        assert body['model']=='gpt-6-astra' and body['reasoning']=={'effort':'high'}
+        assert body['model']=='gpt-6-astra' and body['reasoning']=={'effort':'high','summary':'auto'}
+        assert body['stream'] is True
         content=body['input'][0]['content']
         assert sum(item['type']=='input_image' for item in content)==3
         assert all(item['image_url'].startswith('data:image/jpeg;base64,') for item in content if item['type']=='input_image')
         assert any('floorplan' in x.get('text','') for x in content)
-        return httpx.Response(200,json=response(house_plan()))
+        return streaming_response(house_plan())
     with OpenAI(api_key='fixture',max_retries=0,http_client=httpx.Client(transport=httpx.MockTransport(transport))) as client:
         provider=OpenAIProvider(client,{})
         assets=ASSETS+[{'id':'floor','kind':'floorplan','mime':'image/png'}]
-        result=provider.modeling_plan({'description':'Synthetic plan','locale':'en'},ROOMS,[],assets,lambda _:png(),'')
+        result=provider.modeling_plan({'description':'Synthetic plan','locale':'en'},ROOMS,[],assets,lambda _:png(),'',on_progress=progress.append)
         assert result['spaces'][0]['id']=='r01'
+        assert progress[-1]['phase']=='validating'
+        assert progress[-1]['plan_preview']['captures']==2
+        assert 'Comparing the supplied doorway' in progress[-1]['reasoning_summary']
+        assert 'PRIVATE INTERNAL' not in json.dumps(progress)
+
+
+def test_model_progress_is_private_replayable_and_bounded(tmp_path):
+    class StreamingPlanner(PlanningProvider):
+        supports_modeling_progress=True
+        def modeling_plan(self,*args,on_progress=None):
+            for i in range(550): on_progress({'reasoning_summary':f'Public summary {i}','model':'fixture','effort':'high'})
+            return super().modeling_plan(*args)
+    with TestClient(app(tmp_path,StreamingPlanner(),PlannedWorker())) as client:
+        pid=draft(client)
+        gid=post(client,f'/projects/{pid}/generations',{'request_id':'streaming-model-plan'}).json()['id']
+        g=settled(client,gid)
+        progress=[e for e in g['events'] if e['event_type']=='model_progress']
+        assert len(progress)==1 and progress[0]['progress']['reasoning_summary']=='Public summary 549'
+        assert g['status']=='needs_review'
+        stream=client.get(f'/api/studio/generations/{gid}/events').text
+        assert 'Public summary 549' in stream and 'event: settled' in stream
+        client.cookies.clear();client.get('/api/studio/session')
+        assert client.get(f'/api/studio/generations/{gid}/events').status_code==404
 
 
 def test_restart_connecting_automatic_worker_requires_new_plan_review(tmp_path):

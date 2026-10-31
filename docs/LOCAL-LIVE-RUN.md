@@ -43,7 +43,7 @@ No fallback substitutes another model when access fails. The official model page
 are https://developers.openai.com/api/docs/models/gpt-6-astra,
 https://developers.openai.com/api/docs/models/gpt-6.1-terra and
 https://developers.openai.com/api/docs/models/gpt-6.1-sol.
-Planning allows 24,000 output tokens including reasoning and a 300-second request;
+Planning allows 24,000 output tokens including reasoning and a 600-second request;
 other structured stages allow 6,000 (Q&A 4,000) and 90 seconds. No SDK retries.
 Usage ledger counts attempts across local launcher restarts; deleting the private
 ledger resets the count. It covers Studio only, not legacy intake/realtime endpoints.
@@ -71,3 +71,22 @@ approve reviews. The `preview` and `published` stages make no model calls.
 Music: Dream Culture by Kevin MacLeod, CC BY 4.0; 75-second excerpt with fades.
 Credit and source are in `web/assets/music/CREDITS.md`. Publication freezes the
 current track; music can be replaced before publication without rerunning AI.
+
+## Astra progress streaming
+
+HousePlan requests use the official SDK Responses stream with high reasoning and
+`summary=auto`. The UI displays only public `reasoning_summary_text` events plus
+a partial plan summary/counts; it does not expose raw reasoning text, encrypted
+content or prompts. Partial plans are labelled unverified and never reach Blender.
+Only the completed, schema-parsed and geometry-validated plan can be approved.
+
+Private `model_progress` SSE events carry cumulative snapshots coalesced at 750ms.
+Storage retains the newest snapshot with a monotonically increasing event ID,
+so reconnect/reload restores it without unbounded token-delta history. Only the
+project owner can read it; published packages and the public library omit it.
+The activity card shows elapsed time, preserves reading scroll position, and
+streams the plan summary plus room/checkpoint/fixture counts as they arrive.
+
+Official references:
+https://developers.openai.com/api/docs/guides/reasoning#reasoning-summaries and
+https://developers.openai.com/api/reference/resources/responses/streaming-events.

@@ -201,3 +201,9 @@ replaces the draft music even after generation; spatial inputs remain frozen.
 Publication resolves current music into an immutable snapshot without repeating
 model/TTS work. Published projects reject music replacement/deletion with 409.
 Published v1 schema stays unchanged.
+
+Private Studio SSE also accepts `event_type=model_progress` with a cumulative
+`progress` object: model, effort, phase, started_at (Unix milliseconds), elapsed_seconds,
+reasoning_summary (public API summary only), plan_preview and output_characters.
+It is replayable for the owner and never added to published v1 tour packages.
+Raw reasoning events and encrypted model content are not forwarded.

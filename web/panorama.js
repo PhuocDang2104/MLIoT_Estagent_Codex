@@ -2,6 +2,24 @@
 'use strict';
 // Rectilinear camera -> cylindrical panorama. Pixels outside captured UV are neutral dark, never synthesized.
 // Coverage is a provisional calibration, never inferred as a complete 360 capture.
+// Keep the entire rectilinear frustum inside the captured cylinder, including
+// its corners after pitch. FOV is the larger viewport dimension in this renderer.
+export function constrainView(view, aspect, ratio) {
+  const rad=Math.PI/180, horizontal=Math.min(1,aspect), vertical=Math.min(1,1/aspect);
+  const coverage=view.coverage*rad, halfHeight=coverage*ratio/2;
+  const maxT=Math.min(Math.tan(55*rad),halfHeight*.995/vertical,
+    coverage<Math.PI?Math.tan(coverage*.5)*.995/horizontal:Infinity);
+  const fov=Math.min(Math.max(.25,view.fov),2*Math.atan(maxT)/rad);
+  const tangent=Math.tan(fov*rad/2), lensX=tangent*horizontal, lensY=tangent*vertical;
+  const horizontalPitchLimit=coverage<Math.PI?Math.acos(Math.min(1,lensX/(Math.tan(coverage*.5)*Math.hypot(1,lensY))))-Math.atan(lensY):Math.PI/2-Math.atan(lensY);
+  const pitchLimit=Math.max(0,Math.min(Math.atan(halfHeight*.995)-Math.atan(lensY),horizontalPitchLimit*.995));
+  const pitch=Math.max(-pitchLimit,Math.min(pitchLimit,view.pitch*rad));
+  const cornerLongitude=Math.atan2(lensX,Math.cos(pitch)-Math.abs(Math.sin(pitch))*lensY);
+  const yawLimit=Math.max(0,coverage/2-cornerLongitude-.0001)/rad;
+  const yaw=view.coverage>=360?((view.yaw+180)%360+360)%360-180:Math.max(-yawLimit,Math.min(yawLimit,view.yaw));
+  return {...view,fov,pitch:pitch/rad,yaw};
+}
+
 export class PanoramaCamera {
   constructor(canvas){
     this.canvas=canvas;

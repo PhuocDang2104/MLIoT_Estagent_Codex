@@ -1,0 +1,9 @@
+### Result
+{"actualCatalogImage":"https://estagent.duckdns.org/api/demos/zind-house-000/assets/house/panos/floor_01_partial_room_01_pano_15.jpg","canonicalStatus":200}
+### Ran Playwright code
+```js
+await (async page=>{await page.goto("https://estagent.duckdns.org/index.html");await page.waitForFunction(()=>document.querySelector("#demo-hero").naturalWidth>0);return {actualCatalogImage:await page.locator("#demo-hero").getAttribute("src"),canonicalStatus:(await page.request.get("https://estagent.duckdns.org/demos/zind-house-000")).status()};})(page);
+```
+### Page
+- Page URL: https://estagent.duckdns.org/index.html
+- Page Title: Estagent — Don’t just view. Explore.

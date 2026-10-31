@@ -298,3 +298,6 @@ preconditions guarded cutover; edge/other projects untouched. GET-only productio
 browser and independent root review PASS; original manifest/8images unchanged.
 No production QA drafts or paid calls. Later evidence-only main commits do not
 change this deployed application SHA. Core strict remains known SKIP.
+
+## Fullscreen hero accepted — 2026-10-31
+Live source9323b3a84e2a0f3f47e88b04ced64728c94a8758 image76bb0154…; full immutable metadata in deploy/evidence/hero-fullscreen/release.json. Actual prior VM sourcefc3fdd3 was verified and retained as rollback, including its current MinIO-aware env/catalog. Shared deployment flock and expected-image checks before build/cutover prevent concurrent overwrite. Only runtime app delta vsfc3 was web/app.js,index.html,styles.css; no data/config change. Public actual pixelrotation/Pause/static reducedmotion and viewport1440/390/320 PASS, /business/create kept canonical. Original canonicalmanifest and guide-v2 JS/CSS/bindings unchanged. A harness-only disabled-button assertion was dropped because acceptance is reduced pixel motion; actual reduced-motion pixels are stationary. No app change to force that assertion. Controls follow-up pending separate lane; no globalprovider generation enabled.

@@ -25,7 +25,8 @@ async page=>{
  if(guide.length!==32)throw Error('Wrong capture-locale mapping');
  if(!await audio.evaluate(a=>a.src.includes('/house/guide/')))throw Error('Wrong source audio');
  const viScript=guide.find(t=>t.capture_id==='pano_15'&&t.locale==='vi').script;
- if(await panel.locator('.guide-description').textContent()!==viScript)throw Error('VI script mismatch');
+ if(await panel.locator('.guide-script').textContent()!==viScript)throw Error('VI script mismatch');
+ if(await panel.locator('.guide-description').textContent()!==guide.find(t=>t.capture_id==='pano_15'&&t.locale==='vi').description)throw Error('VI description mismatch');
  // Exercise every natural ended event with actual decoded WAVs, accelerated to fit QA timebox.
  await audio.evaluate(a=>{a.defaultPlaybackRate=8;a.playbackRate=8;});
  await page.waitForFunction(()=>document.querySelector('#demo-guide [data-action=play]').textContent==='Replay tour',null,{timeout:45000,polling:100});
